@@ -27,7 +27,7 @@ function getModuleName(presets: PresetOptions, module_name: string) {
 }
 /**
  * Attempts to import a component from a URI. Returns true if the resource
- * is a wick component that could be parsed, false otherwise.
+ * is a wick component that can be parsed, false otherwise.
  * @param new_component_url
  * @param component
  * @param presets
@@ -38,26 +38,34 @@ export async function importComponentData(new_component_url, component, presets,
 
     try {
 
-        const new_comp_data = await parseSource(new URI(new_component_url), presets, component.location);
+        const { IS_NEW, comp: new_comp_data } = await parseSource(new URI(new_component_url), presets, component.location);
 
-        if (new_comp_data.HAS_ERRORS)
+
+        if (new_comp_data.HAS_ERRORS) {
+            console.log(new_comp_data.errors);
             return false;
+        }
 
-        //const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URI(new_component_url), component.location);
-        // If the ast is an HTML_NODE with a single style element, then integrate the 
-        // css data into the current component. 
-        //const comp_data = await compileComponent(ast, string, resolved_url, presets);
-        componentDataToJSCached(new_comp_data, presets);
+        if (IS_NEW) {
+            //const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URI(new_component_url), component.location);
+            // If the ast is an HTML_NODE with a single style element, then integrate the 
+            // css data into the current component. 
+            //const comp_data = await compileComponent(ast, string, resolved_url, presets);
+            //componentDataToJSCached(new_comp_data, presets);
+
+            if (!new_comp_data.HTML)
+                mergeComponentData(component, new_comp_data);
+        }
 
         if (local_name)
             component.local_component_names.set(local_name.toUpperCase(), new_comp_data.name);
 
-        if (!new_comp_data.HTML)
-            mergeComponentData(component, new_comp_data);
-
         return true;
 
     } catch (e) {
+
+
+        console.log(e);
         console.log("TODO: Replace with a temporary warning component.", e);
     }
 
@@ -156,15 +164,21 @@ export async function importResource(
             break;
 
         case "@model":
+
+            if (default_name)
+                addBindingVariable(frame, default_name, node.pos, BINDING_VARIABLE_TYPE.MODEL_DIRECT, default_name, flag);
+
             if (meta)
                 component.global_model_name = meta.trim();
-            ref_type = BINDING_VARIABLE_TYPE.MODEL_VARIABLE; flag = BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL;
+            ref_type = BINDING_VARIABLE_TYPE.MODEL_VARIABLE;
+            flag = BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL;
             break;
 
         case "@presets":
             /* all ids within this node are imported form the presets object */
             break;
     }
+
 
     for (const { local, external } of names) {
 

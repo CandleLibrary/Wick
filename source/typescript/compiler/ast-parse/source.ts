@@ -46,7 +46,11 @@ const empty_obj = {};
  * @param presets {PresetOptions} - 
  * @param root_url 
  */
-export async function parseSource(input: URL | string, presets?: PresetOptions, root_url: URL = new URL(URL.GLOBAL + "/")): Promise<ComponentDataClass> {
+export async function parseSource(
+    input: URL | string,
+    presets?: PresetOptions,
+    root_url: URL = new URL(URL.GLOBAL + "/")
+): Promise<{ IS_NEW: boolean, comp: ComponentDataClass; }> {
 
     const run_tag = metrics.startRun("Parse Source Input");
 
@@ -89,8 +93,6 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
 
         source_url = url;
 
-        metrics.endRun(run_tag);
-
         if (data.errors.length > 0)
             throw data.errors.pop();
 
@@ -112,6 +114,7 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
             errors.push(e, a);
         }
 
+    } finally {
         metrics.endRun(run_tag);
     }
 
@@ -122,8 +125,9 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
         error: e = null,
         comments = []
     } = data;
-    metrics.endRun(run_tag);
-    return <any>await parseComponentAST(ast, <string>input_string, source_url, presets, null, errors);
+
+    return <Promise<{ IS_NEW: boolean, comp: ComponentDataClass; }>>
+        <any>await parseComponentAST(ast, <string>input_string, source_url, presets, null, errors);
 };
 
 export async function parseComponentAST(
@@ -133,33 +137,61 @@ export async function parseComponentAST(
     presets: PresetOptions,
     parent: ComponentData = null,
     parse_errors: Error[] = [],
-): Promise<ComponentData> {
+
+): Promise<{ IS_NEW: boolean, comp: ComponentDataClass; }> {
 
     const run_tag = metrics.startRun("Parse Source AST");
 
     const
         component: ComponentData = createComponentData(source_string, url);
 
+    if (presets.components.has(component.name)) {
+        metrics.endRun(run_tag);
+        console.log({ n: component.name, url, c: presets.components.get(component.name) });
+        return { IS_NEW: false, comp: presets.components.get(component.name) };
+    }
+
+    presets.components.set(component.name, component);
+
     component.root_frame = createParseFrame(null, component);
 
     component.comments = [];
 
     if (parent) {
-        for (const [name, val] of parent.local_component_names.entries()) {
+
+        for (const [name, val] of parent.local_component_names.entries())
             component.local_component_names.set(name, val);
-        }
+
 
         for (const [name, binding] of parent.root_frame.binding_variables) {
-            if (binding.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE) {
-                addBindingVariable(
-                    component.root_frame,
-                    name,
-                    {},
-                    BINDING_VARIABLE_TYPE.PARENT_VARIABLE,
-                    name,
-                    BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
-                );
-                binding.flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD;
+
+            switch (binding.type) {
+                case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
+                case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
+                case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE: {
+                    addBindingVariable(
+                        component.root_frame,
+                        binding.internal_name,
+                        {},
+                        binding.type,
+                        binding.external_name,
+                        BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
+                    );
+                } break;
+
+
+                case BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE: {
+                    addBindingVariable(
+                        component.root_frame,
+                        name,
+                        {},
+                        BINDING_VARIABLE_TYPE.PARENT_VARIABLE,
+                        name,
+                        BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
+                    );
+
+                    binding.flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD;
+                } break;
             }
         }
     }
@@ -170,11 +202,6 @@ export async function parseComponentAST(
             if (ast && parse_errors.length == 0) {
 
                 const IS_SCRIPT = determineSourceType(ast);
-
-                if (presets.components.has(component.name))
-                    return presets.components.get(component.name);
-
-                presets.components.set(component.name, component);
 
                 if (IS_SCRIPT)
                     await processWickJS_AST(<JSNode>ast, component, presets);
@@ -188,7 +215,7 @@ export async function parseComponentAST(
                 if (component.HAS_ERRORS)
                     throw new Error("Component has errors");
 
-                return component;
+                return { IS_NEW: true, comp: component };
             }
 
         } catch (e) {
@@ -197,7 +224,8 @@ export async function parseComponentAST(
         }
 
     metrics.endRun(run_tag);
-    return createErrorComponent(parse_errors, source_string, url, component);
+
+    return { IS_NEW: true, comp: createErrorComponent(parse_errors, source_string, url, component) };
 
 }
 export async function fetchASTFromRemote(url: URL) {

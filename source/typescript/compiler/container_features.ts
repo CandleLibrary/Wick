@@ -71,40 +71,18 @@ registerFeature(
 
                             if (!(n.type & HTMLNodeClass.HTML_ELEMENT)) { continue; }
 
-                            const inherited_attributes = [], core_attributes = [];
-
-                            ctr.component_attributes.push(inherited_attributes);
-
                             let comp, comp_index = ctr.components.length;
 
-                            if (ch.tag.toLowerCase() == "self") {
-                                comp = component;
-                            } else {
+                            const inherited_attributes = [], core_attributes = [];
+
+                            const IS_GENERATED_COMPONENT = !(component.local_component_names.has(ch.tag));
 
 
-                                if (!Is_Tag_From_HTML_Spec(ch.tag) && component.local_component_names.has(ch.tag))
-                                    comp = presets.components.get(component.local_component_names.get(ch.tag));
-                                else {
-
-                                    comp = await build_system.parseComponentAST(
-                                        Object.assign({}, ch),
-                                        build_system.componentNodeSource(component, ch),
-                                        new URI("auto_generated"),
-                                        presets,
-                                        component
-                                    );
-                                }
-
-                                component.local_component_names.set(comp?.name, comp?.name);
-                                ch.child_id = component.children.push(1) - 1;
-                            }
-
-                            ctr.components.push(comp);
-                            ctr.component_names.push(comp?.name);
-
-                            if (comp) {
+                            {
+                                const new_attribs = [];
                                 //Check for use-if attribute
-                                for (const { name, value } of (n.attributes || [])) {
+                                for (const attrib of (n.attributes || [])) {
+                                    const { name, value } = attrib;
                                     if (typeof value != "string")
                                         if (name == "use-if") {
 
@@ -121,11 +99,46 @@ registerFeature(
                                                 component: comp.name,
                                                 container_id
                                             }, index);
+                                        } else
+                                            IS_GENERATED_COMPONENT
+                                                ? new_attribs.push(attrib)
+                                                : inherited_attributes.push([name, value]);
 
-                                        } else if (typeof value == "object") { } else
-                                            inherited_attributes.push([name, value]);
+
                                 }
+
+                                n.attributes = new_attribs;
                             }
+
+                            ctr.component_attributes.push(inherited_attributes);
+
+
+                            if (ch.tag.toLowerCase() == "self") {
+                                comp = component;
+                            } else {
+
+
+                                if (!IS_GENERATED_COMPONENT)
+
+                                    comp = presets.components.get(component.local_component_names.get(ch.tag));
+
+                                else
+                                    ({ comp } = await build_system.parseComponentAST(
+                                        Object.assign({}, ch),
+                                        build_system.componentNodeSource(component, ch),
+                                        new URI("auto_generated"),
+                                        presets,
+                                        component
+                                    ));
+
+                                component.local_component_names.set(comp?.name, comp?.name);
+
+                                ch.child_id = component.children.push(1) - 1;
+                            }
+
+                            ctr.components.push(comp);
+
+                            ctr.component_names.push(comp?.name);
                         }
 
                         component.container_count++;
@@ -171,9 +184,7 @@ registerFeature(
 
                 let arrow_argument_match = new Array(1).fill(null);
 
-                console.dir({ index, container_id, node, exp: ext(expression, true) }, { depth: 8 });
-
-                if (getListOfUnboundArgs(expression, comp, arrow_argument_match)) {
+                if (getListOfUnboundArgs(expression, comp, arrow_argument_match, build_system)) {
 
                     const arrow_expression_stmt = stmt(`$$ctr${container_id}.addEvaluator(${arrow_argument_match[0].value} => 1, ${comp_index})`);
 
@@ -198,6 +209,7 @@ registerFeature(
 
                     if (attr.name == "data" && host_node.IS_CONTAINER) {
 
+
                         // Process the primary expression for Binding Refs and static
                         // data
                         const ast = await build_system.processBindingAsync(attr.value, component, presets);
@@ -221,7 +233,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, presets, element_index, addOnBindingUpdate) => {
+            buildJS: (node, comp, presets, element_index, on_write, init) => {
 
 
                 const
@@ -231,7 +243,15 @@ registerFeature(
 
                 st.nodes[0].nodes[1].nodes = node.nodes;
 
-                addOnBindingUpdate(st);
+                const resolution_type = getExpressionStaticResolutionType(<JSNode>node.nodes[0], comp, presets);
+                if (
+                    resolution_type == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
+                    ||
+                    resolution_type == STATIC_RESOLUTION_TYPE.STATIC_WITH_GLOBAL
+                )
+                    init(st);
+
+                on_write(st);
 
                 return node;
             },
@@ -540,9 +560,9 @@ registerFeature(
 
                 let arrow_argument_match = new Array(argument_size).fill(null);
 
-                if (getListOfUnboundArgs(node, comp, arrow_argument_match)) {
+                if (getListOfUnboundArgs(node, comp, arrow_argument_match, build_system)) {
 
-                    const arrow_expression_stmt = stmt(`$$ctr${container_id}.${container_method_name}(${arrow_argument_match[0].value} => 1)`);
+                    const arrow_expression_stmt = stmt(`$$ctr${container_id}.${container_method_name}((${arrow_argument_match.map(i => i.value).join(",")}) => 1)`);
 
                     arrow_expression_stmt.nodes[0].nodes[1].nodes[0].nodes[1] = node.nodes[0];
 
@@ -563,7 +583,7 @@ registerFeature(
                 if (ast.type == JSNodeType.ArrowFunction)
                     ast = ast.nodes[1];
 
-                if (getListOfUnboundArgs(ast, comp, arrow_argument_match)) {
+                if (getListOfUnboundArgs(ast, comp, arrow_argument_match, build_system)) {
 
 
                     if (build_system.getExpressionStaticResolutionType(ast, comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
@@ -583,60 +603,62 @@ registerFeature(
         }
 
 
-        /**
-         * Searches for N Undeclared binding references, where N is the number of entries in list arg.
-         * Upon finding matches, converts the types of reference nodes back to their original values.
-         * Found nodes are assigned to the list at an index respective of the order the node was found
-         * in. If the number of found nodes is less then the number of entries in list, then false
-         * is returned; true otherwise.
-         *
-         * @param node
-         * @param comp
-         * @param list
-         * @returns
-         */
-        function getListOfUnboundArgs(node: JSNode, comp: ComponentData, list: JSNode[]): boolean {
-
-            let index = 0;
-
-            let active_names = new Set();
-
-            for (const { node: n } of traverse(node, "nodes")
-                .filter("type", BindingIdentifierBinding, BindingIdentifierReference, JSNodeType.IdentifierBinding, JSNodeType.IdentifierReference)) {
-
-                const name = n.value;
-
-                if (n.type == BindingIdentifierBinding || n.type == BindingIdentifierReference) {
-
-                    const binding = build_system.getComponentBinding(name, comp);
-
-                    if (binding.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
-
-                        n.type = getOriginalTypeOfExtendedType(n.type);
-
-                        if (!active_names.has(name)) {
-                            active_names.add(name);
-                            list[index] = n;
-                            if (++index == list.length)
-                                return true;
-                        }
-                    }
-                } else {
-                    if (!active_names.has(name)) {
-                        active_names.add(name);
-                        list[index] = n;
-                        if (++index == list.length)
-                            return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-
-
 
     }
-
 );
+
+/**
+        * Searches for N Undeclared binding references, where N is the number of entries in list arg.
+        * Upon finding matches, converts the types of reference nodes back to their original values.
+        * Found nodes are assigned to the list at an index respective of the order the node was found
+        * in. If the number of found nodes is less then the number of entries in list, then false
+        * is returned; true otherwise.
+        *
+        * @param node
+        * @param comp
+        * @param list
+        * @returns
+        */
+export function getListOfUnboundArgs(
+    node: JSNode,
+    comp: ComponentData,
+    list: JSNode[],
+    build_sys: any
+): boolean {
+
+    let index = 0;
+
+    let active_names = new Set();
+
+    for (const { node: n } of traverse(node, "nodes")
+        .filter("type", BindingIdentifierBinding, BindingIdentifierReference, JSNodeType.IdentifierBinding, JSNodeType.IdentifierReference)) {
+
+        const name = n.value;
+
+        if (n.type == BindingIdentifierBinding || n.type == BindingIdentifierReference) {
+
+            const binding = build_sys.getComponentBinding(name, comp);
+
+            if (binding.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
+
+                n.type = getOriginalTypeOfExtendedType(n.type);
+
+                if (!active_names.has(name)) {
+                    active_names.add(name);
+                    list[index] = n;
+                    if (++index == list.length)
+                        return true;
+                }
+            }
+        } else {
+            if (!active_names.has(name)) {
+                active_names.add(name);
+                list[index] = n;
+                if (++index == list.length)
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}

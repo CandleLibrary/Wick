@@ -176,7 +176,7 @@ async function componentCreate(input: string | URL, presets: PresetOptions = rt.
 
     b_sys.enableParserFeatures();
 
-    const comp_data = await parseSource(input, presets);
+    const { comp: comp_data } = await parseSource(input, presets);
 
     b_sys.disableParserFeatures();
 

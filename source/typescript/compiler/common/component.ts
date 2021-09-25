@@ -7,7 +7,12 @@ import { DOMLiteral } from "../../types/html";
 import { addBindingVariable } from './binding.js';
 import { ComponentHash } from "./hash_name.js";
 
-export function createErrorComponent(errors: Error[], src: string, location: URL, component: ComponentData = createComponentData(src, location)) {
+export function createErrorComponent(
+    errors: Error[],
+    src: string,
+    location: URL,
+    component: ComponentData = createComponentData(src, location)
+) {
 
     const error_data = [...errors
         .map(

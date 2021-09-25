@@ -4,6 +4,7 @@ import {
     IndirectHook
 } from "../types/all.js";
 import { registerFeature } from './build_system.js';
+import { getListOfUnboundArgs } from './container_features.js';
 
 registerFeature(
 
@@ -50,11 +51,17 @@ registerFeature(
                 // Replace the value with a 
                 // Get the on* attribute name
                 const
-                    { action, nodes: [ast] } = node.nodes[0],
+                    { action, nodes: [ast] } = node.nodes[0];
 
-                    ele_name = "$$ele" + element_index,
+                let arrow_argument_match = new Array(1).fill(null), s = null;
 
-                    s = stmt(`${ele_name}.addEventListener("${action.slice(2)}", v=>a)`);
+                const ele_name = "$$ele" + element_index;
+
+                if (getListOfUnboundArgs(ast, comp, arrow_argument_match, build_system)) {
+                    s = stmt(`${ele_name}.addEventListener("${action.slice(2)}", ${arrow_argument_match[0].value}=>a)`);
+                } else {
+                    s = stmt(`${ele_name}.addEventListener("${action.slice(2)}", _=>a)`);
+                }
 
                 s.nodes[0].nodes[1].nodes[1].nodes[1] = ast;
 

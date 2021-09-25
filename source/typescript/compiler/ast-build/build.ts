@@ -45,7 +45,7 @@ import {
     processHookForClass,
     processIndirectHook
 } from "./hooks.js";
-import { componentDataToTempAST, createComponentTemplate } from "./html.js";
+import { componentDataToTempAST, ensureComponentHasTemplates } from "./html.js";
 
 export async function createComponentTemplates(
     presets: PresetOptions,
@@ -58,7 +58,7 @@ export async function createComponentTemplates(
 
         for (const [name, component] of components.entries()) {
 
-            const template = await createComponentTemplate(component, presets);
+            const template = await ensureComponentHasTemplates(component, presets);
 
             if (!template_container.has(name)) {
 

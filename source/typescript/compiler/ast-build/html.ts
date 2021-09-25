@@ -343,9 +343,13 @@ async function addContainer(
 
         if (!template_map.has(comp.name) && comp.name != component.name) {
 
-            const template = await createComponentTemplate(comp, presets, template_map);
+            await ensureComponentHasTemplates(comp, presets);
+
+            for (const name of comp.templates)
+                template_map.set(name, presets.components.get(name).template);
 
             template_map.set(comp.name, comp.template);
+
         }
     }
 
@@ -366,24 +370,29 @@ async function addContainer(
 }
 
 
-export async function createComponentTemplate(
+export async function ensureComponentHasTemplates(
     comp: ComponentData,
-    presets: PresetOptions,
-    template_map: Map<string, TemplateHTMLNode> = new Map
+    presets: PresetOptions
 ): Promise<TemplateHTMLNode> {
     if (!comp.template) {
-
-        b_sys.enableBuildFeatures();
-
-        const { html } = await componentDataToTempAST(comp, presets, null, template_map);
 
         comp.template = {
             tagName: "template",
             data: "",
             strings: [],
             attributes: new Map([["w:c", ""], ["id", comp.name]]),
-            children: [...html]
+            children: []
         };
+
+        comp.templates = new Set();
+
+        b_sys.enableBuildFeatures();
+
+        const { html, templates } = await componentDataToTempAST(comp, presets);
+
+        comp.template.children.push(...html);
+
+        comp.templates = new Set([comp.name, ...templates.keys()]);
 
         b_sys.disableBuildFeatures();
     }
