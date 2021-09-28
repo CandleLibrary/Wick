@@ -1,18 +1,19 @@
+import { Logger } from "@candlelib/log";
+
+const wick_logger = Logger.createLogger("wick");
+export function warn(...args) {
+    wick_logger.warn(...args);
+}
 export function log(...args) {
-    console.log(...args);
+    wick_logger.log(...args);
 }
 
 export function dir(args) {
-    console.dir(args, {
-        breakLength: 75,
-        depth: null,
-        maxArrayLength: Infinity,
-        maxStringLength: Infinity,
-    });
+    wick_logger.log(args);
 }
 
 export function error(e: Error) {
-    console.log(error);
+    wick_logger.log(error);
 }
 
 export function trace(...args) {

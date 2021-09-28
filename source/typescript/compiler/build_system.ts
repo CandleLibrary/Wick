@@ -387,7 +387,7 @@ export async function loadFeatures() {
 
 
     for (const { name, register } of pending_features) {
-        console.log(`\nLoading feature [${name}]`);
+        log(`\nLoading feature [${name}]`);
         current_name = name;
         await register(<any>build_system);
     }
