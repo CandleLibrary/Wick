@@ -5,7 +5,7 @@ import { rt } from "../../runtime/global.js";
 import { ComponentData, TemplateHTMLNode, PresetOptions } from "../../types/all.js";
 import { componentDataToTempAST } from "../ast-build/html.js";
 import { html_void_tags, Is_Tag_From_HTML_Spec, Is_Tag_Void_Element } from "../common/html.js";
-
+import * as b_sys from "../build_system.js";
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -19,9 +19,13 @@ export async function componentDataToHTML(
     presets: PresetOptions = rt.presets,
 ): Promise<{ html: string, template_map: Map<string, TemplateHTMLNode>; }> {
 
+    b_sys.enableBuildFeatures();
+
     const { html: [html], templates: template_map } = await componentDataToTempAST(comp, presets);
 
     const html_string = htmlTemplateToString(html);
+
+    b_sys.disableBuildFeatures();
 
     return { html: html_string, template_map: template_map };
 }
