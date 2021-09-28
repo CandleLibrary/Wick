@@ -1,5 +1,5 @@
 import { HTMLNode } from "@candlelib/html";
-import { JSExpressionClass } from "@candlelib/js";
+import { JSExpressionClass, JSStatementClass } from "@candlelib/js";
 import { CSSNode } from "source/typescript/entry-point/wick-full.js";
 import { Node } from "../../types/all.js";
 import { metrics } from '../metrics.js';
@@ -64,8 +64,10 @@ function parse_core(input: string, entry_point: number, run_title: string) {
         metrics.endRun(run_tag);
     }
 }
-
-export function parse_js_exp(input: string): JSExpressionClass {
+export function parse_js_stmt(input?: string): JSStatementClass {
+    return parse_core(input, entry_points.js_statement, "Parse JS Statement");
+};
+export function parse_js_exp(input?: string): JSExpressionClass {
     return parse_core(input, entry_points.js_expression, "Parse JS Expression");
 };
 

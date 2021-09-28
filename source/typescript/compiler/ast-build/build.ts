@@ -7,6 +7,7 @@ import {
     JSNodeType as JST,
     stmt
 } from "@candlelib/js";
+import { parse_js_exp } from '../source-code-parse/parse.js';
 import {
     BindingVariable,
     BINDING_VARIABLE_TYPE,
@@ -197,7 +198,7 @@ async function processHTML(
             return_stmt = stmt("return this.makeElement(a);"),
             { html: [html] } = (await componentDataToTempAST(component, presets));
 
-        return_stmt.nodes[0].nodes[1].nodes[0] = exp(`\`${htmlTemplateToString(html).replace(/(\`)/g, "\\\`")}\``);
+        return_stmt.nodes[0].nodes[1].nodes[0] = parse_js_exp(`\`${htmlTemplateToString(html).replace(/(\`)/g, "\\\`")}\``);
 
         appendStmtToFrame(frame, return_stmt);
 
@@ -368,17 +369,17 @@ export async function finalizeBindingExpression(
                  * Convert convenience names to class property accessors
                  */
                 if (node.value.slice(0, 5) == ("$$ele")) {
-                    mutate(<any>exp(`this.elu[${node.value.slice(5)}]`));
+                    mutate(<any>parse_js_exp(`this.elu[${node.value.slice(5)}]`));
                     skip();
                 } else if (node.value.slice(0, 5) == ("$$ctr")) {
-                    mutate(<any>exp(`this.ctr[${node.value.slice(5)}]`));
+                    mutate(<any>parse_js_exp(`this.ctr[${node.value.slice(5)}]`));
                     skip();
                 } else if (node.value.slice(0, 4) == ("$$ch")) {
-                    mutate(<any>exp(`this.ch[${node.value.slice(4)}]`));
+                    mutate(<any>parse_js_exp(`this.ch[${node.value.slice(4)}]`));
                     skip();
                 } else if (node.value.slice(0, 4) == "$$bi") {
                     const binding = getComponentBinding(node.value.slice(4), component);
-                    mutate(<any>exp(`${binding.class_index}`));
+                    mutate(<any>parse_js_exp(`${binding.class_index}`));
                     skip();
                 }
 
@@ -395,7 +396,7 @@ export async function finalizeBindingExpression(
 
                 const
                     name = <string>node.value,
-                    id = exp(getCompiledBindingVariableNameFromString(name, component, comp_info)),
+                    id = parse_js_exp(<string>getCompiledBindingVariableNameFromString(name, component, comp_info)),
                     new_node = setPos(id, node.pos);
 
                 if (!component.root_frame.binding_variables.has(<string>name))
@@ -428,9 +429,9 @@ export async function finalizeBindingExpression(
                             comp_var_name: string =
                                 getCompiledBindingVariableNameFromString(name, component, comp_info),
 
-                            assignment: JSCallExpression = <any>exp(`this.${update_action}(${index})`),
+                            assignment: JSCallExpression = <any>parse_js_exp(`this.${update_action}(${index})`),
 
-                            exp_ = exp(`${comp_var_name}${node.symbol[0]}1`),
+                            exp_ = parse_js_exp(`${comp_var_name}${node.symbol[0]}1`),
 
                             { ast, NEED_ASYNC: NA } =
                                 await finalizeBindingExpression(ref, component, comp_info, presets);
@@ -443,7 +444,7 @@ export async function finalizeBindingExpression(
 
                         if (node.type == JST.PreExpression)
                             assignment.nodes[1].nodes.push(
-                                <any>exp("true")
+                                <any>parse_js_exp("true")
                             );
 
                         mutate(setPos(assignment, node.pos));
@@ -470,7 +471,7 @@ export async function finalizeBindingExpression(
 
                         const index = comp_info.binding_records.get(name).index,
 
-                            assignment: JSCallExpression = <any>exp(`this.${update_action}(${index})`),
+                            assignment: JSCallExpression = <any>parse_js_exp(`this.${update_action}(${index})`),
 
                             { ast: a1, NEED_ASYNC: NA1 } =
                                 await finalizeBindingExpression(ref, component, comp_info, presets),

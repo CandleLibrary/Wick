@@ -4,13 +4,15 @@ import {
     renderWithFormatting as CFLrenderWithFormatting,
     renderWithSourceMap as CFLrenderWithSourceMap,
     renderWithFormattingAndSourceMap as CFLrenderWithFormattingAndSourceMap,
+    experimentalRender,
     FormatRule
 } from "@candlelib/conflagrate";
-import { FormatFunction as JSFormatFunction, JSNode } from "@candlelib/js";
+import { FormatFunction as JSFormatFunction, JSNode, render_mappings } from "@candlelib/js";
 import { CSSNode, FormatFunction as CSSFormatFunction } from "@candlelib/css";
 
 import { renderers, format_rules } from "./rules.js";
 import { Node } from "../../types/all.js";
+import { wick_mappings, wick_renderers } from './mappings.js';
 
 
 export const FormatFunction: CustomFormatFunction<Node> = (val, prop_name, node) => {
@@ -22,6 +24,10 @@ export const FormatFunction: CustomFormatFunction<Node> = (val, prop_name, node)
     return str;
 
 };
+
+export function renderNew(node: Node): string {
+    return experimentalRender(node, wick_mappings, wick_renderers);
+}
 
 export function renderCompressed(
     node: Node
