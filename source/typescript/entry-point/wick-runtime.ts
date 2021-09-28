@@ -12,14 +12,14 @@ let
     wick_root = function () {
 
         console.warn("Wick.rt is incapable of compiling components. Use the full Wick library instead." +
-            " \n\t A dummy component will be generated.");
+            " \n\t A placeholder component will be generated instead.");
 
         const d = {
             mount: nop,
             get pending() { return d; },
             class: function () {
                 this.ele = document.createElement("div");
-                this.ele.innerHTML = "Wick.rt is incapable of compiling component, a dummy component has been generated instead.";
+                this.ele.innerHTML = "Wick.rt is incapable of compiling components, a dummy component has been generated instead.";
             },
             createInstance: nop,
         };
@@ -69,6 +69,7 @@ const wick = Object.assign(wick_root, {
             const elements = gatherWickElements();
 
             for (const comp of hydrateComponentElements(elements)) {
+                comp.initialize();
                 comp.connect();
             }
         });
