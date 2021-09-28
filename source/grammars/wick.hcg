@@ -49,7 +49,7 @@
 <> WICK > COMPONENT                                                                                           
 
 <> COMPONENT > 
-         ! html::HTML
+         html::HTML
           
      |    
           js::javascript 
@@ -67,9 +67,9 @@
 
 +> html::TAG > 
 
-          \< (t:style | t:STYLE) html::ATTRIBUTES? \>  css::CSS?  \</ (t:style | t:STYLE) \>                                  
+          ( \<style | \<STYLE ) html::ATTRIBUTES? \>  css::CSS?  \</ (t:style | t:STYLE) \>                                  
                                             
-          f:r { { type:env.typ.HTML_STYLE,  attributes:$$3 || [], nodes:[$$5], pos } }
+          f:r { { type:env.typ.HTML_STYLE,  attributes:$$2 || [], nodes:[$$4], pos } }
     
 +> html::TAG_BODY_ITEM > 
 

@@ -6,21 +6,21 @@
 
 
     
-<> HTML > RESULT
+<> HTML > ! RESULT
 
 <> RESULT > DTD(*) BODY                                                                     
                                                                 f:r { $2.DTD = $1, $2 }
 
 <> BODY > GOAL_TAG
 
-<> GOAL_TAG > TAG
+<> GOAL_TAG > ! TAG
 
 <> TAG > \< TAGNAME ATTRIBUTES? \> TAG_BODY?  \</ TAGNAME \>                                     
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:$5 || [], VOID:false, pos } }
     | \< TAGNAME ATTRIBUTES? \/>                                                             
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:false, pos } }
-    | \< VOID_NAME ATTRIBUTES? /? >                                                          
-                                        f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:true, pos } }
+    | VOID_TAG_HEAD ATTRIBUTES? /? >                                                          
+                                        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:[], VOID:true, pos } }
     
 <> DTD > \<! tk:identifier ? \--  ( g:id | g:sym | g:sp | g:nl | g:num  )(*\" )  \-- \>                                                 
                                                                 f:r { { type:"DTD", tag:$$2|| "", value:$$4 }  }                
@@ -30,22 +30,22 @@
 # https://www.w3.org/TR/2011/WD-html-markup-20110113/syntax.html#syntax-elements
 ###########################################################################################
 
-<> VOID_NAME > t:input
-    | t:area
-    | t:base
-    | t:br
-    | t:col
-    | t:command
-    | t:embed
-    | t:hr
-    | t:img
-    | t:keygen
-    | t:link
-    | t:meta
-    | t:param
-    | t:source
-    | t:track
-    | t:wbr
+<> VOID_TAG_HEAD > \<input
+    | \<area
+    | \<base
+    | \<br
+    | \<col
+    | \<command
+    | \<embed
+    | \<hr
+    | \<img
+    | \<keygen
+    | \<link
+    | \<meta
+    | \<param
+    | \<source
+    | \<track
+    | \<wbr
 
 <> TAG_BODY > TAG_BODY_ITEM(+)
 
