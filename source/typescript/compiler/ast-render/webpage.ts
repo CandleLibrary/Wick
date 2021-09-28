@@ -61,6 +61,14 @@ function renderComponentInit(component_class_declarations, presets) {
     `;
 }
 
+export const default_wick_hooks = {
+    init_script_render: renderBasicWickPageInit,
+    init_components_render: renderComponentInit
+}, default_radiate_hooks = {
+    init_script_render: renderRadiatePageInit,
+    init_components_render: renderComponentInit
+};
+
 
 /**[API]
  * Builds a single page from a wick component, with the
@@ -75,12 +83,9 @@ function renderComponentInit(component_class_declarations, presets) {
 export async function RenderPage(
     comp: ComponentData,
     presets: PresetOptions = rt.presets,
-    hooks: PageRenderHooks = {
-        init_script_render: comp.RADIATE
-            ? renderRadiatePageInit
-            : renderBasicWickPageInit,
-        init_components_render: renderComponentInit
-    }
+    hooks: PageRenderHooks = comp.RADIATE
+        ? default_radiate_hooks
+        : default_wick_hooks
 ): Promise<{
     /**
      * A string of template elements that comprise components that are rendered
@@ -186,7 +191,7 @@ function renderWickPageString(
     head: string,
     script: string,
     style: string,
-    hooks: PageRenderHooks
+    hooks: PageRenderHooks,
 ): string {
     return `<!DOCTYPE html>
 <html lang="en">
