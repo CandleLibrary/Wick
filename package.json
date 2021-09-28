@@ -49,8 +49,8 @@
     },
     "homepage": "https://github.com/CandleLibrary/wick#readme",
     "devDependencies": {
-        "@types/node": "^13.9.1",
-        "@candlelib/cure": "0.5.0"
+        "@candlelib/cure": "0.5.0",
+        "@types/node": "^13.9.1"
     },
     "jshintConfig": {
         "esversion": 6,
@@ -60,13 +60,14 @@
         "@candlelib/conflagrate": "0.4.3",
         "@candlelib/css": "0.3.9",
         "@candlelib/glow": "0.4.8",
+        "@candlelib/html": "0.2.4",
         "@candlelib/hydrocarbon": "0.12.0",
         "@candlelib/js": "0.5.9",
+        "@candlelib/log": "^0.1.0",
+        "@candlelib/paraffin": "0.1.9",
         "@candlelib/spark": "0.3.3",
         "@candlelib/uri": "0.2.4",
-        "@candlelib/wind": "0.5.3",
-        "@candlelib/html": "0.2.4",
-        "@candlelib/paraffin": "0.1.9"
+        "@candlelib/wind": "0.5.3"
     },
     "esm": {
         "cjs": {
