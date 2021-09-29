@@ -27,7 +27,7 @@ export async function componentDataToHTML(
 
     b_sys.disableBuildFeatures();
 
-    return { html: html_string, template_map: template_map };
+    return { html: html_string, template_map };
 }
 
 /**

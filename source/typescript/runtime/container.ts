@@ -808,8 +808,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
         if (this.filter)
             output = this.comps.filter(comp => this.filter(comp.container_model));
 
-        if (this.sort)
+        if (this.sort) {
             output.sort(this.sort);
+        }
 
         this.activeComps = output;
 
@@ -875,6 +876,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
             if (
                 Math.abs(this.scrub_velocity) > 0.0001
             ) {
+
                 if (this.scrub(this.scrub_velocity)) {
 
                     this.scrub_velocity *= (this.drag);
