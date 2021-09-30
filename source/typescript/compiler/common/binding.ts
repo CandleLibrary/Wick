@@ -176,6 +176,7 @@ export function addBindingVariable(
 
     if (root.binding_variables.has(internal_name)) {
 
+
         let UPGRADED = false;
 
         const existing_binding = root.binding_variables.get(internal_name);
@@ -322,8 +323,8 @@ export function getCompiledBindingVariableName(
             case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
                 return `this.model.${external_name}`;
 
-            //case BINDING_VARIABLE_TYPE.MODEL:
-            //return `this.${external_name}`;
+            case BINDING_VARIABLE_TYPE.MODEL_DIRECT:
+                return `this.model`;
 
             case BINDING_VARIABLE_TYPE.METHOD_VARIABLE:
                 return "this." + binding.internal_name;

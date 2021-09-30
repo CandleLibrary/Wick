@@ -12,6 +12,7 @@ export enum BINDING_VARIABLE_TYPE {
     INTERNAL_VARIABLE = 1,
     PARENT_VARIABLE = 2,
     MODEL_VARIABLE = 4,
+    MODEL_DIRECT = 512,
 
     /**
      * A Global variable that should be wrapped into a an

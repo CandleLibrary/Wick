@@ -226,7 +226,7 @@ export async function processHookForClass(
         // the purpose of such ASTs is to register the appropriate binding identify for use
         // within the component class.
         if ((ast.type != BindingIdentifierBinding && ast.type != BindingIdentifierReference))
-            appendStmtToFrame(class_info.async_init_frame, ast);
+            appendStmtToFrame(class_info.init_frame, ast);
 
         // Update pending binding records 
         for (const name of component_variables)

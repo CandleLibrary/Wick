@@ -92,7 +92,7 @@ export class ComponentDataClass implements ComponentData {
     root_ele_claims: ComponentData["root_ele_claims"];
     template: ComponentData["template"];
     indirect_hooks: ComponentData["indirect_hooks"];
-
+    templates: ComponentData["templates"];
     presets: PresetOptions;
 
     constructor(source_string: string, location: URL) {
