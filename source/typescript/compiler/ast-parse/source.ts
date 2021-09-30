@@ -147,7 +147,6 @@ export async function parseComponentAST(
 
     if (presets.components.has(component.name)) {
         metrics.endRun(run_tag);
-        console.log({ n: component.name, url, c: presets.components.get(component.name) });
         return { IS_NEW: false, comp: presets.components.get(component.name) };
     }
 
@@ -168,16 +167,17 @@ export async function parseComponentAST(
             switch (binding.type) {
                 case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
                 case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
-                case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE: {
-                    addBindingVariable(
-                        component.root_frame,
-                        binding.internal_name,
-                        {},
-                        binding.type,
-                        binding.external_name,
-                        BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
-                    );
-                } break;
+                case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE:
+                    {
+                        addBindingVariable(
+                            component.root_frame,
+                            binding.internal_name,
+                            {},
+                            binding.type,
+                            binding.external_name,
+                            BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
+                        );
+                    } break;
 
 
                 case BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE: {

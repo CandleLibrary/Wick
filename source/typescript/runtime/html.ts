@@ -113,7 +113,7 @@ export function hydrateComponentElement(hydrate_candidate: HTMLElement, parent_c
 
     const u = undefined;
 
-    let first_comp: WickRTComponent = null, prev_comp = null;
+    let first_comp: WickRTComponent = null;
 
     for (const component_name of names) {
 

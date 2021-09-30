@@ -114,9 +114,6 @@ export class Router {
             };
         };
 
-        //Adding CandleLibrary URL to the presets object for use by wick components. 
-        this.wick.rt.presets.url = URL;
-
         /* */
         this.modal_stack = [];
 
@@ -300,10 +297,7 @@ export class Router {
             if (IS_SAME_PAGE)
                 return;
 
-
-            let UNWIND = 0;
             let FORCE_CLOSE = (page.type == "transitioning_modal");
-
 
             this.modal_stack = this.modal_stack.reduce((r, a) => {
 

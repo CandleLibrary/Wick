@@ -1,4 +1,4 @@
-import { ext, JSNode } from "@candlelib/js";
+import { JSNode } from "@candlelib/js";
 import URI from '@candlelib/uri';
 import { error } from '../../entry-point/logger.js';
 import {
@@ -12,7 +12,6 @@ import {
 } from "../../types/all.js";
 import { processWickCSS_AST } from '../ast-parse/parse.js';
 import { parseSource } from "../ast-parse/source.js";
-import { componentDataToJSCached } from "../ast-render/js.js";
 import { parse_css } from '../source-code-parse/parse.js';
 import { addBindingVariable, addWriteFlagToBindingVariable } from "./binding.js";
 import { addPendingModuleToPresets } from './common.js';
@@ -47,7 +46,7 @@ export async function importComponentData(new_component_url, component, presets,
         }
 
         if (IS_NEW) {
-            //const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URI(new_component_url), component.location);
+
             // If the ast is an HTML_NODE with a single style element, then integrate the 
             // css data into the current component. 
             //const comp_data = await compileComponent(ast, string, resolved_url, presets);
@@ -170,6 +169,7 @@ export async function importResource(
 
             if (meta)
                 component.global_model_name = meta.trim();
+
             ref_type = BINDING_VARIABLE_TYPE.MODEL_VARIABLE;
             flag = BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL;
             break;
@@ -185,9 +185,11 @@ export async function importResource(
         if (external == "namespace")
             continue;
 
-        if (!addBindingVariable(frame, local, node.pos, ref_type, external || local, flag))
+        if (!addBindingVariable(frame, local, node.pos, ref_type, external || local, flag)) {
+
             //@ts-ignore
             node.pos.throw(`Import variable [${local}] already declared`);
+        }
 
         addWriteFlagToBindingVariable(local, frame);
     }
