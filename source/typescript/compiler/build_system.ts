@@ -15,6 +15,7 @@ import { processFunctionDeclaration, processNodeAsync, processWickCSS_AST, proce
 import { parseComponentAST } from './ast-parse/source.js';
 import {
     addBindingReference, addBindingVariable,
+    addDefaultValueToBindingVariable,
     addNameToDeclaredVariables,
     addReadFlagToBindingVariable,
     addWriteFlagToBindingVariable,
@@ -162,6 +163,7 @@ const build_system = {
     importResource: importResource,
     addIndirectHook: addIndirectHook,
     addBindingVariable: addBindingVariable,
+    addDefaultValueToBindingVariable: addDefaultValueToBindingVariable,
     addWriteFlagToBindingVariable: addWriteFlagToBindingVariable,
     addNameToDeclaredVariables: addNameToDeclaredVariables,
     addBindingReference: addBindingReference,
@@ -341,6 +343,7 @@ export function disableBuildFeatures() {
 }
 
 export function enableParserFeatures() {
+    enable_feature_function("addDefaultValueToBindingVariable", addDefaultValueToBindingVariable);
     enable_feature_function("addBindingVariable", addBindingVariable);
     enable_feature_function("getStaticValue", getStaticValue);
     enable_feature_function("getElementAtIndex", getElementAtIndex);
@@ -353,10 +356,11 @@ export function enableParserFeatures() {
     enable_feature_function("processBindingAsync", processBindingAsync);
 }
 export function disableParserFeatures() {
-    disable_feature_function("getStaticValue", () => { trace("getStaticValue is disabled outside of build contexts"); });
-    disable_feature_function("getElementAtIndex", () => { trace("getElementAtIndex is disabled outside of build contexts"); });
-    disable_feature_function("getComponentBinding", () => { trace("getComponentBinding is disabled outside of build contexts"); });
-    disable_feature_function("getExpressionStaticResolutionType", () => { trace("getExpressionStaticResolutionType is disabled outside of build contexts"); });
+    enable_feature_function("addDefaultValueToBindingVariable", () => { trace("addDefaultValueToBindingVariable is disabled outside of parsing contexts"); });
+    disable_feature_function("getStaticValue", () => { trace("getStaticValue is disabled outside of parsing contexts"); });
+    disable_feature_function("getElementAtIndex", () => { trace("getElementAtIndex is disabled outside of parsing contexts"); });
+    disable_feature_function("getComponentBinding", () => { trace("getComponentBinding is disabled outside of parsing contexts"); });
+    disable_feature_function("getExpressionStaticResolutionType", () => { trace("getExpressionStaticResolutionType is disabled outside of parsing contexts"); });
     disable_feature_function("addBindingVariable", () => { trace("addBindingVariable is disabled outside of parsing contexts"); });
     disable_feature_function("importResource", () => { trace("importResource is disabled outside of parsing contexts"); });
     disable_feature_function("addIndirectHook", () => { trace("addIndirectHook is disabled outside of parsing contexts"); });

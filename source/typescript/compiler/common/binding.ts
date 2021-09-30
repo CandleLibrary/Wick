@@ -130,14 +130,13 @@ export function addReadFlagToBindingVariable(var_name: string, frame: FunctionFr
 }
 
 
-export function addDefaultValueToBindingVariable(frame: FunctionFrame, name: string, value: JSNode, hooks: IntermediateHook[] = []) {
+export function addDefaultValueToBindingVariable(frame: FunctionFrame, name: string, value: JSNode) {
+
     const root = getRootFrame(frame);
 
     if (root.binding_variables.has(name)) {
         const binding = root.binding_variables.get(name);
-        binding.backup_default_val = copy(value);
         binding.default_val = value;
-        binding.default_hooks = hooks;
     }
 }
 /**
@@ -155,7 +154,7 @@ export function addBindingVariable(
     internal_name: string,
     pos: any | Lexer,
     type: BINDING_VARIABLE_TYPE = BINDING_VARIABLE_TYPE.UNDECLARED,
-    external_name: string = "", //"$$" + internal_name + "$$",
+    external_name: string = "",
     flags: BINDING_FLAG = 0,
 ): boolean {
 
@@ -645,6 +644,7 @@ export async function getStaticValueAstFromSourceAST(
         } else {
 
             const name = tools.getIdentifierName(node);
+
 
             /**
              * Only accept references whose value can be resolved through binding variable 

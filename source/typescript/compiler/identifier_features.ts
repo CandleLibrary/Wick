@@ -106,8 +106,9 @@ registerFeature(
                                     throw new ReferenceError(msg);
                                 }
 
-
                                 build_system.addWriteFlagToBindingVariable(l_name, frame);
+
+                                build_system.addDefaultValueToBindingVariable(frame, l_name, <JSNode>value);
 
                                 // Change binding type to an Assignment Expression to ensure the 
                                 // build process can correctly create runtime binding hooks. 
