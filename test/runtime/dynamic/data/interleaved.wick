@@ -1,6 +1,0 @@
-var data = "test1"
-
-export default <div>
-    {data}
-    <div>hello world</div>
-</div>

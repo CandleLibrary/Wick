@@ -1,6 +1,0 @@
-import slot_holder from "./slot.wick"
-
-export default <div>
-    <a>Here be a slot</a>
-    <slot_holder/>
-</div>
