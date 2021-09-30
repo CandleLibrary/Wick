@@ -686,8 +686,6 @@ export async function getStaticValue(
     ASSUME_RUNTIME: boolean = false
 ) {
 
-
-
     const ast = await getStaticValueAstFromSourceAST(
         input_ast, component, presets, model, parent_comp, ASSUME_RUNTIME
     );

@@ -65,67 +65,56 @@ registerFeature(
 
                         }, node);
 
-                        for (const n of ctr.nodes) {
+                        for (const ch of ctr.nodes) {
 
-                            ch = n;
-
-                            if (!(n.type & HTMLNodeClass.HTML_ELEMENT)) { continue; }
+                            if (!(ch.type & HTMLNodeClass.HTML_ELEMENT)) { continue; }
 
                             let comp, comp_index = ctr.components.length;
 
-                            const inherited_attributes = [], core_attributes = [];
+                            const inherited_attributes = [];
 
                             const IS_GENERATED_COMPONENT = !(component.local_component_names.has(ch.tag));
 
+                            const new_attribs = [];
 
-                            {
-                                const new_attribs = [];
-                                //Check for use-if attribute
-                                for (const attrib of (n.attributes || [])) {
-                                    const { name, value } = attrib;
-                                    if (typeof value != "string") {
-                                        if (name == "use-if") {
+                            for (const attrib of (ch.attributes || [])) {
+                                const { name, value } = attrib;
 
-                                            build_system.addIndirectHook(component, ContainerUseIfHook, {
-                                                expression: await build_system.processBindingAsync(value, component, presets),
-                                                comp_index: comp_index,
-                                                container_id
-                                            }, index);
+                                if (typeof value != "string") {
+                                    if (name == "use-if") {
 
-                                        } else if (name == "use-if-empty") {
+                                        build_system.addIndirectHook(component, ContainerUseIfHook, {
+                                            expression: await build_system.processBindingAsync(value, component, presets),
+                                            comp_index: comp_index,
+                                            container_id
+                                        }, index);
 
-                                            build_system.addIndirectHook(component, ContainerUseIfEmptyHook, {
-                                                hook_value: value.primary_ast,
-                                                component: comp.name,
-                                                container_id
-                                            }, index);
-                                        } else
-                                            IS_GENERATED_COMPONENT
-                                                ? new_attribs.push(attrib)
-                                                : inherited_attributes.push([name, value]);
-                                    } else {
-                                        new_attribs.push(attrib);
-                                    }
+                                    } else if (name == "use-if-empty") {
 
-
+                                        build_system.addIndirectHook(component, ContainerUseIfEmptyHook, {
+                                            hook_value: value.primary_ast,
+                                            component: comp.name,
+                                            container_id
+                                        }, index);
+                                    } else
+                                        IS_GENERATED_COMPONENT
+                                            ? new_attribs.push(attrib)
+                                            : inherited_attributes.push([name, value]);
+                                } else {
+                                    new_attribs.push(attrib);
                                 }
-
-                                n.attributes = new_attribs;
                             }
 
-                            ctr.component_attributes.push(inherited_attributes);
+                            ch.attributes = new_attribs;
 
+
+                            ctr.component_attributes.push(inherited_attributes);
 
                             if (ch.tag.toLowerCase() == "self") {
                                 comp = component;
                             } else {
 
-
-                                if (!IS_GENERATED_COMPONENT)
-
-                                    comp = presets.components.get(component.local_component_names.get(ch.tag));
-
-                                else
+                                if (IS_GENERATED_COMPONENT)
                                     ({ comp } = await build_system.parseComponentAST(
                                         Object.assign({}, ch),
                                         build_system.componentNodeSource(component, ch),
@@ -133,6 +122,8 @@ registerFeature(
                                         presets,
                                         component
                                     ));
+                                else
+                                    comp = presets.components.get(component.local_component_names.get(ch.tag));
 
                                 component.local_component_names.set(comp?.name, comp?.name);
 
