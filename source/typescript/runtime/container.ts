@@ -297,7 +297,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.setLoadedFlag();
     }
 
-    onModelUpdate(container) { this.filter_new_items(container); }
+    onModelUpdate(container) { this.filter_new_items(container.data); }
 
     setLoadedFlag() {
         if (!this.LOADED)
@@ -972,7 +972,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 }
             }
 
-            spark.queueUpdate(this);
+            this.scheduledUpdate();
+            //spark.queueUpdate(this);
         }
     }
     addEvaluator(evaluator: (a: any) => boolean, index) { this.evaluators[index] = evaluator; }

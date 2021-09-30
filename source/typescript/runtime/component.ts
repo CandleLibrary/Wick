@@ -21,6 +21,12 @@ const enum DATA_DIRECTION {
 
 const empty_array = [];
 
+const enum ComponentFlag {
+    CONNECTED = 1 << 0,
+    TRANSITIONED_IN = 1 << 1,
+    DESTROY_AFTER_TRANSITION = 1 << 2
+}
+
 
 export class WickRTComponent implements Sparky, ObservableWatcher {
 
@@ -151,7 +157,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             this.ele = this.createElement(presets, [this]);
     }
 
-    initialize(model) {
+    initialize(model?: any) {
 
         if (this.INITIALIZED)
             return;
@@ -588,19 +594,23 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         const prev_val = this[attribute_index];
 
-        if (attribute_value !== prev_val || typeof attribute_value == "object") {
+        if (attribute_value !== prev_val) {
 
+            this[attribute_index] = attribute_value;
             if (
                 !this.call_set.has(attribute_index)
                 &&
                 this.lookup_function_table[attribute_index]
-            )
+            ) {
+                /*
                 this.call_set.set(attribute_index, [this.active_flags, this.call_depth]);
 
-            this[attribute_index] = attribute_value;
-
-            //Forcefully update 
-            spark.queueUpdate(this, 0, 0, true);
+                
+                //Forcefully update 
+                spark.queueUpdate(this, 0, 0, true); 
+            */
+                this.lookup_function_table[attribute_index].call(this, this.call_depth);
+            }
         }
 
         return RETURN_PREVIOUS_VAL ? prev_val : this[attribute_index];
@@ -750,22 +760,11 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             if (index == pending_function_index)
                 return;
 
-        this.binding_call_set.push([pending_function_index, call_depth]);
+        this.lookup_function_table[pending_function_index].call(this, call_depth);
 
-        spark.queueUpdate(this);
-    }
-
-    callFrame(pending_function_index: number, call_depth) {
-
-        if (call_depth >= 1) return;
-
-        for (const [index] of this.binding_call_set)
-            if (index == pending_function_index)
-                return;
-
-        this.binding_call_set.push([pending_function_index, call_depth]);
-
-        spark.queueUpdate(this);
+        //this.binding_call_set.push([pending_function_index, call_depth]);
+        //
+        //spark.queueUpdate(this);
     }
 
     /**************** Abstract Functions *********************/
@@ -784,11 +783,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     //=========================================================
     //=========================================================
     integrateElement(ele: HTMLElement, component_chain: WickRTComponent[] = [this]): number {
+
         let sk = 0, PROCESS_CHILDREN = true;
 
         let scope_component: WickRTComponent = this;
-
-
 
         if (!this.ele) {
 
