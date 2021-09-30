@@ -138,6 +138,8 @@ registerFeature(
                         binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE
                         ||
                         binding.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+                        ||
+                        binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
                     ) {
                         const e = expr(`a=$$ele${element_index}.value`);
                         e.nodes[0] = expression;
