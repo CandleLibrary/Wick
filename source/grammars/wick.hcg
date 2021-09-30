@@ -125,12 +125,12 @@
 
 
 
-<> IMPORT_ATTRIBUTE > t:import \= js::named_imports
+<> IMPORT_ATTRIBUTE > t:import \= js::specifier_clause
 
      f:r { {type:env.typ.HTMLImportAttribute, name:$1, value:$3, pos } }
 
 
-<> EXPORT_ATTRIBUTE > t:export \= js::named_imports
+<> EXPORT_ATTRIBUTE > t:export \= js::specifier_clause
 
      f:r { {type:env.typ.HTMLExportAttribute,name:$1, value:$3, pos } }
 

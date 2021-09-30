@@ -15,9 +15,9 @@
 
 <> GOAL_TAG > ! TAG
 
-<> TAG > \< TAGNAME ATTRIBUTES? \> TAG_BODY?  \</ TAGNAME \>                                     
+<> TAG > \< (RST g:sp g:nl ) TAGNAME ATTRIBUTES? \> TAG_BODY?  \</ (RST g:sp g:nl ) TAGNAME \>                                     
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:$5 || [], VOID:false, pos } }
-    | \< TAGNAME ATTRIBUTES? \/>                                                             
+    | \< (RST g:sp g:nl ) TAGNAME ATTRIBUTES? \/>                                                             
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:false, pos } }
     | VOID_TAG_HEAD ATTRIBUTES? /? >                                                          
                                         f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:[], VOID:true, pos } }
@@ -60,9 +60,9 @@
     | ATTRIBUTE_HEAD                                                                            
                                                                 f:r { {type:env.typ.HTMLAttribute, name:$1, value:"", IS_BINDING:false, pos } }
 
-<> ATTRIBUTE_HEAD > \' tk:identifier \'                                                             
+<> ATTRIBUTE_HEAD > \' (RST g:sp g:nl ) tk:identifier \'                                                             
                                                                 f:r { $2 }
-    | \" tk:identifier \"                                                                           
+    | \" (RST g:sp g:nl ) tk:identifier \"                                                                           
                                                                 f:r { $2 }
     | tk:identifier
 
