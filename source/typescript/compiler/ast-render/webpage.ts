@@ -42,7 +42,6 @@ function renderBasicWickPageInit(component_class_declarations, presets) {
 }
 
 function renderRadiatePageInit(component_class_declarations, presets) {
-    console.log("Rendering Wick-Radiate Page");
     return `
     import init_router from "/@cl/wick-radiate/";
 
@@ -51,7 +50,6 @@ function renderRadiatePageInit(component_class_declarations, presets) {
 }
 
 function renderComponentInit(component_class_declarations, presets) {
-    console.log("Rendering Components Page");
     return `
     const w = wick;
 
