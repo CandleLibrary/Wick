@@ -242,13 +242,11 @@ registerFeature(
 
                     if (
                         node.tag.toLocaleLowerCase() == "component"
-                        ||
-                        node.tag.toLocaleLowerCase() == "radiate-element"
                     ) {
 
                         node.tag = "div";
 
-                        const comp = await build_system.parseComponentAST(
+                        const { comp } = await build_system.parseComponentAST(
                             Object.assign({}, node),
                             node.pos.slice(),
                             component.location,
@@ -263,6 +261,7 @@ registerFeature(
                         node.component = comp;
 
                         if (comp) {
+
 
                             component.local_component_names.set(comp?.name, comp?.name);
 
@@ -301,33 +300,34 @@ registerFeature(
 
                         node.tag = "div";
 
-                        const comp = await build_system.parseComponentAST(
+                        const { comp } = await build_system.parseComponentAST(
                             Object.assign({}, node),
                             node.pos.slice(),
                             component.location,
                             presets,
-                            component);
-
-                        node.nodes.length = 0;
-
-                        node.child_id = component.children.push(1) - 1;
-
-                        node.component = comp;
-
-                        node.attributes.push({
-                            IS_BINDING: false,
-                            name: "radiate",
-                            value: component.name,
-                            type: HTMLNodeType.HTMLAttribute
-                        });
+                            component
+                        );
 
                         if (comp) {
+
+                            node.nodes.length = 0;
+
+                            node.child_id = component.children.push(1) - 1;
+
+                            node.component = comp;
+
+                            node.attributes.push({
+                                IS_BINDING: false,
+                                name: "radiate",
+                                value: component.name,
+                                type: HTMLNodeType.HTMLAttribute
+                            });
 
                             component.local_component_names.set(comp?.name, comp?.name);
 
                             skip();
 
-                            node.component_name = node.component.name;
+                            node.component_name = comp.name;
 
                             //@ts-ignore
                             node.attributes.push({
