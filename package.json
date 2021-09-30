@@ -1,6 +1,6 @@
 {
     "name": "@candlelib/wick",
-    "version": "0.15.9",
+    "version": "0.15.10",
     "description": "HTML Component Compiler",
     "main": "./build/library/entry-point/wick-server.js",
     "types": "./build/types/entry-point/wick-server.d.ts",
@@ -57,17 +57,17 @@
         "unused": true
     },
     "dependencies": {
-        "@candlelib/conflagrate": "0.4.3",
-        "@candlelib/css": "0.3.9",
-        "@candlelib/glow": "0.4.8",
-        "@candlelib/html": "0.2.4",
-        "@candlelib/hydrocarbon": "0.12.0",
-        "@candlelib/js": "0.5.9",
-        "@candlelib/log": "^0.1.0",
-        "@candlelib/paraffin": "0.1.9",
-        "@candlelib/spark": "0.3.3",
-        "@candlelib/uri": "0.2.4",
-        "@candlelib/wind": "0.5.3"
+        "@candlelib/conflagrate": "0.4.4",
+        "@candlelib/css": "0.3.10",
+        "@candlelib/glow": "0.4.9",
+        "@candlelib/html": "0.2.5",
+        "@candlelib/hydrocarbon": "0.13.1-canary",
+        "@candlelib/js": "0.5.10",
+        "@candlelib/log": "0.1.1",
+        "@candlelib/paraffin": "0.1.10",
+        "@candlelib/spark": "0.3.4",
+        "@candlelib/uri": "0.3.0",
+        "@candlelib/wind": "0.5.4"
     },
     "esm": {
         "cjs": {
