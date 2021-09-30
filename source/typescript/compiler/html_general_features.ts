@@ -122,15 +122,16 @@ registerFeature(
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-                    const url = getAttributeValue("url", node) || "",
-                        name = getAttributeValue("name", node) || "";
+                    const url = String(getAttributeValue("url", node) || ""),
+                        name = String(getAttributeValue("name", node) || "");
 
                     await build_system.importResource(
-                        url,
+                        url + "",
                         component,
                         presets,
                         node,
-                        name, [{ local: name, external: name }],
+                        "",
+                        [{ local: name, external: name }],
                         component.root_frame
                     );
 
