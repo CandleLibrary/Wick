@@ -19,7 +19,7 @@ registerFeature(
          */
         build_system.registerHTMLParserHandler<HTMLAttribute>(
             {
-                priority: -Infinity, // <- Truly meant to be overridden
+                priority: -100000000, // <- Truly meant to be overridden
 
                 async prepareHTMLNode(attr, host_node, host_element, index, skip, component, presets) {
 
@@ -59,6 +59,7 @@ registerFeature(
             async buildHTML(hook, comp, presets, model, parents) {
 
                 const ast = hook.nodes[0].nodes[0];
+
 
                 if (
                     build_system.getExpressionStaticResolutionType(ast, comp, presets)
