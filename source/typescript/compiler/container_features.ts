@@ -83,7 +83,7 @@ registerFeature(
                                 //Check for use-if attribute
                                 for (const attrib of (n.attributes || [])) {
                                     const { name, value } = attrib;
-                                    if (typeof value != "string")
+                                    if (typeof value != "string") {
                                         if (name == "use-if") {
 
                                             build_system.addIndirectHook(component, ContainerUseIfHook, {
@@ -103,6 +103,9 @@ registerFeature(
                                             IS_GENERATED_COMPONENT
                                                 ? new_attribs.push(attrib)
                                                 : inherited_attributes.push([name, value]);
+                                    } else {
+                                        new_attribs.push(attrib);
+                                    }
 
 
                                 }
