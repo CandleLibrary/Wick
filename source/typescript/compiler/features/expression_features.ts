@@ -126,10 +126,10 @@ registerFeature(
                             if (Name_Is_A_Binding_Variable(name, frame))
                                 build_system.addBindingReference(<JSNode>node, <JSNode>parent_node, frame);
                             else
-                                throw (`Invalid assignment to undeclared variable [${name}]`);
-                            //node.pos.throw(
-                            //`Invalid assignment to undeclared variable [${name}]`
-                            //);
+                                id.pos.throw(
+                                    `Invalid access of undeclared variable [${name}]`,
+                                    component.location.toString()
+                                );
 
                             build_system.addWriteFlagToBindingVariable(name, frame);
                         }
