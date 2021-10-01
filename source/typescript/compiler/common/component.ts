@@ -23,7 +23,7 @@ export function createErrorComponent(
     ]
         .map(e => <DOMLiteral>{
             tag_name: "p",
-            children: [
+            nodes: [
                 {
                     tag_name: "",
                     data: e.replace(/>/g, "&gt;")
@@ -45,12 +45,12 @@ export function createErrorComponent(
         attributes: [
             ["style", "font-family:monospace"]
         ],
-        children: [
+        nodes: [
             {
                 tag_name: "div",
-                children: [{
+                nodes: [{
                     tag_name: "p",
-                    children: [
+                    nodes: [
                         {
                             tag_name: "",
                             data: `Error in ${location}:`,

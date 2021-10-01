@@ -5,7 +5,7 @@ export const css_selector_helpers: SelectionHelpers<DOMLiteral> = {
     getIndexFigures: (ele, tag) => ({ ele_index: 0, tag_index: 0 }),
 
     WQmatch: (ele, wq_selector) => (<any>wq_selector).val,
-    getChildren: (ele) => (ele.children && ele.children.slice().map(e => Object.assign({}, e)).map(e => ((e.parent = ele), e))) || [],
+    getChildren: (ele) => (ele.nodes && ele.nodes.slice().map(e => Object.assign({}, e)).map(e => ((e.parent = ele), e))) || [],
 
     getParent: (ele) => ele.parent,
 

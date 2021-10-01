@@ -83,7 +83,7 @@ export interface DOMLiteral {
     host_component_index: number;
 
     /**  Names space index id into the namespaces table. */
-    namespace_id?: number;
+    name_space?: number;
 
     /**Tag name of the element.  */
     tag_name: string;
@@ -92,7 +92,7 @@ export interface DOMLiteral {
     attributes?: Array<[string, string]>;
 
     /** Array of DOM children. */
-    children?: DOMLiteral[];
+    nodes?: DOMLiteral[];
 
     /**  String data for TextNodes. If it is an empty string then this data will be
         assigned to the TextNode that will ultimately be created.*/
@@ -114,7 +114,7 @@ export interface DOMLiteral {
     /**
      * True if is a binding.
      */
-    is_bindings?: boolean;
+    IS_BINDING?: boolean;
 
     /**
      * Lexer positioned at original source location.
@@ -139,7 +139,7 @@ export interface ContainerDomLiteral extends DOMLiteral {
      */
     component_names?: string[];
 
-    component_attribs: [string, string][][];
+    component_attributes: [string, string][][];
 
     IS_CONTAINER: true;
 }

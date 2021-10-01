@@ -51,12 +51,12 @@ export async function componentDataToTempAST(
         //Convert html to string 
         const {
             tag_name: tag_name = "",
-            children: c = [],
+            nodes: c = [],
             data: data,
-            is_bindings: IS_BINDING,
+            IS_BINDING: IS_BINDING,
             component_name: component_name,
             slot_name: slot_name,
-            namespace_id
+            name_space: namespace_id
         }: DOMLiteral = html,
             children = c.map(i => ({ USED: false, child: i, id: comp_data.length - 1 }));
 
@@ -334,7 +334,7 @@ async function addContainer(
     parent_components: ComponentData[] = null
 ) {
     const {
-        component_attribs,
+        component_attributes: component_attribs,
         component_names
     } = <ContainerDomLiteral>html,
         w_ctr = component_names.join(" "),

@@ -93,13 +93,11 @@ export function buildExportableDOMNode(
     if (ast.slot_name)
         node.slot_name = ast.slot_name;
 
-
     if (ast.IS_BINDING)
-        node.is_bindings = true;
+        node.IS_BINDING = true;
 
     if (ast.component_name)
         node.component_name = ast.component_name;
-
 
     if (ast.IS_CONTAINER) {
 
@@ -110,7 +108,7 @@ export function buildExportableDOMNode(
         ctr.IS_CONTAINER = true;
         ctr.component_names = ctr_ast.component_names;
         ctr.container_id = ctr_ast.container_id;
-        ctr.component_attribs = ctr_ast.component_attributes;
+        ctr.component_attributes = ctr_ast.component_attributes;
 
         if (ctr.tag_name == "CONTAINER")
             ctr.tag_name = "DIV";
@@ -130,9 +128,9 @@ export function buildExportableDOMNode(
      */
 
     if (ast.nodes && ast.nodes.length > 0) {
-        node.children = [];
+        node.nodes = [];
         for (const child of ast.nodes)
-            node.children.push(buildExportableDOMNode(child));
+            node.nodes.push(buildExportableDOMNode(child));
     }
 
     node.element_index = ast.id;
@@ -141,7 +139,7 @@ export function buildExportableDOMNode(
         node.data = ast.data;
 
     } else if (ast.name_space > 0) {
-        node.namespace_id = ast.name_space || 0;
+        node.name_space = ast.name_space || 0;
     }
 
     return node;
@@ -157,8 +155,8 @@ export function getElementAtIndex(comp: ComponentData, index: number, node: DOML
     if (index == node.element_index)
         return node;
 
-    if (node.children)
-        for (const child of node.children) {
+    if (node.nodes)
+        for (const child of node.nodes) {
             let out = null;
             if ((out = getElementAtIndex(comp, index, child, counter)))
                 return out;
