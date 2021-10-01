@@ -5,6 +5,7 @@ import { htmlTemplateToString } from "../build/library/compiler/ast-render/html.
 import Presets from "../build/library/compiler/common/presets.js";
 import wick_server from "../build/library/entry-point/wick-server.js";
 import { assertTree } from "./test-tools/tools.js";
+import { enableBuildFeatures } from "../build/library/compiler/build_system.js";
 
 await HTML.server();
 assert_group("Basic Container Static Resolution", sequence, () => {
@@ -36,6 +37,8 @@ export default <div>
     const presets = new Presets();
 
     const component = await wick_server(source_string, presets);
+
+    enableBuildFeatures();
 
     const { html } = await componentDataToTempAST(component, presets);
 
