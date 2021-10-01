@@ -39,7 +39,7 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
 
     for (const { node, meta: { depth, parent, traverse_state } } of bidirectionalTraverse(html, "children")) {
 
-        const depth_str = "    ";
+        const depth_str = "  ";
 
         if (traverse_state == TraverseState.LEAF && (!node.tagName || Is_Tag_Void_Element(node.tagName))) {
 
@@ -59,7 +59,7 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
                 node.strings.push(...node.data.split("\n"));
 
             if (parent)
-                parent.strings.push(...node.strings.map(s => "" + s));
+                parent.strings.push(...node.strings.map(s => depth_str + s));
 
             continue;
         }
@@ -89,11 +89,11 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
                 node.strings.push(`</${node.tagName}>`);;
 
             if (parent)
-                parent.strings.push(...node.strings.map(s => "" + s));
+                parent.strings.push(...node.strings.map(s => depth_str + s));
         }
     };
 
-    return html.strings.join("");
+    return html.strings.join("\n");
 }
 
 function addAttributesToString(node: TraversedNode<TemplateHTMLNode>, string: string) {
