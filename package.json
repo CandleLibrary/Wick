@@ -14,7 +14,7 @@
         "test": "candle.cure --reporter ci --headless ./test/*",
         "test.watch": "candle.cure -w ./test/*",
         "server": "lantern",
-        "buildsite": "candle.wick compile --output ./www  ./site\\"
+        "buildsite": "npm install && candle.wick compile --output ./www  ./site\\"
     },
     "repository": {
         "type": "git",
@@ -50,7 +50,7 @@
     },
     "homepage": "https://github.com/CandleLibrary/wick#readme",
     "devDependencies": {
-        "@candlelib/wick": "*",
+        "@candlelib/wick": "0.15.12",
         "@candlelib/cure": "*",
         "@types/node": "^13.9.1"
     },
