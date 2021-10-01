@@ -52,7 +52,7 @@
     "homepage": "https://github.com/CandleLibrary/wick#readme",
     "devDependencies": {
         "@candlelib/cure": "*",
-        "@candlelib/wick": "0.15.15",
+        "@candlelib/wick": "*",
         "@types/node": "^13.9.1"
     },
     "jshintConfig": {
