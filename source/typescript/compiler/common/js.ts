@@ -43,15 +43,15 @@ export function getGenericMethodNode(name = "generic", arg_string = "_null_", bo
     return node;
 }
 
-export function convertObjectToJSNode(obj: any): JSExpressionClass {
+export function convertObjectToJSNode(obj: any): JSNode {
 
     switch (typeof obj) {
         case "string":
-            return <JSExpressionClass>parse_js_exp(`"${obj.replace(/\"/g, "\\\"").replace(/\n/g, "\\\n")}"`);
+            return <JSNode>parse_js_exp(`"${obj.replace(/\"/g, "\\\"").replace(/\n/g, "\\\n")}"`);
         case "boolean":
         case "undefined":
         case "number":
-            return <JSExpressionClass>parse_js_exp(`${obj}`);
+            return <JSNode>parse_js_exp(`${obj}`);
         case "object": {
 
             if (Array.isArray(obj)) {
@@ -61,7 +61,7 @@ export function convertObjectToJSNode(obj: any): JSExpressionClass {
                     //@ts-ignore
                     node.nodes.push(convertObjectToJSNode(o));
 
-                return <JSExpressionClass>node;
+                return <JSNode>node;
             }
 
             const node = parse_js_exp("({})").nodes[0];
@@ -76,7 +76,7 @@ export function convertObjectToJSNode(obj: any): JSExpressionClass {
                 });
             }
 
-            return <JSExpressionClass>node;
+            return <JSNode>node;
         }
 
     }
