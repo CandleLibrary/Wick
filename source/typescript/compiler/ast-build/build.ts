@@ -46,7 +46,7 @@ import {
     processHookForClass,
     processIndirectHook
 } from "./hooks.js";
-import { componentDataToTempAST, ensureComponentHasTemplates } from "./html.js";
+import { componentDataToCompiledHTML, ensureComponentHasTemplates } from "./html.js";
 
 export async function createComponentTemplates(
     presets: PresetOptions,
@@ -193,7 +193,7 @@ async function processHTML(
         const
             frame = createBuildFrame("ce"),
             return_stmt = stmt("return this.makeElement(a);"),
-            { html: [html] } = (await componentDataToTempAST(component, presets));
+            { html: [html] } = (await componentDataToCompiledHTML(component, presets));
 
         return_stmt.nodes[0].nodes[1].nodes[0] = parse_js_exp(`\`${htmlTemplateToString(html).replace(/(\`)/g, "\\\`")}\``);
 

@@ -3,7 +3,7 @@ import { TraversedNode } from "@candlelib/conflagrate/build/types/types/traverse
 import { exp, JSExpressionClass, JSNode, JSNodeType } from "@candlelib/js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData, TemplateHTMLNode, PresetOptions } from "../../types/all.js";
-import { componentDataToTempAST } from "../ast-build/html.js";
+import { componentDataToCompiledHTML } from "../ast-build/html.js";
 import { html_void_tags, Is_Tag_From_HTML_Spec, Is_Tag_Void_Element } from "../common/html.js";
 import * as b_sys from "../build_system.js";
 
@@ -21,7 +21,7 @@ export async function componentDataToHTML(
 
     b_sys.enableBuildFeatures();
 
-    const { html: [html], templates: template_map } = await componentDataToTempAST(comp, presets);
+    const { html: [html], templates: template_map } = await componentDataToCompiledHTML(comp, presets);
 
     const html_string = htmlTemplateToString(html);
 

@@ -25,7 +25,7 @@ import * as b_sys from "../build_system.js";
  * @param html
  * @param root
  */
-export async function componentDataToTempAST(
+export async function componentDataToCompiledHTML(
     comp: ComponentData,
     presets: PresetOptions = rt.presets,
     model = null,
@@ -120,7 +120,7 @@ export async function componentDataToTempAST(
 
         for (const { child } of children.filter(n => !n.USED)) {
 
-            const { html } = await componentDataToTempAST(
+            const { html } = await componentDataToCompiledHTML(
                 comp,
                 presets,
                 model,
@@ -207,7 +207,7 @@ async function processSlot(
             if (pkg.child.slot_name == slot_name && !pkg.USED) {
                 pkg.USED = true;
                 pkg.child.host_component_index = pkg.id;
-                r_.html.push(...(await componentDataToTempAST(
+                r_.html.push(...(await componentDataToCompiledHTML(
                     parent_component,
                     presets,
                     model,
@@ -227,7 +227,7 @@ async function processSlot(
             if (!pkg.child.slot_name && !pkg.USED) {
                 pkg.USED = true;
                 pkg.child.host_component_index = pkg.id;
-                r_.html.push(...(await componentDataToTempAST(
+                r_.html.push(...(await componentDataToCompiledHTML(
                     parent_component,
                     presets,
                     model,
@@ -296,7 +296,7 @@ async function addComponent(
     if (htmlState.IS_COMPONENT & state)
         state |= htmlState.IS_INTERLEAVED;
 
-    ({ html: [node] } = await componentDataToTempAST(
+    ({ html: [node] } = await componentDataToCompiledHTML(
         c_comp,
         presets,
         model,
@@ -391,7 +391,7 @@ export async function ensureComponentHasTemplates(
 
         b_sys.enableBuildFeatures();
 
-        const { html, templates } = await componentDataToTempAST(comp, presets);
+        const { html, templates } = await componentDataToCompiledHTML(comp, presets);
 
         comp.template.children.push(...html);
 
@@ -479,7 +479,7 @@ async function processContainerHooks(
 
                 for (const model of data) {
 
-                    const result = await componentDataToTempAST(child_comp, presets, model, template_map);
+                    const result = await componentDataToCompiledHTML(child_comp, presets, model, template_map);
 
                     node.children.push(result.html[0]);
                 }
