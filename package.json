@@ -1,7 +1,7 @@
 {
     "name": "@candlelib/wick",
     "version": "0.15.11",
-    "description": "HTML Component Compiler",
+    "description": "Web Component Compiler",
     "main": "./build/library/entry-point/wick-server.js",
     "types": "./build/types/entry-point/wick-server.d.ts",
     "type": "module",
@@ -13,7 +13,8 @@
         "compile": "./scripts/compile.sh",
         "test": "candle.cure --reporter ci --headless ./test/*",
         "test.watch": "candle.cure -w ./test/*",
-        "server": "lantern"
+        "server": "lantern",
+        "buildsite": "candle.wick compile --output ./www  ./site\\"
     },
     "repository": {
         "type": "git",
@@ -49,6 +50,7 @@
     },
     "homepage": "https://github.com/CandleLibrary/wick#readme",
     "devDependencies": {
+        "@candlelib/wick": "*",
         "@candlelib/cure": "0.5.0",
         "@types/node": "^13.9.1"
     },
