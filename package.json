@@ -1,6 +1,6 @@
 {
     "name": "@candlelib/wick",
-    "version": "0.15.12",
+    "version": "0.15.13",
     "description": "Web Component Compiler",
     "main": "./build/library/entry-point/wick-server.js",
     "types": "./build/types/entry-point/wick-server.d.ts",
@@ -37,7 +37,8 @@
         "/build",
         "/README.md",
         "/CHANGELOG.md",
-        "/LICENSE"
+        "/LICENSE",
+        "/index.js"
     ],
     "directories": {
         "lib": "source",
@@ -50,8 +51,8 @@
     },
     "homepage": "https://github.com/CandleLibrary/wick#readme",
     "devDependencies": {
-        "@candlelib/wick": "0.15.12",
         "@candlelib/cure": "*",
+        "@candlelib/wick": "0.15.13",
         "@types/node": "^13.9.1"
     },
     "jshintConfig": {
