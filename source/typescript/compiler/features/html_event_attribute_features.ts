@@ -51,7 +51,7 @@ registerFeature(
                 // Replace the value with a 
                 // Get the on* attribute name
                 const
-                    { action, nodes: [ast] } = node.nodes[0];
+                    { action, nodes: [ast] } = node.value[0];
 
                 let arrow_argument_match = new Array(1).fill(null), s = null;
 

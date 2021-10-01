@@ -42,7 +42,7 @@ export function addIndirectHook<T>(
 ) {
     comp.indirect_hooks.push(<IndirectHook<T>>{
         type,
-        nodes: Array.isArray(ast)
+        value: Array.isArray(ast)
             ? ast
             : [ast],
         ele_index,

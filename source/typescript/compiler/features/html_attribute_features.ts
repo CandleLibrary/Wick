@@ -47,7 +47,7 @@ registerFeature(
 
             buildJS: (node, comp, presets, element_index, addWrite, addInit) => {
 
-                const { name, nodes: [ast] } = node.nodes[0];
+                const { name, nodes: [ast] } = node.value[0];
 
                 const s = build_system.js.expr(`$$ele${element_index}.setAttribute("${name}",e)`);
 
@@ -58,7 +58,7 @@ registerFeature(
 
             async buildHTML(hook, comp, presets, model, parents) {
 
-                const ast = hook.nodes[0].nodes[0];
+                const ast = hook.value[0].nodes[0];
 
 
                 if (
@@ -68,7 +68,7 @@ registerFeature(
                 ) {
 
                     return <any>{
-                        html: { attributes: [[hook.nodes[0].name, await build_system.getStaticValue(ast, comp, presets, model, parents)]] }
+                        html: { attributes: [[hook.value[0].name, await build_system.getStaticValue(ast, comp, presets, model, parents)]] }
 
                     };
                 }

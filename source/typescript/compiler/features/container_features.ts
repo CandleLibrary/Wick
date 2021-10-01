@@ -172,7 +172,7 @@ registerFeature(
                     expression,
                     comp_index,
                     container_id,
-                } = node.nodes[0];
+                } = node.value[0];
 
                 let arrow_argument_match = new Array(1).fill(null);
 
@@ -249,17 +249,17 @@ registerFeature(
             },
 
             buildHTML: async (hook, comp, presets, model, parents) => {
-                const ast = hook.nodes[0];
+                const ast = hook.value[0];
                 const container_ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
 
                 if (
-                    getExpressionStaticResolutionType(<JSNode>hook.nodes[0], comp, presets)
+                    getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, presets)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                     &&
                     container_ele.component_names.length > 0
                 ) {
-                    return await getStaticValue(hook.nodes[0], comp, presets, model, parents);
+                    return await getStaticValue(hook.value[0], comp, presets, model, parents);
                 }
 
                 return [];
@@ -534,10 +534,10 @@ registerFeature(
         async function createContainerStaticValue(hook: IndirectHook<JSNode>, comp, presets, model, parents) {
 
 
-            if (build_system.getExpressionStaticResolutionType(hook.nodes[0], comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
+            if (build_system.getExpressionStaticResolutionType(hook.value[0], comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
 
 
-                const ast = await build_system.getStaticValueAstFromSourceAST(hook.nodes[0], comp, presets, model, parents, false);
+                const ast = await build_system.getStaticValueAstFromSourceAST(hook.value[0], comp, presets, model, parents, false);
 
                 try {
                     return eval(renderCompressed(<JSNode>ast));
@@ -569,7 +569,7 @@ registerFeature(
 
                 let arrow_argument_match = new Array(argument_size).fill(null);
 
-                let ast = hook.nodes[0];
+                let ast = hook.value[0];
 
                 //Expects just an expression statement, but the expression statement in an arrow function will work as well.
                 if (ast.type == JSNodeType.ArrowFunction)

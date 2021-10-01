@@ -120,9 +120,9 @@ export async function getDefaultBindingValueAST(
         if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp) {
             for (const hook of (<ComponentData><any>parent_comp).indirect_hooks.filter(h => h.type == ExportToChildAttributeHook)) {
 
-                if (hook.nodes[0].foreign == binding.external_name) {
+                if (hook.value[0].foreign == binding.external_name) {
 
-                    return await getDefaultBindingValueAST(hook.nodes[0].local, parent_comp, presets, model, null, ASSUME_RUNTIME);
+                    return await getDefaultBindingValueAST(hook.value[0].local, parent_comp, presets, model, null, ASSUME_RUNTIME);
                 }
             }
 

@@ -52,7 +52,7 @@ registerFeature(
 
                 const st = build_system.js.stmt<JSExpressionStatement>(`$$ele${element_index}.data = 0`);
 
-                st.nodes[0].nodes[1] = <JSNode>node.nodes[0];
+                st.nodes[0].nodes[1] = <JSNode>node.value[0];
 
                 addOnBindingUpdate(st);
 

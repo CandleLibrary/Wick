@@ -92,7 +92,7 @@ registerFeature(
 
                 const
                     ele_name = "$$ele" + element_index,
-                    expression = node.nodes[0],
+                    expression = node.value[0],
                     root_type = expression.type,
                     READONLY = build_system.getElementAtIndex(comp, element_index)
                         ?.attributes
@@ -162,12 +162,12 @@ registerFeature(
                 const ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
 
                 if (
-                    build_system.getExpressionStaticResolutionType(<JSNode>hook.nodes[0], comp, presets)
+                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, presets)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const val = await build_system.getStaticValue(hook.nodes[0], comp, presets, model, parents);
+                    const val = await build_system.getStaticValue(hook.value[0], comp, presets, model, parents);
 
                     if (val !== null)
                         return <any>{
@@ -190,7 +190,7 @@ registerFeature(
             buildJS: (node, comp, presets, element_index, addOnBindingUpdate, addInitBindingInit) => {
                 const { expr, stmt } = build_system.js,
                     ele_name = "$$ele" + element_index,
-                    expression = node.nodes[0],
+                    expression = node.value[0],
                     root_type = expression.type,
                     READONLY = getElementAtIndex(comp, element_index)
                         .attributes
@@ -258,12 +258,12 @@ registerFeature(
                 const ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
 
                 if (
-                    build_system.getExpressionStaticResolutionType(<JSNode>hook.nodes[0], comp, presets)
+                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, presets)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const val = await build_system.getStaticValue(hook.nodes[0], comp, presets, model, parents);
+                    const val = await build_system.getStaticValue(hook.value[0], comp, presets, model, parents);
 
                     if (val !== null)
                         return <any>{

@@ -247,7 +247,7 @@ export interface IndirectHook<T = Node> {
 
     type: ExtendedType,
 
-    nodes: T;
+    value: T;
 
     ele_index: number;
 

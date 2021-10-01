@@ -221,7 +221,7 @@ registerFeature(
 
                 const child_comp = presets.components.get(comp_name);
 
-                const { foreign, local, child_id } = node.nodes[0];
+                const { foreign, local, child_id } = node.value[0];
 
                 if (child_comp) {
 
@@ -270,7 +270,7 @@ registerFeature(
             verify: () => true,
 
             buildJS: (node, comp, _, _2, _3, addInit) => {
-                const [clause] = node.nodes;
+                const [clause] = node.value;
 
                 for (const { nodes: [internal] } of clause.nodes)
                     registerClassBinding(addInit, build_system.getComponentBinding(internal.value, comp));
