@@ -2,6 +2,7 @@ import { buildRenderers, experimentalConstructRenderers, NodeMappings } from "@c
 import { HTMLNodeType, Node } from "../../types/all.js";
 import { NodeTypes } from "../source-code-parse/env.js";
 import { render_mappings as js_mappings } from '@candlelib/js';
+import { css_mappings } from '@candlelib/css';
 
 
 
@@ -9,6 +10,7 @@ export const wick_mappings: NodeMappings<Node, "type"> = <NodeMappings<Node, "ty
     typename: "type",
     type_lookup: null,
     mappings: [
+        ...css_mappings.mappings,
         ...js_mappings.mappings,
         {
             type: HTMLNodeType.HTML_DIV,
