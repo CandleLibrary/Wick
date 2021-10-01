@@ -244,12 +244,12 @@ const build_system = {
          * Parses a JS statement string and returns an AST representation of 
          * the expression, or null if the expression is invalid. 
          */
-        stmt: <T>(s: string): T => <T><any>stmt(s),
+        stmt: <T = JSNode>(s: string): T => <T><any>stmt(s),
         /**
          * Parses a JS expression and returns an AST representation of 
          * the expression, or null if the expression is invalid. 
          */
-        expr: <T>(s: string): T => <T><any>exp(s),
+        expr: <T = JSNode>(s: string): T => <T><any>exp(s),
     },
     /**
      * Useful tools for debugging.

@@ -1,12 +1,10 @@
 import { bidirectionalTraverse, traverse, TraverseState } from '@candlelib/conflagrate';
+import { JSExportDeclaration, JSImportClause, JSNodeType, JSStatementClass, renderCompressed } from '@candlelib/js';
 import { getPackageJsonObject } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
-import { JSExportDeclaration, JSImportClause, JSStatementClass } from '@candlelib/js';
-import { JSNodeType } from 'build/types/entry-point/wick-full.js';
 import { parse_component, parse_js_exp, parse_js_stmt } from '../compiler/source-code-parse/parse.js';
 import { renderNew } from '../compiler/source-code-render/render.js';
 import { Node } from '../types/wick_ast.js';
-import path from 'path';
 
 async function getResolvedModulePath(
 	new_uri: string,
@@ -300,7 +298,7 @@ export async function compile_module(
 				if (node.type == JSNodeType.ExportDeclaration) {
 					if (!node.DEFAULT) {
 
-						if (node.nodes[0]?.type == JSNodeType.ExportClause) {
+						if (node.nodes[0]?.type == JSNodeType.Specifiers) {
 							for (const specifier of node.nodes[0].nodes) {
 								const name = specifier.nodes[0].value;
 								if (imported_refs.has(name)) {
@@ -348,7 +346,7 @@ export async function compile_module(
 			}
 		}
 
-		output.push(renderNew(module));
+		output.push(renderCompressed(module));
 	}
 
 	await fsp.writeFile(output_file_path, output.join("\n"), { encoding: 'utf8' });

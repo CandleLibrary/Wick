@@ -1,12 +1,10 @@
 import { traverse } from '@candlelib/conflagrate';
-import { ext, JSExpressionStatement, JSIdentifier, JSNode, JSNodeType, renderCompressed, stmt } from '@candlelib/js';
+import { JSExpressionStatement, JSIdentifier, JSIdentifierClass, JSNode, JSNodeType, renderCompressed, stmt } from '@candlelib/js';
 import URI from '@candlelib/uri';
 import {
     BINDING_VARIABLE_TYPE,
     ComponentData,
-    ContainerDomLiteral,
-    HOOK_SELECTOR,
-    HTMLAttribute,
+    ContainerDomLiteral, HTMLAttribute,
     HTMLContainerNode,
     HTMLNodeClass,
     HTMLNodeType,
@@ -16,7 +14,7 @@ import {
 import { registerFeature } from './build_system.js';
 import { getExpressionStaticResolutionType, getStaticValue } from "./common/binding.js";
 import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "./common/extended_types.js";
-import { getElementAtIndex, Is_Tag_From_HTML_Spec } from "./common/html.js";
+import { getElementAtIndex } from "./common/html.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "./common/js_hook_types.js";
 
 
@@ -235,7 +233,7 @@ registerFeature(
 
                     st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`);
 
-                st.nodes[0].nodes[1].nodes = node.nodes;
+                st.nodes[0].nodes[1].nodes = <any>node.nodes;
 
                 const resolution_type = getExpressionStaticResolutionType(<JSNode>node.nodes[0], comp, presets);
                 if (
@@ -627,7 +625,7 @@ export function getListOfUnboundArgs(
     for (const { node: n } of traverse(node, "nodes")
         .filter("type", BindingIdentifierBinding, BindingIdentifierReference, JSNodeType.IdentifierBinding, JSNodeType.IdentifierReference)) {
 
-        const name = n.value;
+        const name = (<JSIdentifierClass>n).value;
 
         if (n.type == BindingIdentifierBinding || n.type == BindingIdentifierReference) {
 

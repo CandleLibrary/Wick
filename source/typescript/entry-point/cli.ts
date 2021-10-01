@@ -39,6 +39,7 @@ import { compile_module } from './compile_module.js';
 import { ComponentData } from './wick-full.js';
 import wick from './wick-server.js';
 
+
 URI.server();
 
 const
@@ -60,22 +61,6 @@ candle.wick <input-component> <output-directory>
 const IS_FLAT = addCLIConfig("compile", { key: "flat", help_brief: `Output files to a flat directory structure` });
 
 const output_directory = addCLIConfig("compile", { key: "output", help_brief: `Directory in which to output files`, REQUIRES_VALUE: true });
-
-const USE_RADIATE = addCLIConfig("compile",
-	{
-		key: "use_radiate",
-		help_brief:
-			`
-Use radiate client-side router to handle multi-page sites. 
-This causes the compiler to treat every "index.wick" as a separate
-page and will output a single-page component for each "index.wick"
-entry point. 
-
-Without this option wick will only compile the input component or 
-the index.wick of the input directory.
-`
-	}
-);
 
 addCLIConfig("compile",
 	{
@@ -102,7 +87,6 @@ optionally hydrated with the associated support scripts.
 			const root_directory = URI.resolveRelative(input_path);
 			const output_directory = URI.resolveRelative("./www/");
 			const presets = new Presets();
-			const RADIATE = !!USE_RADIATE.value;
 
 			//Compile a list of entry components
 
@@ -111,6 +95,12 @@ optionally hydrated with the associated support scripts.
 				output_name?: string;
 			} {
 				if (uri.filename.slice(0, 5) == "page_") {
+					if (uri.filename == "page_home")
+						return {
+							IS_ENTRY_COMPONENT: true,
+							output_name: "root"
+						};
+
 					return {
 						IS_ENTRY_COMPONENT: true,
 						output_name: uri.filename.slice(5)
@@ -193,10 +183,12 @@ optionally hydrated with the associated support scripts.
 				else
 					USE_WICK_RUNTIME = true;
 
-				const resolved_filepath = URI.resolveRelative(
-					"./" + output_name,
-					output_directory + ""
-				);
+				const resolved_filepath = output_name == "root"
+					? output_directory
+					: URI.resolveRelative(
+						"./" + output_name,
+						output_directory + ""
+					);
 
 				await fsp.mkdir(resolved_filepath + "", { recursive: true });
 
