@@ -167,13 +167,16 @@ registerFeature(
 
                 async prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-                    const { ast } = await build_system.processJSNode(
+                    const function_frame = await build_system.
+                        processFunctionDeclaration(<JSNode>node, component, presets);
+
+                    /* const { ast } = await build_system.processJSNode(
                         <JSNode>node, component, presets, null, frame, true
-                    );
+                    ); */
 
                     skip();
 
-                    return <JSNode>ast;
+                    return null;
                 }
 
             }, JSNodeType.ArrowFunction
