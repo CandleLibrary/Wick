@@ -8,10 +8,10 @@ import {
     BINDING_VARIABLE_TYPE, HTMLAttribute, HTMLNode,
     HTMLNodeClass,
     IndirectHook
-} from "../types/all.js";
-import { registerFeature } from './build_system.js';
-import { getExtendTypeVal } from './common/extended_types.js';
-import { BindingIdentifierBinding } from './common/js_hook_types.js';
+} from "../../types/all.js";
+import { registerFeature } from '../build_system.js';
+import { getExtendTypeVal } from '../common/extended_types.js';
+import { BindingIdentifierBinding } from '../common/js_hook_types.js';
 
 export const ExportToChildAttributeHook = getExtendTypeVal("data-export-to-child-through-attribute-hook", JSNodeType.StringLiteral);
 

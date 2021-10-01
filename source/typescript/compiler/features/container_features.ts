@@ -10,12 +10,12 @@ import {
     HTMLNodeType,
     IndirectHook,
     STATIC_RESOLUTION_TYPE
-} from "../types/all.js";
-import { registerFeature } from './build_system.js';
-import { getExpressionStaticResolutionType, getStaticValue } from "./common/binding.js";
-import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "./common/extended_types.js";
-import { getElementAtIndex } from "./common/html.js";
-import { BindingIdentifierBinding, BindingIdentifierReference } from "./common/js_hook_types.js";
+} from "../../types/all.js";
+import { registerFeature } from '../build_system.js';
+import { getExpressionStaticResolutionType, getStaticValue } from "../data/static_resolution.js";
+import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "../common/extended_types.js";
+import { getElementAtIndex } from "../common/html.js";
+import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 
 
 export const ContainerDataHook = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);

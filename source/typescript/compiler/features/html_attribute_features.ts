@@ -3,8 +3,8 @@ import {
     HTMLAttribute, HTMLNodeType,
     IndirectHook,
     STATIC_RESOLUTION_TYPE
-} from "../types/all.js";
-import { registerFeature } from './build_system.js';
+} from "../../types/all.js";
+import { registerFeature } from './../build_system.js';
 
 registerFeature(
 

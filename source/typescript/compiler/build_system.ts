@@ -21,20 +21,20 @@ import {
     addWriteFlagToBindingVariable,
     getBindingFromExternalName,
     getBindingStaticResolutionType,
-    getComponentBinding,
+    getComponentBinding
+} from './common/binding.js';
+import {
     getExpressionStaticResolutionType,
     getStaticValue,
     getStaticValueAstFromSourceAST
-} from './common/binding.js';
+} from "./data/static_resolution.js";
 import { getComponentSourceString, setPos } from './common/common.js';
-import { importResource } from "./common/import.js";
 import { css_selector_helpers } from './common/css.js';
 import { getExtendTypeName, getExtendTypeVal } from './common/extended_types.js';
 import { getElementAtIndex } from './common/html.js';
+import { importResource } from "./data/module.js";
 import { getFirstReferenceName } from './common/js.js';
 import { metrics } from './metrics.js';
-import { AnyAaaaRecord } from 'dns';
-
 
 const registered_hook_handlers = new Map();
 

@@ -2,8 +2,8 @@ import { JSExpressionClass, JSExpressionStatement, JSNode } from '@candlelib/js'
 import {
     HTMLNode, HTMLNodeType,
     IndirectHook, WickBindingNode
-} from "../types/all.js";
-import { registerFeature } from './build_system.js';
+} from "../../types/all.js";
+import { registerFeature } from './../build_system.js';
 
 registerFeature(
 

@@ -13,9 +13,9 @@ import {
 import { processWickCSS_AST } from '../ast-parse/parse.js';
 import { parseSource } from "../ast-parse/source.js";
 import { parse_css } from '../source-code-parse/parse.js';
-import { addBindingVariable, addWriteFlagToBindingVariable } from "./binding.js";
-import { addPendingModuleToPresets } from './common.js';
-import { mergeComponentData } from './component.js';
+import { addBindingVariable, addWriteFlagToBindingVariable } from "../common/binding.js";
+import { addPendingModuleToPresets } from '../common/common.js';
+import { mergeComponentData } from '../common/component.js';
 
 
 function getModuleName(presets: PresetOptions, module_name: string) {

@@ -2,9 +2,9 @@ import { copy, traverse } from '@candlelib/conflagrate';
 import { JSCallExpression, JSFormalParameters, JSIdentifier, JSIdentifierBinding, JSNode, JSNodeType } from '@candlelib/js';
 import {
     BINDING_VARIABLE_TYPE, HTMLNodeType, IndirectHook, JSHandler, WickBindingNode
-} from "../types/all.js";
-import { registerFeature } from './build_system.js';
-import { BindingIdentifierReference } from './common/js_hook_types.js';
+} from "../../types/all.js";
+import { registerFeature } from './../build_system.js';
+import { BindingIdentifierReference } from './../common/js_hook_types.js';
 
 registerFeature(
 

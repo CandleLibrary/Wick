@@ -1,6 +1,6 @@
 import { JSNode, JSNodeType, JSStringLiteral } from '@candlelib/js';
-import { ComponentData } from '../entry-point/wick-full.js';
-import { registerFeature } from './build_system.js';
+import { ComponentData } from '../../entry-point/wick-full.js';
+import { registerFeature } from './../build_system.js';
 
 registerFeature(
 

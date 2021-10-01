@@ -212,6 +212,8 @@ export async function parseComponentAST(
 
                 processUndefinedBindingVariables(component, presets);
 
+                metrics.endRun(run_tag);
+
                 if (component.HAS_ERRORS)
                     throw new Error("Component has errors");
 
@@ -219,14 +221,17 @@ export async function parseComponentAST(
             }
 
         } catch (e) {
-            console.log(e);
+            console.error(e);
             parse_errors.push(e, ...(component?.errors ?? []));
         }
 
+    if (parse_errors)
+        for (const e of parse_errors)
+            console.error(e);
+
     metrics.endRun(run_tag);
 
-    return { IS_NEW: true, comp: createErrorComponent(parse_errors, source_string, url, component) };
-
+    throw new Error(`Invalid Component ${url + ""}`);
 }
 export async function fetchASTFromRemote(url: URL) {
 

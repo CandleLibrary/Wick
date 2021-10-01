@@ -2,10 +2,10 @@ import { JSNode, JSNodeType } from '@candlelib/js';
 import {
     BINDING_VARIABLE_TYPE, ContainerDomLiteral, HTMLAttribute, HTMLNodeType, IndirectHook,
     STATIC_RESOLUTION_TYPE
-} from "../types/all.js";
-import { registerFeature } from './build_system.js';
-import { getElementAtIndex } from './common/html.js';
-import { BindingIdentifierBinding, BindingIdentifierReference } from './common/js_hook_types.js';
+} from "../../types/all.js";
+import { registerFeature } from './../build_system.js';
+import { getElementAtIndex } from './../common/html.js';
+import { BindingIdentifierBinding, BindingIdentifierReference } from './../common/js_hook_types.js';
 
 registerFeature(
 

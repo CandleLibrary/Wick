@@ -1,7 +1,7 @@
 import { traverse } from "@candlelib/conflagrate";
-import { ext, JSBindingProperty, JSExpressionClass, JSIdentifier, JSIdentifierClass, JSMethod, JSNode, JSNodeClass, JSNodeType } from "@candlelib/js";
-
+import { JSBindingProperty, JSExpressionClass, JSIdentifier, JSIdentifierClass, JSMethod, JSNode, JSNodeClass, JSNodeType } from "@candlelib/js";
 import { parse_js_exp } from "../source-code-parse/parse.js";
+
 /**
  * Create an AST of the form
  * ```js

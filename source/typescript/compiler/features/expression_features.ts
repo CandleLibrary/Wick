@@ -1,10 +1,10 @@
 import { traverse } from '@candlelib/conflagrate';
 import { HTMLNode } from '@candlelib/html';
 import { JSIdentifierReference, JSNode, JSNodeType } from '@candlelib/js';
-import { HOOK_SELECTOR, HTMLNodeType } from "../types/all.js";
-import { registerFeature } from './build_system.js';
-import { Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure } from './common/binding.js';
-import { getExtendTypeVal } from './common/extended_types.js';
+import { HOOK_SELECTOR, HTMLNodeType } from "../../types/all.js";
+import { registerFeature } from '../build_system.js';
+import { Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure } from '../common/binding.js';
+import { getExtendTypeVal } from '../common/extended_types.js';
 
 registerFeature(
 

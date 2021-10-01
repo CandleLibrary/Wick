@@ -2,9 +2,9 @@ import { JSNode, stmt } from '@candlelib/js';
 import {
     BINDING_VARIABLE_TYPE,
     HTMLAttribute, HTMLNode, HTMLNodeType
-} from "../types/all.js";
-import { registerFeature } from './build_system.js';
-import { ComponentHash } from './common/hash_name.js';
+} from "../../types/all.js";
+import { registerFeature } from './../build_system.js';
+import { ComponentHash } from './../common/hash_name.js';
 
 registerFeature(
 
@@ -153,7 +153,7 @@ registerFeature(
 
 
                     const
-                        id = getAttributeValue("id", node),
+                        id = <string>getAttributeValue("id", node),
                         [script] = <JSNode[]><unknown>(node.nodes),
                         src = getAttributeValue("src", node);
 

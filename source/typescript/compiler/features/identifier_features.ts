@@ -1,9 +1,9 @@
 import { traverse } from '@candlelib/conflagrate';
 import { JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, tools } from '@candlelib/js';
-import { BINDING_VARIABLE_TYPE, STATIC_RESOLUTION_TYPE } from '../types/binding.js';
-import { registerFeature } from './build_system.js';
-import { Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure, Variable_Is_Declared_Locally } from './common/binding.js';
-import { BindingIdentifierBinding, BindingIdentifierReference } from './common/js_hook_types.js';
+import { BINDING_VARIABLE_TYPE, STATIC_RESOLUTION_TYPE } from '../../types/binding.js';
+import { registerFeature } from './../build_system.js';
+import { Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure, Variable_Is_Declared_Locally } from './../common/binding.js';
+import { BindingIdentifierBinding, BindingIdentifierReference } from './../common/js_hook_types.js';
 
 registerFeature(
 

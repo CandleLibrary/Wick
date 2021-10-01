@@ -1,7 +1,7 @@
 import { JSNode } from "source/typescript/entry-point/wick-full.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, PresetOptions, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
-import { getStaticValue } from "../common/binding.js";
+import { getStaticValue } from "../data/static_resolution.js";
 import { processHookForHTML } from "./hooks.js";
 import {
     ContainerDataHook,
@@ -12,7 +12,7 @@ import {
     ContainerShiftHook,
     ContainerSortHook,
     ContainerUseIfHook
-} from "../container_features.js";
+} from "../features/container_features.js";
 import * as b_sys from "../build_system.js";
 
 /**

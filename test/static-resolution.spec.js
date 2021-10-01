@@ -1,11 +1,10 @@
 import HTML from "@candlelib/html";
-import { assert } from "console";
 import { componentDataToTempAST } from "../build/library/compiler/ast-build/html.js";
 import { htmlTemplateToString } from "../build/library/compiler/ast-render/html.js";
+import { enableBuildFeatures } from "../build/library/compiler/build_system.js";
 import Presets from "../build/library/compiler/common/presets.js";
 import wick_server from "../build/library/entry-point/wick-server.js";
 import { assertTree } from "./test-tools/tools.js";
-import { enableBuildFeatures } from "../build/library/compiler/build_system.js";
 
 await HTML.server();
 assert_group("Basic Container Static Resolution", sequence, () => {

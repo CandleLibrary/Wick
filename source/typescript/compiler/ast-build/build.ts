@@ -154,10 +154,7 @@ export async function createCompiledComponentClass(
         return class_info;
 
     } catch (e) {
-        console.log(e);
         throw e;
-        console.log(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
-        return createCompiledComponentClass(createErrorComponent([e], component.source, component.location, component), presets);
     } finally {
         metrics.endRun(run_tag);
         b_sys.disableBuildFeatures();

@@ -1,5 +1,3 @@
-import { SET_ONCE_environment_globals } from './common';
-
 export const GlobalVariables = [
     "AbortController",
     "AbortSignal",

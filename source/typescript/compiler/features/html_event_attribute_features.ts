@@ -2,8 +2,8 @@ import { JSNode, JSNodeType, stmt } from '@candlelib/js';
 import {
     HTMLAttribute, HTMLNodeType,
     IndirectHook
-} from "../types/all.js";
-import { registerFeature } from './build_system.js';
+} from "../../types/all.js";
+import { registerFeature } from './../build_system.js';
 import { getListOfUnboundArgs } from './container_features.js';
 
 registerFeature(

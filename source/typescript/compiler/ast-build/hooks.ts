@@ -17,11 +17,10 @@ import {
     Binding_Var_Is_Directly_Accessed,
     getBindingStaticResolutionType,
     getComponentBinding,
-    getExpressionStaticResolutionType,
     getExternalName,
-    getStaticValueAstFromSourceAST,
     Name_Is_A_Binding_Variable
 } from "../common/binding.js";
+import { getExpressionStaticResolutionType, getStaticValueAstFromSourceAST } from "../data/static_resolution.js";
 import {
     appendStmtToFrame,
     createBuildFrame,

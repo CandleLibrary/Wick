@@ -11,9 +11,11 @@ import {
     componentDataToJSCached,
     componentDataToJSStringCached
 } from "../compiler/ast-render/js.js";
+import * as b_sys from "../compiler/build_system.js";
 import { ComponentDataClass } from "../compiler/common/component.js";
 import { css_selector_helpers } from "../compiler/common/css.js";
 import { ComponentHash } from "../compiler/common/hash_name.js";
+
 import { parse_component } from "../compiler/source-code-parse/parse.js";
 import { renderWithFormatting } from "../compiler/source-code-render/render.js";
 import { WickRTComponent } from "../runtime/component.js";
@@ -37,33 +39,80 @@ import {
     ObservableWatcher,
     PresetOptions
 } from "../types/all.js";
-
-import { Presets } from "./wick-runtime.js";
-
-import * as b_sys from "../compiler/build_system.js";
-
 // Load features. Only need side effects as the proper 
 // systems will automatically register themselves through the
 // build system
 import { log } from './logger.js';
+import { Presets } from "./wick-runtime.js";
 
-import "../compiler/container_features.js";
-import "../compiler/expression_features.js";
-import "../compiler/function_features.js";
-import "../compiler/html_attribute_features.js";
-import "../compiler/html_event_attribute_features.js";
-import "../compiler/html_general_features.js";
-import "../compiler/identifier_features.js";
-import "../compiler/input_features.js";
-import "../compiler/module_features.js";
-import "../compiler/string_features.js";
-import "../compiler/text_node_features.js";
+export * from "../compiler/source-code-render/render.js";
+export * from "../compiler/source-code-render/rules.js";
+export {
+    //Functions
+    parse_component as parser,
+    ComponentHash as createNameHash,
+    componentDataToHTML,
+    componentDataToCSS,
+    componentDataToJS as componentDataToClass,
+    createCompiledComponentClass as componentDataToClassString,
+
+    //tools
+    test,
+
+    //Object Types
+    PresetOptions as Presets,
+    WickRTComponent as RuntimeComponent,
+    WickRTComponent,
+    HTMLNodeTypeLU as HTMLNodeType,
+    JSNodeTypeLU,
+    CSSNodeType,
+
+    //Pure Types
+    WickLibrary,
+    ExtendedComponentData as ExtendedComponent,
+    WickRuntime,
+    ComponentData as Component,
+    ComponentData,
+    ObservableModel,
+    ObservableWatcher,
+    DOMLiteral,
+    BindingVariable,
+    JSNode,
+    HTMLNode as HTMLNode,
+    CSSNode,
+    JSNodeType,
+    HTMLNodeClass as HTMLNodeClass,
+    FunctionFrame,
+    IntermediateHook as IntermediateBinding,
+    BINDING_VARIABLE_TYPE,
+    BINDING_FLAG as DATA_FLOW_FLAG,
+
+    /*Observables*/
+    Observable,
+
+};
+
+
 
 log("\n\n----------- Initializing Wick ---------------");
 
 log("Loading Wick build features");
+/*** */
+import "../compiler/features/container_features.js";
+import "../compiler/features/expression_features.js";
+import "../compiler/features/function_features.js";
+import "../compiler/features/html_attribute_features.js";
+import "../compiler/features/html_event_attribute_features.js";
+import "../compiler/features/html_general_features.js";
+import "../compiler/features/identifier_features.js";
+import "../compiler/features/input_features.js";
+import "../compiler/features/module_features.js";
+import "../compiler/features/string_features.js";
+import "../compiler/features/text_node_features.js";
+
 
 await b_sys.loadFeatures();
+
 
 log("Completed loading of build features");
 
@@ -290,51 +339,6 @@ const wick: WickLibrary = Object.assign(componentCreate,
 
 export default wick;
 
-export * from "../compiler/source-code-render/render.js";
-export * from "../compiler/source-code-render/rules.js";
-export {
-    //Functions
-    parse_component as parser,
-    ComponentHash as createNameHash,
-    componentDataToHTML,
-    componentDataToCSS,
-    componentDataToJS as componentDataToClass,
-    createCompiledComponentClass as componentDataToClassString,
 
-    //tools
-    test,
-
-    //Object Types
-    PresetOptions as Presets,
-    WickRTComponent as RuntimeComponent,
-    WickRTComponent,
-    HTMLNodeTypeLU as HTMLNodeType,
-    JSNodeTypeLU,
-    CSSNodeType,
-
-    //Pure Types
-    WickLibrary,
-    ExtendedComponentData as ExtendedComponent,
-    WickRuntime,
-    ComponentData as Component,
-    ComponentData,
-    ObservableModel,
-    ObservableWatcher,
-    DOMLiteral,
-    BindingVariable,
-    JSNode,
-    HTMLNode as HTMLNode,
-    CSSNode,
-    JSNodeType,
-    HTMLNodeClass as HTMLNodeClass,
-    FunctionFrame,
-    IntermediateHook as IntermediateBinding,
-    BINDING_VARIABLE_TYPE,
-    BINDING_FLAG as DATA_FLOW_FLAG,
-
-    /*Observables*/
-    Observable,
-
-};
 
 

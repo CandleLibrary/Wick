@@ -16,7 +16,7 @@ export const WICK_AST_NODE_TYPE_SIZE = 85;
  * Wick node values and types. Extends JavaScript nodes described in @candlelib/js, and CSS nodes described in @candlelib/css
  */
 
-export const enum HTMLNodeType {
+export enum HTMLNodeType {
     WickBinding = (147 << 23),
     HTML_IMPORT = ((148 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     HTMLAttribute = ((149 << 23) | HTMLNodeClass.HTML_NODE),
@@ -103,7 +103,8 @@ export const enum HTMLNodeType {
     HTML_SVG = ((230 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     HTML_BINDING_ELEMENT = ((230 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     CompiledBinding = ((231 << 23)),
-    ComponentVariableDeclaration = ((232 << 23))
+    ComponentVariableDeclaration = ((232 << 23)),
+    MARKDOWN = ((233 << 23))
 };
 
 export enum HTMLNodeTypeLU {
