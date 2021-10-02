@@ -1,5 +1,13 @@
 import { traverse } from '@candlelib/conflagrate';
-import { JSExpressionStatement, JSIdentifier, JSIdentifierClass, JSNode, JSNodeType, renderCompressed, stmt } from '@candlelib/js';
+import {
+    JSExpressionStatement,
+    JSIdentifier,
+    JSIdentifierClass,
+    JSNode,
+    JSNodeType,
+    renderCompressed,
+    stmt
+} from '@candlelib/js';
 import URI from '@candlelib/uri';
 import {
     BINDING_VARIABLE_TYPE,
@@ -16,6 +24,7 @@ import { getExpressionStaticResolutionType, getStaticValue } from "../data/stati
 import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "../common/extended_types.js";
 import { getElementAtIndex } from "../common/html.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
+import { convertObjectToJSNode } from '../common/js.js';
 
 
 export const ContainerDataHook = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);
@@ -225,7 +234,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, presets, element_index, on_write, init) => {
+            buildJS: async (node, comp, presets, element_index, on_write, init) => {
 
 
                 const
@@ -233,19 +242,37 @@ registerFeature(
 
                     st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`);
 
-                st.nodes[0].nodes[1].nodes = <any>node.nodes;
+                const resolution_type = getExpressionStaticResolutionType(<JSNode>node.value[0], comp, presets);
 
-                const resolution_type = getExpressionStaticResolutionType(<JSNode>node.nodes[0], comp, presets);
+                // If the value can be resolved to pure data (no functions) then replace the
+                // current AST with the resolved data AST
+
+
+                // Static bindings will never change, thus they can be set once in the init
+                // function of the component
                 if (
-                    resolution_type == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
-                    ||
-                    resolution_type == STATIC_RESOLUTION_TYPE.STATIC_WITH_GLOBAL
-                )
+                    (resolution_type ^ STATIC_RESOLUTION_TYPE.CONSTANT_STATIC)
+                    == 0
+                ) {
+                    const val = await getStaticValue(<any>node.value[0], comp, presets);
+                    const st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`);
+                    if (val) {
+
+
+                        const ast = convertObjectToJSNode(val);
+
+                        st.nodes[0].nodes[1].nodes = <any>[ast];
+                    }
+
                     init(st);
+                }
 
-                on_write(st);
+                if (!(resolution_type & STATIC_RESOLUTION_TYPE.CONSTANT_STATIC)) {
+                    st.nodes[0].nodes[1].nodes = <any>node.value;
+                    on_write(st);
+                }
 
-                return node;
+                return null;
             },
 
             buildHTML: async (hook, comp, presets, model, parents) => {
@@ -537,7 +564,7 @@ registerFeature(
             if (build_system.getExpressionStaticResolutionType(hook.value[0], comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
 
 
-                const ast = await build_system.getStaticValueAstFromSourceAST(hook.value[0], comp, presets, model, parents, false);
+                const ast = await build_system.getStaticAST(hook.value[0], comp, presets, model, parents, false);
 
                 try {
                     return eval(renderCompressed(<JSNode>ast));
@@ -583,7 +610,8 @@ registerFeature(
                         const arrow_expression_stmt = build_system.js.expr(`(${arrow_argument_match.map(v => v.value)}) => 1`);
 
                         arrow_expression_stmt.nodes[1] =
-                            await build_system.getStaticValueAstFromSourceAST(ast, comp, presets, model, parents, false);;
+                            await build_system.getStaticAST(ast, comp, presets, model, parents, false);
+
                         try {
                             return eval(renderCompressed(arrow_expression_stmt));
                         } catch (e) { }

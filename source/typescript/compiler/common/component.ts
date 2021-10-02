@@ -73,6 +73,7 @@ export function createErrorComponent(
 export class ComponentDataClass implements ComponentData {
 
     RADIATE: ComponentData["RADIATE"];
+    TEMPLATE: ComponentData["TEMPLATE"];
     name: ComponentData["name"];
     container_count: ComponentData["container_count"];
     global_model_name: ComponentData["global_model_name"];
@@ -80,11 +81,12 @@ export class ComponentDataClass implements ComponentData {
     local_component_names: ComponentData["local_component_names"];
     location: ComponentData["location"];
     root_frame: ComponentData["root_frame"];
-    HTML: ComponentData["HTML"];
     HAS_ERRORS: ComponentData["HAS_ERRORS"];
     names: ComponentData["names"];
     frames: ComponentData["frames"];
+    HTML: ComponentData["HTML"];
     HTML_HEAD: ComponentData["HTML_HEAD"];
+    INLINE_HTML: ComponentData["INLINE_HTML"];
     CSS: ComponentData["CSS"];
     hooks: ComponentData["hooks"];
     children: ComponentData["children"];
@@ -93,6 +95,8 @@ export class ComponentDataClass implements ComponentData {
     template: ComponentData["template"];
     indirect_hooks: ComponentData["indirect_hooks"];
     templates: ComponentData["templates"];
+    element_counter: ComponentData["element_counter"];
+    element_index_remap: ComponentData["element_index_remap"];
     presets: PresetOptions;
 
     constructor(source_string: string, location: URL) {
@@ -115,6 +119,10 @@ export class ComponentDataClass implements ComponentData {
 
         this.HAS_ERRORS = false;
 
+        this.TEMPLATE = false;
+
+        this.RADIATE = false;
+
         this.names = [];
 
         this.frames = [];
@@ -122,6 +130,8 @@ export class ComponentDataClass implements ComponentData {
         this.HTML_HEAD = [];
 
         this.CSS = [];
+
+        this.INLINE_HTML = [];
 
         this.children = [];
 
@@ -134,6 +144,10 @@ export class ComponentDataClass implements ComponentData {
         this.template = null;
 
         this.presets = null;
+
+        this.element_counter = -1;
+
+        this.element_index_remap = new Map;
     }
 
     get class(): typeof WickRTComponent {

@@ -32,7 +32,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     ele: HTMLElement;
 
-    elu: Element[];
+    elu: (Element | Text)[];
 
     CONNECTED: boolean;
 
@@ -650,6 +650,35 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     /**
+     * Updates an element with new data. If the data is an HTMLElement
+     * the existing element is replaced with the new element
+     */
+    ue(element_index: number, data: any) {
+
+        let ele = this.elu[element_index];
+
+        if (data instanceof HTMLElement) {
+
+            this.elu[element_index] = data;
+
+            if (ele.parentElement)
+                ele.parentElement.replaceChild(data, ele);
+
+            return;
+        } else if (!(ele instanceof Text)) {
+
+            let node = new Text();
+
+            this.elu[element_index] = node;
+
+            if (ele.parentElement)
+                ele.parentElement.replaceChild(node, ele);
+        };
+
+        this.elu[element_index].data = data;
+    }
+
+    /**
      * Check to see of the index locations are not undefined
      * @param ids 
      */
@@ -915,8 +944,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         hydrateComponentElement(ele, parent_chain, this);
 
         this.integrateElement(ele, parent_chain);
-
-        //this.hydrate();
 
         return ele;
     }

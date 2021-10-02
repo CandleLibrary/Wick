@@ -9,8 +9,9 @@ import {
     renderCompressed,
     tools
 } from "@candlelib/js";
+import { Node } from 'build/types/types/wick_ast.js';
 import {
-    BindingVariable, BINDING_VARIABLE_TYPE, ComponentData, PLUGIN_TYPE,
+    BindingVariable, BINDING_VARIABLE_TYPE, ComponentData, HTMLNodeClass, PLUGIN_TYPE,
     PresetOptions, STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import {
@@ -23,6 +24,91 @@ import {
 import { convertObjectToJSNode } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 import { ExportToChildAttributeHook } from '../features/module_features.js';
+import { parse_js_exp } from '../source-code-parse/parse.js';
+import { AsyncFunction } from './AsyncFunction.js';
+const DataCache = new WeakMap();
+
+
+export async function getStaticAST(
+    input_ast: JSNode & { cache_data: any; },
+    component: ComponentData,
+    presets: PresetOptions,
+    model: any = null,
+    parent_comp: ComponentData[] = null,
+    ASSUME_RUNTIME: boolean = false,
+    ref: any = null
+) {
+
+    const input_args = new Map;
+
+    return await getStaticValueAstFromSourceAST(
+        input_ast, component, presets, model, parent_comp, ASSUME_RUNTIME, input_args
+    );
+}
+
+/**
+ * Retrieves the real default value of the given binding,
+ * or returns null.
+ */
+export async function getStaticValue(
+    input_ast: Node & { cache_data: any; },
+    component: ComponentData,
+    presets: PresetOptions,
+    model: any = null,
+    parent_comp: ComponentData[] = null,
+    ASSUME_RUNTIME: boolean = false,
+    ref: any = null
+): Promise<{ html: any, value: null; }> {
+
+    const input_args = new Map;
+
+    const ast = await getStaticValueAstFromSourceAST(
+        input_ast, component, presets, model, parent_comp, ASSUME_RUNTIME, input_args
+    );
+
+    let html = null, value = null;
+
+    if (ast) {
+        if (ast.type & HTMLNodeClass.HTML_ELEMENT) {
+            html = ast;
+        } else {
+
+            try {
+
+                const data_string = renderCompressed(<any>ast);
+
+                if (data_string)
+                    if (ast.type == JSNodeType.ArrowFunction) {
+
+                        const { ASYNC } = ast;
+
+                        let fn = ASYNC
+                            ? AsyncFunction(`return (${data_string})(...arguments)`)
+                            : Function(`return (${data_string})(...arguments)`);
+
+                        const data = await fn({
+                            parseDir: () => []
+                        });
+
+                        value = data;
+                    } else {
+                        value = Function(...input_args.keys(), `return (${data_string})`)(...input_args.values());
+                    }
+
+
+                if (value.type && (value.type & HTMLNodeClass.HTML_ELEMENT)) {
+                    html = value; value = null;
+                }
+
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    }
+
+    return { value, html };
+}
+
 
 /**
  * Returns a STATIC_RESOLUTION_TYPE value representing the static resolution
@@ -75,6 +161,7 @@ export function getExpressionStaticResolutionType(
 
             case JSNodeType.ArrowFunction:
 
+
                 for (const n of node.nodes)
                     type |= getExpressionStaticResolutionType(<any>n, comp, presets, m, g);
 
@@ -109,7 +196,8 @@ export async function getDefaultBindingValueAST(
     presets: PresetOptions,
     model: Object,
     parent_comp: ComponentData[] = null,
-    ASSUME_RUNTIME: boolean = false
+    ASSUME_RUNTIME: boolean = false,
+    node_lookups: Map<string, Node>
 ): Promise<JSExpressionClass> {
 
 
@@ -117,19 +205,34 @@ export async function getDefaultBindingValueAST(
 
     if (binding) {
 
-        if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp) {
+        if (binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT) {
+
+            console.log({ d: presets.active_template_data });
+
+            if (presets.active_template_data)
+                return await <any>convertObjectToJSNode(presets.active_template_data[binding.internal_name]);
+
+        } else if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp) {
             for (const hook of (<ComponentData><any>parent_comp).indirect_hooks.filter(h => h.type == ExportToChildAttributeHook)) {
 
                 if (hook.value[0].foreign == binding.external_name) {
 
-                    return await getDefaultBindingValueAST(hook.value[0].local, parent_comp, presets, model, null, ASSUME_RUNTIME);
+                    return await getDefaultBindingValueAST(
+                        hook.value[0].local,
+                        <any>parent_comp,
+                        presets,
+                        model,
+                        null,
+                        ASSUME_RUNTIME,
+                        node_lookups
+                    );
                 }
             }
 
         } /*else*//*else*/ if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
 
             if (model)
-                return await convertObjectToJSNode(model[binding.internal_name]);
+                return await <any>convertObjectToJSNode(model[binding.internal_name]);
 
         } else if (binding.type == BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE) {
 
@@ -146,10 +249,26 @@ export async function getDefaultBindingValueAST(
 
         } else if (ASSUME_RUNTIME) {
             if (getBindingStaticResolutionType(binding, comp, presets) != STATIC_RESOLUTION_TYPE.INVALID)
-                return await getStaticValueAstFromSourceAST(binding.default_val, comp, presets, model, parent_comp, ASSUME_RUNTIME);
+                return <any>await getStaticValueAstFromSourceAST(
+                    <any>binding.default_val,
+                    comp,
+                    presets,
+                    model,
+                    parent_comp,
+                    ASSUME_RUNTIME,
+                    node_lookups
+                );
         }
         else if (Is_Statically_Resolvable_On_Server(binding, comp, presets))
-            return await getStaticValueAstFromSourceAST(binding.default_val, comp, presets, model, parent_comp);
+            return await <any>getStaticValueAstFromSourceAST(
+                <any>binding.default_val,
+                comp,
+                presets,
+                model,
+                parent_comp,
+                false,
+                node_lookups
+            );
 
     }
 
@@ -175,35 +294,49 @@ export async function getDefaultBindingValueAST(
  */
 
 export async function getStaticValueAstFromSourceAST(
-    input_node: JSNode,
+    input_node: Node,
     comp: ComponentData,
     presets: PresetOptions,
     model: Object,
     parent_comp: ComponentData[] = null,
-    ASSUME_RUNTIME: boolean = false
-): Promise<JSExpressionClass> {
-
-
+    ASSUME_RUNTIME: boolean = false,
+    node_lookups: Map<string, Node>
+): Promise<Node> {
 
     const receiver = { ast: null };
 
     for (const { node, meta } of traverse(input_node, "nodes")
-        .filter(
-            "type",
-            JSNodeType.PostExpression,
-            JSNodeType.PreExpression,
-            JSNodeType.CallExpression,
-            BindingIdentifierBinding,
-            BindingIdentifierReference
-        )
+        .makeSkippable()
         .makeReplaceable()
         .extract(receiver)) {
 
-        if (node.type == JSNodeType.PostExpression || node.type == JSNodeType.PreExpression) {
-            const val = await getStaticValueAstFromSourceAST(node.nodes[0], comp, presets, model, parent_comp, ASSUME_RUNTIME);
+        if (node.type & HTMLNodeClass.HTML_ELEMENT) {
+
+            const name = "$" + node_lookups.size;
+
+            node_lookups.set(name, node);
+
+            meta.replace(<any>parse_js_exp(name));
+
+            meta.skip();
+
+        } else if (node.type == JSNodeType.PostExpression || node.type == JSNodeType.PreExpression) {
+
+            const val = await getStaticValueAstFromSourceAST(
+                <any>node.nodes[0],
+                comp,
+                presets,
+                model,
+                parent_comp,
+                ASSUME_RUNTIME,
+                node_lookups
+            );
+
             if (val === undefined)
                 return undefined;
+
             meta.replace(val);
+
         } else if (node.type == JSNodeType.CallExpression) {
 
             const name = tools.getIdentifierName(node);
@@ -213,7 +346,15 @@ export async function getStaticValueAstFromSourceAST(
 
                 for (const n of node.nodes.slice(1)) {
 
-                    const val = await getStaticValueAstFromSourceAST(n, comp, presets, model, parent_comp, ASSUME_RUNTIME);
+                    const val = await getStaticValueAstFromSourceAST(
+                        n,
+                        comp,
+                        presets,
+                        model,
+                        parent_comp,
+                        ASSUME_RUNTIME,
+                        node_lookups
+                    );
 
                     if (val === undefined)
                         return undefined;
@@ -230,10 +371,10 @@ export async function getStaticValueAstFromSourceAST(
                 meta.replace(<JSNode>convertObjectToJSNode(val));
             }
 
-        } else {
+        } else if (node.type == BindingIdentifierBinding
+            || node.type == BindingIdentifierReference) {
 
             const name = tools.getIdentifierName(node);
-
 
             /**
              * Only accept references whose value can be resolved through binding variable
@@ -242,7 +383,15 @@ export async function getStaticValueAstFromSourceAST(
             if (comp.root_frame.binding_variables.has(name)) {
 
 
-                const val = await <any>getDefaultBindingValueAST(name, comp, presets, model, parent_comp, ASSUME_RUNTIME);
+                const val = <any>await getDefaultBindingValueAST(
+                    name,
+                    comp,
+                    presets,
+                    model,
+                    parent_comp,
+                    ASSUME_RUNTIME,
+                    node_lookups
+                );
 
                 if (val === undefined)
                     return undefined;
@@ -261,30 +410,8 @@ export async function getStaticValueAstFromSourceAST(
                 return undefined;
         }
     }
-    return <JSExpressionClass>receiver.ast;
+
+    return <any>receiver.ast;
 }
-/**
- * Retrieves the real default value of the given binding,
- * or return null.
- */
 
-export async function getStaticValue(
-    input_ast: JSNode,
-    component: ComponentData,
-    presets: PresetOptions,
-    model: any = null,
-    parent_comp: ComponentData[] = null,
-    ASSUME_RUNTIME: boolean = false
-) {
 
-    const ast = await getStaticValueAstFromSourceAST(
-        input_ast, component, presets, model, parent_comp, ASSUME_RUNTIME
-    );
-
-    if (ast)
-        try {
-            return eval(renderCompressed(<any>ast));
-        } catch (e) { }
-
-    return null;
-}

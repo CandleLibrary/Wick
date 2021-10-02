@@ -109,6 +109,7 @@ import "../compiler/features/input_features.js";
 import "../compiler/features/module_features.js";
 import "../compiler/features/string_features.js";
 import "../compiler/features/text_node_features.js";
+import "../compiler/features/template_features.js";
 
 
 await b_sys.loadFeatures();
@@ -220,6 +221,7 @@ async function componentCreate(input: string | URL, presets: PresetOptions = rt.
     // Ensure there is a presets object attached to this component.
     if (!presets)
         presets = new Presets();
+
     if (!rt.presets)
         rt.presets = presets;
 
@@ -228,16 +230,6 @@ async function componentCreate(input: string | URL, presets: PresetOptions = rt.
     const { comp: comp_data } = await parseSource(input, presets);
 
     b_sys.disableParserFeatures();
-
-    //Prefill component data
-
-
-    await componentDataToJSCached(comp_data, presets, true, true);
-
-    await componentDataToJSStringCached(comp_data, presets, true, true);
-
-    await createComponentTemplates(presets, rt.templates);
-
 
     comp_data.presets = presets;
 

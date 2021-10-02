@@ -20,7 +20,7 @@ import {
     getExternalName,
     Name_Is_A_Binding_Variable
 } from "../common/binding.js";
-import { getExpressionStaticResolutionType, getStaticValueAstFromSourceAST } from "../data/static_resolution.js";
+import { getExpressionStaticResolutionType, getStaticValue, getStaticValueAstFromSourceAST } from "../data/static_resolution.js";
 import {
     appendStmtToFrame,
     createBuildFrame,
@@ -28,7 +28,7 @@ import {
     getStatementsFromFrame
 } from "../common/frame.js";
 import { ErrorHash } from "../common/hash_name.js";
-import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
+import { convertObjectToJSNode, Expression_Contains_Await, getPropertyAST } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 
 
@@ -148,6 +148,7 @@ export async function processHookForClass(
         pending_init_asts = [],
         pending_destroy_asts = [];
 
+    element_index = component.element_index_remap.get(element_index) ?? element_index;
 
     /**
      * Code that should execute when one or more 
@@ -234,18 +235,21 @@ export async function processHookForClass(
 
     for (const { ast, meta_binding_nodes } of pending_write_asts) {
 
-        if (ALLOW_STATIC_REPLACE) {
-            // Check the hooks AST to determine if it is 
-            // statically resolvable with constant values only
 
-            if (
-                getExpressionStaticResolutionType(ast, component, presets)
-                ==
-                STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
-            ) {
-                continue;
-            };
-        }
+        // Check the hooks AST to determine if it is 
+        // statically resolvable with constant values only
+
+        if (
+            ALLOW_STATIC_REPLACE &&
+            getExpressionStaticResolutionType(ast, component, presets)
+            ==
+            STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
+        )
+            continue;
+
+
+        // Do not leak template bindings to runtime components
+
 
         // Convert runtime static variables to prevent 
         // creating runtime class objects for the binding
@@ -258,18 +262,21 @@ export async function processHookForClass(
             const binding = component.root_frame.binding_variables.get(name);
 
             if (
-                (binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE)
-                &&
-                (
-                    getBindingStaticResolutionType(binding, component, presets)
-                    &
-                    (STATIC_RESOLUTION_TYPE.WITH_MODEL | STATIC_RESOLUTION_TYPE.WITH_PARENT)
-                ) == 0
+                ((binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE)
+                    &&
+                    (
+                        getBindingStaticResolutionType(binding, component, presets)
+                        &
+                        (STATIC_RESOLUTION_TYPE.WITH_MODEL | STATIC_RESOLUTION_TYPE.WITH_PARENT)
+                    ) == 0)
+                ||
+                //Template constants should always be resolved
+                binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT
             ) {
-                const val = await getStaticValueAstFromSourceAST(node, component, presets, null, null, true);
+                const { value } = await getStaticValue(node, component, presets, null, null, true);
 
-                if (val)
-                    mutate(val);
+                if (value)
+                    mutate(convertObjectToJSNode(value));
             }
         }
 

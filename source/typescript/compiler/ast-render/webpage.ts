@@ -83,7 +83,8 @@ export async function RenderPage(
     presets: PresetOptions = rt.presets,
     hooks: PageRenderHooks = comp.RADIATE
         ? default_radiate_hooks
-        : default_wick_hooks
+        : default_wick_hooks,
+    template_data = null
 ): Promise<{
     /**
      * A string of template elements that comprise components that are rendered

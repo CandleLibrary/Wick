@@ -1,5 +1,4 @@
 import URL from "@candlelib/uri";
-import Module from 'module';
 import { PluginStore } from "../plugin/plugin";
 import { WickRTComponent } from "../runtime/component";
 import { ComponentClassStrings, ComponentData, ComponentStyle } from "./component";
@@ -69,64 +68,6 @@ export interface PresetOptions {
 
 
     };
-
-    /**
-     * A collection of custom component constructors that implement
-     * this ComponentConstructor interface.
-     */
-    custom_components?: {};
-
-    /**
-     * OLD - NEEDS UPDATE
-     * 
-     * Store of user defined classes that extend the Model or Model classes. `<w-scope>` tags in 
-     * templates that have a value set for the  `schema` attribute, e.g. 
-     * 
-     * `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the 
-     * class in presets.schema whose property name matches the "schema" attribute.
-     *
-     * Assign classes that extend Model or SchemedModel to preset_options.schemas to have them 
-     * available to Wick.
-     *
-     * In JavaScript:
-     * ```javascript
-     * class MyFavoriteModelType extends Model {};
-     * preset_options.custom_components = {
-     *      my_favorite_model_type : MyFavoriteModelType
-     * }
-     * ```
-     * note: presets.schema.any is always assigned to the Model class.
-     * @instance
-     * @readonly
-     */
-    schemes?: {};
-
-    /**
-     * OLD - NEEDS UPDATE
-     * 
-     * Store of user defined Model instances that serve as global models, which are available to the 
-     * whole application. 
-     * 
-     * Multiple Scopes will be able to _bind_ to the Models. `<w-scope>` tags in templates that have 
-     * a value set for the `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be 
-     * bound to the model in presets .model whose property name matches the "model" attribute.
-     *
-     * Assign instances of Model or Model or any class that extends these to preset_options.models 
-     * to have them used by Wick.
-     *
-     * In JavaScript:
-     * ```javascript
-     *   const MyGlobalModel = new Model({global_data: "This is global!"});
-     *   preset_options.custom_components = {
-     *        my_global_model : MyGlobalModel
-     *   }
-     * ```
-     *
-     *
-     * @instance
-     * @readonly
-     */
-    models?: {};
 
     /**
      * URL of the initiating script.
@@ -199,6 +140,10 @@ export interface PresetOptions {
      * The @candlelib/glow module if it has been imported
      */
     glow?: any;
+
+    template_data: WeakMap<ComponentData, any[]>;
+
+    active_template_data?: any;
 }
 
 

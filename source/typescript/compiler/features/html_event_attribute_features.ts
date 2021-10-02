@@ -19,6 +19,8 @@ registerFeature(
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
+
+
                     if (node.name.slice(0, 2) == "on") {
 
                         // Process the primary expression for Binding Refs and static
@@ -27,7 +29,7 @@ registerFeature(
 
                         // Create an indirect hook for container data attribute
 
-                        build_system.addIndirectHook(component, OnEventHook, { action: node.name, nodes: [ast] }, index);
+                        build_system.addIndirectHook(component, OnEventHook, { action: node.name.slice(2), nodes: [ast] }, index);
 
                         // Remove the attribute from the container element
 
@@ -55,15 +57,13 @@ registerFeature(
 
                 let arrow_argument_match = new Array(1).fill(null), s = null;
 
-                const ele_name = "$$ele" + element_index;
-
                 if (getListOfUnboundArgs(ast, comp, arrow_argument_match, build_system)) {
-                    s = stmt(`${ele_name}.addEventListener("${action.slice(2)}", ${arrow_argument_match[0].value}=>a)`);
+                    s = stmt(`this.attachListener(${element_index}, "${action}", ${arrow_argument_match[0].value}=>a)`);
                 } else {
-                    s = stmt(`${ele_name}.addEventListener("${action.slice(2)}", _=>a)`);
+                    s = stmt(`this.attachListener(${element_index}, "${action}", _=>a)`);
                 }
 
-                s.nodes[0].nodes[1].nodes[1].nodes[1] = ast;
+                s.nodes[0].nodes[1].nodes[2].nodes[1] = ast;
 
                 addInit(s);
             },

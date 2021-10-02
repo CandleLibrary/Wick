@@ -21,11 +21,15 @@ export async function componentDataToHTML(
 
     b_sys.enableBuildFeatures();
 
+    comp.element_counter = 0;
+
     const { html: [html], templates: template_map } = await componentDataToCompiledHTML(comp, presets);
 
     const html_string = htmlTemplateToString(html);
 
     b_sys.disableBuildFeatures();
+
+    console.log(comp.element_index_remap);
 
     return { html: html_string, template_map };
 }

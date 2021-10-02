@@ -328,6 +328,10 @@ export function getCompiledBindingVariableName(
             case BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE:
                 return `${external_name}`;
 
+            case BINDING_VARIABLE_TYPE.TEMPLATE_INITIALIZER:
+            case BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT:
+                return "---INVALID US OF TEMPLATE BINDINGS---";
+
             default:
                 return `this[${comp_info.binding_records.get(binding.internal_name)?.index ?? -1}]`;
         }
@@ -414,6 +418,7 @@ export function getBindingStaticResolutionType(
                 break;
 
             case BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE:
+            case BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT:
                 type = STATIC_RESOLUTION_TYPE.CONSTANT_STATIC;
                 break;
 
@@ -477,6 +482,10 @@ export function Binding_Var_Is_Internal_Variable(comp_var: BindingVariable) {
         comp_var.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
         ||
         comp_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+        ||
+        comp_var.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT
+        ||
+        comp_var.type == BINDING_VARIABLE_TYPE.TEMPLATE_INITIALIZER
     );
 }
 

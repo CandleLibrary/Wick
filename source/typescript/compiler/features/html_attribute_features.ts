@@ -67,10 +67,13 @@ registerFeature(
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    return <any>{
-                        html: { attributes: [[hook.value[0].name, await build_system.getStaticValue(ast, comp, presets, model, parents)]] }
+                    const { value } = await build_system.getStaticValue(ast, comp, presets, model, parents);
 
-                    };
+                    if (value)
+                        return <any>{
+                            html: { attributes: [[hook.value[0].name, value]] }
+
+                        };
                 }
             }
         });

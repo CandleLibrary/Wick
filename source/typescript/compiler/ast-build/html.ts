@@ -14,6 +14,7 @@ import {
     ContainerUseIfHook
 } from "../features/container_features.js";
 import * as b_sys from "../build_system.js";
+import { buildExportableDOMNode } from '../common/html.js';
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -45,8 +46,6 @@ export async function componentDataToCompiledHTML(
         strings: [],
     };
 
-    //if (html)
-    //html = on_ele_hook(html);
     if (html) {
         //Convert html to string 
         const {
@@ -60,9 +59,11 @@ export async function componentDataToCompiledHTML(
         }: DOMLiteral = html,
             children = c.map(i => ({ USED: false, child: i, id: comp_data.length - 1 }));
 
+        if (html.id != undefined)
+            comp.element_index_remap.set(html.id, comp.element_counter);
+
         if (namespace_id)
             node.namespace = namespace_id;
-
 
         if (html.IS_CONTAINER == true)
             await addContainer(
@@ -78,8 +79,6 @@ export async function componentDataToCompiledHTML(
             );
 
         else if (component_name && presets.components.has(component_name)) {
-
-
 
             ({ node, state } =
                 await addComponent(
@@ -110,13 +109,16 @@ export async function componentDataToCompiledHTML(
             await processElement(html, comp, presets, model, node, parent_component, tag_name, state, comp_data, template_map);
 
         } else if (IS_BINDING)
-            await addBindingElement(html, state, node, comp_data, comp, presets, model, parent_component);
+            node = await resolveHTMLBinding(html, state, node, comp_data, comp, presets, model, parent_component);
         else
             processTextNode(node, data);
 
         const child_state = (((state) & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
             == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
             ? htmlState.IS_INTERLEAVED : 0;
+
+        if (html.id != undefined)
+            comp.element_counter += 1;
 
         for (const { child } of children.filter(n => !n.USED)) {
 
@@ -136,6 +138,8 @@ export async function componentDataToCompiledHTML(
         }
 
     }
+
+    node.data ||= "";
 
     return { html: [node], templates: template_map };
 }
@@ -540,7 +544,7 @@ async function processHooks(
 }
 
 
-async function addBindingElement(
+async function resolveHTMLBinding(
     html: DOMLiteral,
     state: htmlState,
     node: TemplateHTMLNode,
@@ -549,34 +553,54 @@ async function addBindingElement(
     presets: PresetOptions,
     model: any = null,
     parent_component: ComponentData[]
-) {
-
+): Promise<TemplateHTMLNode> {
     //*
     const
         hook = getHookFromElement(html, comp)[0],
-        val = hook
-            ? await getStaticValue(<JSNode>hook.nodes[0], comp, presets, model, parent_component)
+        { value, html: child_html } = hook
+            ? await getStaticValue(<JSNode>hook.value[0], comp, presets, model, parent_component)
             : null;
 
+    console.log({ html, b: hook.value, value });
 
-    if ((state & htmlState.IS_INTERLEAVED) > 0)
-        node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
+    if (child_html) {
 
-    node.tagName = "w-b";
+        const converted_node = buildExportableDOMNode(child_html);
+        console.log({ converted_node });
 
-    if (val) {
+        const { html } = await componentDataToCompiledHTML(
+            comp,
+            presets,
+            model,
+            undefined,
+            converted_node
+        );
+
+        node = html[0];
+
+    } else {
+        node.tagName = "w-b";
+        node.data = html.data || "";
+    }
+
+    if (value != undefined) {
+
         node.children.push({
-            data: val + "",
+            data: value + "",
             children: [],
             strings: [],
             attributes: null,
             tagName: null,
         });
     }
-    node.data = html.data || "";
-    //*/
 
+    if ((state & htmlState.IS_INTERLEAVED) > 0)
+        node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
+
+
+    return node;
 }
+
 function getHookFromElement(ele: DOMLiteral, comp: ComponentData): IndirectHook[] {
     let hooks = [];
 

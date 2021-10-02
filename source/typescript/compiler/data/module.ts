@@ -12,18 +12,17 @@ import {
 } from "../../types/all.js";
 import { processWickCSS_AST } from '../ast-parse/parse.js';
 import { parseSource } from "../ast-parse/source.js";
-import { parse_css } from '../source-code-parse/parse.js';
 import { addBindingVariable, addWriteFlagToBindingVariable } from "../common/binding.js";
 import { addPendingModuleToPresets } from '../common/common.js';
 import { mergeComponentData } from '../common/component.js';
-
-
+import { parse_css } from '../source-code-parse/parse.js';
 function getModuleName(presets: PresetOptions, module_name: string) {
     if (!presets.repo.has(module_name))
         return addPendingModuleToPresets(presets, module_name);
     else
         return presets.repo.get(module_name).hash;
 }
+
 /**
  * Attempts to import a component from a URI. Returns true if the resource
  * is a wick component that can be parsed, false otherwise.
@@ -41,7 +40,6 @@ export async function importComponentData(new_component_url, component, presets,
 
 
         if (new_comp_data.HAS_ERRORS) {
-            console.log(new_comp_data.errors);
             return false;
         }
 
@@ -136,6 +134,19 @@ export async function importResource(
             }
 
             return;
+
+        case "@template":
+            // Opts the component into the wick templating system client side router system. The component must be 
+            // at the root of the component tree for this to work.
+            component.TEMPLATE = true;
+
+            ref_type = BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT; flag = BINDING_FLAG.FROM_PRESETS;
+
+            if (default_name)
+                addBindingVariable(frame, default_name, node.pos, BINDING_VARIABLE_TYPE.TEMPLATE_INITIALIZER, default_name, flag);
+
+            break;
+
         case "@radiate":
             // Opts the component into the wick-radiate client side router system. The component must be 
             // at the root of the component tree for this to work.
@@ -181,6 +192,7 @@ export async function importResource(
 
 
     for (const { local, external } of names) {
+
 
         if (external == "namespace")
             continue;

@@ -108,8 +108,6 @@ registerFeature(
 
                                 build_system.addWriteFlagToBindingVariable(l_name, frame);
 
-                                build_system.addDefaultValueToBindingVariable(frame, l_name, <JSNode>value);
-
                                 // Change binding type to an Assignment Expression to ensure the 
                                 // build process can correctly create runtime binding hooks. 
                                 //@ts-ignore
@@ -118,6 +116,8 @@ registerFeature(
                                 build_system.addBindingReference(<JSNode>binding, <JSNode>parent_node, frame);
 
                                 const new_node = await build_system.processNodeAsync(binding, frame, component, presets, true);
+
+                                build_system.addDefaultValueToBindingVariable(frame, l_name, <JSNode>new_node.nodes[1]);
 
                                 // Wrap in an expression statement node to ensure proper rendering of 
                                 // semicolons. Particularly important in minified outputs. 
@@ -153,6 +153,7 @@ registerFeature(
                         }
                     }
 
+                    skip();
 
                     if (frame.IS_ROOT)
                         return node.nodes;
@@ -229,9 +230,9 @@ registerFeature(
                     binding_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
                 ) {
 
-                    const val = await build_system.getStaticValueAstFromSourceAST(node, comp, presets, null, null, true);
+                    const value = await build_system.getStaticAST(<any>node, comp, presets, null, null, true);
 
-                    if (val) return val;
+                    if (value) return <JSExpressionClass>value;
                 }
             },
 

@@ -1,5 +1,6 @@
-import { matchAll } from '@candlelib/css';
+import { CSSNodeType, matchAll } from '@candlelib/css';
 import { exp, ext, JSNode, JSNodeType, JSNodeTypeLU, stmt } from '@candlelib/js';
+import { Node } from 'build/types/types/all.js';
 import { dir, log, trace } from '../entry-point/logger.js';
 import {
     DOMLiteral,
@@ -23,17 +24,17 @@ import {
     getBindingStaticResolutionType,
     getComponentBinding
 } from './common/binding.js';
-import {
-    getExpressionStaticResolutionType,
-    getStaticValue,
-    getStaticValueAstFromSourceAST
-} from "./data/static_resolution.js";
 import { getComponentSourceString, setPos } from './common/common.js';
 import { css_selector_helpers } from './common/css.js';
 import { getExtendTypeName, getExtendTypeVal } from './common/extended_types.js';
 import { getElementAtIndex } from './common/html.js';
-import { importResource } from "./data/module.js";
 import { getFirstReferenceName } from './common/js.js';
+import { importResource } from "./data/module.js";
+import {
+    getExpressionStaticResolutionType,
+    getStaticAST,
+    getStaticValue
+} from "./data/static_resolution.js";
 import { metrics } from './metrics.js';
 
 const registered_hook_handlers = new Map();
@@ -86,9 +87,9 @@ const registration_system = {
         return getExtendTypeVal(extension_name, original_type);
     },
 
-    registerJSParserHandler(js_parse_handler: JSHandler<JSNode>, ...types: JSNodeType[]) {
+    registerJSParserHandler(js_parse_handler: JSHandler<Node>, ...types: (JSNodeType | HTMLNodeType | CSSNodeType)[]) {
         log(`    Registering JS Handler for ${types.map(g => JSNodeTypeLU[g]).join(" ")}`);
-        loadJSParseHandler(js_parse_handler, ...types);
+        loadJSParseHandler(<any>js_parse_handler, ...(<any>types));
     },
 
     registerHTMLParserHandler<T = HTMLNode, P = HTMLNode>(
@@ -211,6 +212,15 @@ const build_system = {
      * Only enabled in build contexts.
      */
     getStaticValue: getStaticValue,
+
+    /**
+     * Returns the resolved AST of the expression
+     * if all variables can be resolved statically.
+     * Otherwise returns null.
+     * 
+     * Only enabled in build contexts.
+     */
+    getStaticAST: getStaticAST,
     /**
      * Retrieve the HTMLNode at a givin index 
      * 
@@ -232,7 +242,6 @@ const build_system = {
      */
     getExpressionStaticResolutionType: getExpressionStaticResolutionType,
     getBindingStaticResolutionType: getBindingStaticResolutionType,
-    getStaticValueAstFromSourceAST: getStaticValueAstFromSourceAST,
 
     metrics: metrics,
 

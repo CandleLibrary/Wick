@@ -158,7 +158,6 @@ registerFeature(
 
             buildHTML: async (hook, comp, presets, model, parents) => {
 
-
                 const ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
 
                 if (
@@ -167,12 +166,11 @@ registerFeature(
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const val = await build_system.getStaticValue(hook.value[0], comp, presets, model, parents);
+                    const { value } = await build_system.getStaticValue(hook.value[0], comp, presets, model, parents);
 
-                    if (val !== null)
+                    if (value !== null)
                         return <any>{
-                            html: { attributes: [["value", val]] }
-
+                            html: { attributes: [["value", value]] }
                         };
                 }
             }
@@ -263,11 +261,11 @@ registerFeature(
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const val = await build_system.getStaticValue(hook.value[0], comp, presets, model, parents);
+                    const { value } = await build_system.getStaticValue(hook.value[0], comp, presets, model, parents);
 
-                    if (val !== null)
+                    if (value !== null)
                         return <any>{
-                            html: { attributes: [["checked", !!val]] }
+                            html: { attributes: [["checked", !!value]] }
 
                         };
                 }

@@ -176,42 +176,36 @@ optionally hydrated with the associated support scripts.
 
 				const { comp: component, output_name } = components.get(key);
 
-				const RADIATE = component.RADIATE;
+				if (component.TEMPLATE) {
 
-				if (RADIATE)
-					USE_RADIATE_RUNTIME = true;
-				else
-					USE_WICK_RUNTIME = true;
+					let data = presets.template_data.get(component);
 
-				const resolved_filepath = output_name == "root"
-					? output_directory
-					: URI.resolveRelative(
-						"./" + output_name,
-						output_directory + ""
-					);
+					for (const template_data of data) {
 
-				await fsp.mkdir(resolved_filepath + "", { recursive: true });
+						if (!template_data.page_name)
+							component.root_frame.ast.pos.throw(
+								"Expected [page_name] for template",
+								component.location.toString()
+							);
 
-				const hooks = Object.assign({}, RADIATE ? default_radiate_hooks : default_wick_hooks);
+						presets.active_template_data = template_data;
 
-				if (RADIATE)
-					hooks.init_script_render = function () {
-						return `
-				import init_router from "/radiate.js";
+						const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
+							= await buildComponentPage(component, presets, template_data.page_name, output_directory);
 
-				init_router();`;
-					};
-				else
-					hooks.init_script_render = function () {
-						return `
-			import w from "/wick.js";
-		
-			w.hydrate();`;
-					};
+						presets.active_template_data = null;
 
-				const { page } = await RenderPage(component, component.presets, hooks);
+						USE_RADIATE_RUNTIME ||= A;
+						USE_WICK_RUNTIME ||= B;
+					}
+				} else {
 
-				await fsp.writeFile(resolved_filepath + "/index.html", page, { encoding: 'utf8' });
+					const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
+						= await buildComponentPage(component, presets, output_name, output_directory);
+
+					USE_RADIATE_RUNTIME ||= A;
+					USE_WICK_RUNTIME ||= B;
+				}
 			}
 
 			if (USE_RADIATE_RUNTIME) {
@@ -251,3 +245,50 @@ optionally hydrated with the associated support scripts.
 	);
 
 processCLIConfig();
+
+async function buildComponentPage(
+	component: ComponentData,
+	presets: Presets,
+	output_name: string,
+	output_directory: URI,
+	template_data?: any
+) {
+	const fsp = (await import("fs")).default.promises;
+
+	let
+		USE_RADIATE_RUNTIME: boolean = component.RADIATE,
+		USE_WICK_RUNTIME: boolean = !component.RADIATE;
+
+	const resolved_filepath = output_name == "root"
+		? output_directory
+		: URI.resolveRelative(
+			"./" + output_name,
+			output_directory + ""
+		);
+
+	await fsp.mkdir(resolved_filepath + "", { recursive: true });
+
+	const hooks = Object.assign({}, USE_RADIATE_RUNTIME ? default_radiate_hooks : default_wick_hooks);
+
+	if (USE_RADIATE_RUNTIME)
+		hooks.init_script_render = function () {
+			return `
+				import init_router from "/radiate.js";
+
+				init_router();`;
+		};
+
+	else
+		hooks.init_script_render = function () {
+			return `
+			import w from "/wick.js";
+		
+			w.hydrate();`;
+		};
+
+	const { page } = await RenderPage(component, presets, hooks, template_data);
+
+	await fsp.writeFile(resolved_filepath + "/index.html", page, { encoding: 'utf8' });
+
+	return { USE_RADIATE_RUNTIME, USE_WICK_RUNTIME };
+}

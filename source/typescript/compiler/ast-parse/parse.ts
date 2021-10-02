@@ -81,7 +81,10 @@ export async function processCoreAsync(
 
     function_frame.ast = <JSFunctionDeclaration>(await processNodeAsync(ast, function_frame, component, presets, true));
 
+
+
     incrementBindingRefCounters(function_frame);
+
 
     return function_frame;
 }
@@ -144,7 +147,6 @@ export async function processNodeAsync(
     presets: PresetOptions,
     SKIP_ROOT: boolean = false
 ) {
-
     const gen = processNodeGenerator(ast, function_frame, component, presets, SKIP_ROOT);
 
     let val = gen.next();
@@ -201,6 +203,7 @@ export function* processNodeGenerator(
             else if (result != node)
                 meta.replace(<any>result);
 
+
             break;
         }
     }
@@ -219,7 +222,8 @@ async function loadHTMLImports(ast: HTMLNode, component: ComponentData, presets:
 
 export async function processWickHTML_AST(ast: HTMLNode,
     component: ComponentData,
-    presets: PresetOptions
+    presets: PresetOptions,
+    USE_AS_PRIMARY_HTML: boolean = true
 ): Promise<HTMLNode> {
     //Process the import list
 
@@ -239,7 +243,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
     } = { ast: null },
         attribute_handlers = html_handlers[Math.max((HTMLNodeType.HTMLAttribute >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
 
-    let last_element = null, ele_index = -1;
+    let last_element = null, ele_index = component.element_counter;
 
     //Remove content-less text nodes.
     for (const { node, meta: { prev, next, mutate } } of traverse(ast, "nodes")
@@ -299,6 +303,8 @@ export async function processWickHTML_AST(ast: HTMLNode,
         if (html_node.type & HTMLNodeClass.HTML_ELEMENT || html_node.type == HTMLNodeType.WickBinding)
             html_node.id = ++ele_index;
 
+        console.log({ ele_index });
+
         if (!html_node.comp)
             html_node.comp = component.name;
 
@@ -337,10 +343,14 @@ export async function processWickHTML_AST(ast: HTMLNode,
         }
     }
 
+    component.element_counter = ele_index;
 
     if (receiver.ast) {
 
-        component.HTML = buildExportableDOMNode(receiver.ast);
+        if (USE_AS_PRIMARY_HTML)
+            component.HTML = buildExportableDOMNode(receiver.ast);
+        else
+            component.INLINE_HTML.push(receiver.ast);
 
         if (
             receiver.ast.component_name

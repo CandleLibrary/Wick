@@ -1,7 +1,7 @@
 import { traverse } from '@candlelib/conflagrate';
 import { HTMLNode } from '@candlelib/html';
 import { JSIdentifierReference, JSNode, JSNodeType } from '@candlelib/js';
-import { HOOK_SELECTOR, HTMLNodeType } from "../../types/all.js";
+import { HOOK_SELECTOR, HTMLNodeClass, HTMLNodeType } from "../../types/all.js";
 import { registerFeature } from '../build_system.js';
 import { Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure } from '../common/binding.js';
 import { getExtendTypeVal } from '../common/extended_types.js';
@@ -142,6 +142,24 @@ registerFeature(
             }, JSNodeType.AssignmentExpression, JSNodeType.PostExpression, JSNodeType.PreExpression
         );
 
-    }
+        /*############################################################
+        * ASSIGNMENT + POST/PRE EXPRESSIONS
+        + Post(++|--) and (++|--)Pre increment expressions
+        */
+        build_system.registerJSParserHandler(
+            {
+                priority: 1,
 
+                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+                    if (node.type & HTMLNodeClass.HTML_ELEMENT) {
+
+                        skip();
+
+                        return <any>await build_system.processHTMLNode(<any>node, component, presets, false);
+                    }
+                }
+            }, ...Object.values(HTMLNodeType).filter((i): i is HTMLNodeType => typeof i == "number")
+        );
+    }
 );

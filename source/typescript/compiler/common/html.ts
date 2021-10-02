@@ -88,6 +88,8 @@ export function buildExportableDOMNode(
 
     const node: DOMLiteral = <DOMLiteral>{ pos: ast.pos };
 
+    node.id = ast.id;
+
     node.tag_name = ast.tag || "";
 
     if (ast.slot_name)

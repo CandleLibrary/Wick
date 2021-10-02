@@ -53,10 +53,6 @@ export default class Presets implements PresetOptions {
      */
     component_class_string: PresetOptions["component_class_string"];
 
-    schemes?: PresetOptions["schemes"];
-
-    models?: PresetOptions["models"];
-
     styles?: PresetOptions["styles"];
 
     url: PresetOptions["url"];
@@ -70,6 +66,10 @@ export default class Presets implements PresetOptions {
     css_cache: PresetOptions["css_cache"];
 
     repo: PresetOptions["repo"];
+
+    template_data: PresetOptions["template_data"];
+
+    active_template_data: PresetOptions["active_template_data"];
 
     static global = { get v() { return CachedPresets; }, set v(e) { } };
 
@@ -101,8 +101,6 @@ export default class Presets implements PresetOptions {
 
         this.models = {};
 
-        this.schemes = {};
-
         this.component_class = new Map;
 
         this.component_class_string = new Map;
@@ -120,6 +118,10 @@ export default class Presets implements PresetOptions {
         //this.options.USE_SHADOWED_STYLE = ((user_presets.options.USE_SHADOWED_STYLE) && (this.options.USE_SHADOW));
 
         this.integrate_new_options(user_presets);
+
+        this.template_data = new WeakMap;
+
+        this.active_template_data = null;
 
         CachedPresets = this;
     }

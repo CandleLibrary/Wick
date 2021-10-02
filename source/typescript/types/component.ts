@@ -36,6 +36,13 @@ export interface ComponentData {
     RADIATE: boolean;
 
     /**
+     * If true, this component serves as the basis for 
+     * a template. use `import {define_ids} from "@template"`
+     * to create components from this template. 
+     */
+    TEMPLATE: boolean;
+
+    /**
      * True if errors were encountered when processing
      * the component. Also, if true, this component will
      * generate an error report element if it is mounted
@@ -94,6 +101,12 @@ export interface ComponentData {
      */
     HTML_HEAD: HTMLNode[];
 
+    /**
+     * HTML nodes that are defined within JS expressions and may
+     * be integrated into the root HTML element through bindings.
+     */
+    INLINE_HTML: HTMLNode[];
+
     CSS: ComponentStyle[];
 
     /**
@@ -142,6 +155,10 @@ export interface ComponentData {
     templates: Set<string>;
 
     indirect_hooks: IndirectHook<any>[];
+
+    element_counter: number;
+
+    element_index_remap: Map<number, number>;
 }
 
 /**

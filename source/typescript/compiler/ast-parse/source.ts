@@ -1,8 +1,9 @@
 import { JSNode, JSNodeType } from "@candlelib/js";
 import URL from "@candlelib/uri";
+import { traverse } from '../../../../../conflagrate/build/types/conflagrate.js';
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE, ComponentData, HTMLNode, HTMLNodeClass, PresetOptions } from "../../types/all.js";
 import { addBindingVariable, processUndefinedBindingVariables } from "../common/binding.js";
-import { ComponentDataClass, createComponentData, createErrorComponent } from "../common/component.js";
+import { ComponentDataClass, createComponentData } from "../common/component.js";
 import { createParseFrame } from "../common/frame.js";
 import { metrics } from '../metrics.js';
 import { parse_component } from "../source-code-parse/parse.js";
@@ -64,7 +65,6 @@ export async function parseSource(
         errors: Error[] = [];
 
     try {
-        const run_tag = metrics.startRun("URL");
 
         let url = new URL(input);
 
@@ -97,8 +97,6 @@ export async function parseSource(
             throw data.errors.pop();
 
     } catch (e) {
-
-        const run_tag = metrics.startRun("STRING");
         //console.log(e);
 
         //Illegal URL, try parsing string
@@ -125,6 +123,9 @@ export async function parseSource(
         error: e = null,
         comments = []
     } = data;
+
+
+
 
     return <Promise<{ IS_NEW: boolean, comp: ComponentDataClass; }>>
         <any>await parseComponentAST(ast, <string>input_string, source_url, presets, null, errors);
@@ -156,45 +157,8 @@ export async function parseComponentAST(
 
     component.comments = [];
 
-    if (parent) {
-
-        for (const [name, val] of parent.local_component_names.entries())
-            component.local_component_names.set(name, val);
-
-
-        for (const [name, binding] of parent.root_frame.binding_variables) {
-
-            switch (binding.type) {
-                case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
-                case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
-                case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE:
-                    {
-                        addBindingVariable(
-                            component.root_frame,
-                            binding.internal_name,
-                            {},
-                            binding.type,
-                            binding.external_name,
-                            BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
-                        );
-                    } break;
-
-
-                case BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE: {
-                    addBindingVariable(
-                        component.root_frame,
-                        name,
-                        {},
-                        BINDING_VARIABLE_TYPE.PARENT_VARIABLE,
-                        name,
-                        BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
-                    );
-
-                    binding.flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD;
-                } break;
-            }
-        }
-    }
+    if (parent)
+        integrateParentComponentScope(parent, component);
 
     if (ast)
         try {
@@ -211,6 +175,8 @@ export async function parseComponentAST(
                 addComponentNamesToPresets(component, presets);
 
                 processUndefinedBindingVariables(component, presets);
+
+                let indice = 0;
 
                 metrics.endRun(run_tag);
 
@@ -233,6 +199,49 @@ export async function parseComponentAST(
 
     throw new Error(`Invalid Component ${url + ""}`);
 }
+function integrateParentComponentScope(
+    parent: ComponentData,
+    component: ComponentData
+) {
+
+    for (const [name, val] of parent.local_component_names.entries())
+        component.local_component_names.set(name, val);
+
+
+    for (const [name, binding] of parent.root_frame.binding_variables) {
+
+        switch (binding.type) {
+            case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
+            case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
+            case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE:
+                {
+                    addBindingVariable(
+                        component.root_frame,
+                        binding.internal_name,
+                        {},
+                        binding.type,
+                        binding.external_name,
+                        BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
+                    );
+                } break;
+
+
+            case BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE: {
+                addBindingVariable(
+                    component.root_frame,
+                    name,
+                    {},
+                    BINDING_VARIABLE_TYPE.PARENT_VARIABLE,
+                    name,
+                    BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
+                );
+
+                binding.flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD;
+            } break;
+        }
+    }
+}
+
 export async function fetchASTFromRemote(url: URL) {
 
     const

@@ -14,6 +14,7 @@ import {
     CompiledComponentClass,
     ComponentData,
     FunctionFrame,
+    HTMLNodeClass,
     PresetOptions
 } from "../../types/all.js";
 import { componentDataToCSS } from "../ast-render/css.js";
@@ -359,7 +360,9 @@ export async function finalizeBindingExpression(
         .makeMutable()
         .makeSkippable()
     ) {
-        switch (node.type) {
+        if (node.type & HTMLNodeClass.HTML_ELEMENT) {
+            mutate(<any>parse_js_exp("'TODO: Setup element integration'"));
+        } else switch (node.type) {
 
             case JST.IdentifierBinding: case JST.IdentifierReference:
                 /**
@@ -452,6 +455,7 @@ export async function finalizeBindingExpression(
                 break;
 
             case JST.AssignmentExpression:
+
                 //@ts-ignore
                 if (Node_Is_Binding_Identifier(node.nodes[0])) {
                     const
@@ -459,6 +463,7 @@ export async function finalizeBindingExpression(
                         //@ts-ignore
                         name = <string>ref.value,
                         comp_var: BindingVariable = getComponentBinding(name, component);
+
 
                     //Directly assign new value to model variables
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {

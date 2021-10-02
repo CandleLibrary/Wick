@@ -13,7 +13,7 @@
 import spark from "@candlelib/spark";
 import HTML from "@candlelib/html";
 import { createCompiledComponentClass } from "../compiler/ast-build/build.js";
-import { componentDataToTempAST } from "../compiler/ast-build/html.js";
+import { componentDataToCompiledHTML } from "../compiler/ast-build/html.js";
 import { componentDataToCSS } from "../compiler/ast-render/css.js";
 import { htmlTemplateToString } from "../compiler/ast-render/html.js";
 import { ComponentDataClass } from "../compiler/common/component.js";
@@ -166,7 +166,7 @@ export function init() {
      */
     ComponentDataClass.prototype.getHTMLTemplate = async function (presets = rt.presets) {
 
-        const { html } = await componentDataToTempAST(this, presets);
+        const { html } = await componentDataToCompiledHTML(this, presets);
 
 
         return html[0];
@@ -185,7 +185,7 @@ export function init() {
      */
     ComponentDataClass.prototype.getHTMLTemplateMap = async function (presets = rt.presets) {
 
-        const { template_map } = await componentDataToTempAST(this, presets);
+        const { template_map } = await componentDataToCompiledHTML(this, presets);
 
         return template_map;
     };
