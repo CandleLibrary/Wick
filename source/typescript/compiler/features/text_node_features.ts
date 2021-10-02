@@ -56,8 +56,10 @@ registerFeature(
 
                 const type = build_system.getExpressionStaticResolutionType(v, comp, presets);
 
-                //if(type == 1)
-                //return null;
+                console.log({ type, v });
+
+                if (type == 1)
+                    return null;
 
 
                 console.log({ type, v });

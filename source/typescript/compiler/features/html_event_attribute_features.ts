@@ -58,9 +58,9 @@ registerFeature(
                 let arrow_argument_match = new Array(1).fill(null), s = null;
 
                 if (getListOfUnboundArgs(ast, comp, arrow_argument_match, build_system)) {
-                    s = stmt(`this.attachListener(${element_index}, "${action}", ${arrow_argument_match[0].value}=>a)`);
+                    s = stmt(`this.al(${element_index}, "${action}", ${arrow_argument_match[0].value}=>a)`);
                 } else {
-                    s = stmt(`this.attachListener(${element_index}, "${action}", _=>a)`);
+                    s = stmt(`this.al(${element_index}, "${action}", _=>a)`);
                 }
 
                 s.nodes[0].nodes[1].nodes[2].nodes[1] = ast;

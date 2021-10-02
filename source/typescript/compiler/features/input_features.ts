@@ -112,8 +112,8 @@ registerFeature(
 
                 // The expression will at least produce an output that will be assigned
 
-                const s = stmt(`${ele_name}.value = 1`);
-                s.nodes[0].nodes[1] = (expression);
+                const s = stmt(`this.sa(${element_index}, "value", b)`);
+                s.nodes[0].nodes[1].nodes[2] = (expression);
                 addOnBindingUpdate(s);
 
                 if (
@@ -141,15 +141,15 @@ registerFeature(
                         ||
                         binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
                     ) {
-                        const e = expr(`a=$$ele${element_index}.value`);
+                        const e = expr(`a=_.target.value`);
                         e.nodes[0] = expression;
-                        const s = stmt(`this.attachListener(${element_index}, "input",  _=>a)`);
+                        const s = stmt(`this.al(${element_index}, "input",  _=>a)`);
                         s.nodes[0].nodes[1].nodes[2].nodes[1] = e;
                         addInitBindingInit(s);
                     } else if (binding.type == BINDING_VARIABLE_TYPE.METHOD_VARIABLE) {
                         const e = expr(`this.${binding.internal_name}(v)`);
                         e.nodes[1].nodes[0] = expression;
-                        const s = stmt(`this.attachListener(${element_index}, "input",  _=>a)`);
+                        const s = stmt(`this.al(${element_index}, "input",  _=>a)`);
                         s.nodes[0].nodes[1].nodes[2].nodes[1] = e;
                         addInitBindingInit(s);
                     }
@@ -237,13 +237,13 @@ registerFeature(
                     ) {
                         const e = expr(`a=$$ele${element_index}.checked`);
                         e.nodes[0] = expression;
-                        const s = stmt(`this.attachListener(${element_index}, "input",  _=>a)`);
+                        const s = stmt(`this.al(${element_index}, "input",  _=>a)`);
                         s.nodes[0].nodes[1].nodes[2].nodes[1] = e;
                         addInitBindingInit(s);
                     } else if (binding.type == BINDING_VARIABLE_TYPE.METHOD_VARIABLE) {
                         const e = expr(`this.${binding.internal_name}(v)`);
                         e.nodes[1].nodes[0] = expression;
-                        const s = stmt(`this.attachListener(${element_index}, "input",  _=>a)`);
+                        const s = stmt(`this.al(${element_index}, "input",  _=>a)`);
                         s.nodes[0].nodes[1].nodes[2].nodes[1] = e;
                         addInitBindingInit(s);
                     }

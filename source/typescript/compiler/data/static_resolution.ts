@@ -207,8 +207,6 @@ export async function getDefaultBindingValueAST(
 
         if (binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT) {
 
-            console.log({ d: presets.active_template_data });
-
             if (presets.active_template_data)
                 return await <any>convertObjectToJSNode(presets.active_template_data[binding.internal_name]);
 

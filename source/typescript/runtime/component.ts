@@ -32,7 +32,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     ele: HTMLElement;
 
-    elu: (Element | Text)[];
+    elu: (Element | Text)[][];
 
     CONNECTED: boolean;
 
@@ -444,6 +444,21 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         return transition_time;
     }
 
+    se(index, ele) {
+
+        if (!this.elu[index])
+            this.elu[index] = [];
+
+        this.elu[index].push(ele);
+    }
+
+    re(index, ele) {
+
+        if (!this.elu[index])
+            return;
+
+        this.elu[index] = this.elu[index].filter(e => e != ele);
+    }
 
     /**
      * Call when the ordering of the component changes the component 
@@ -650,35 +665,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     /**
-     * Updates an element with new data. If the data is an HTMLElement
-     * the existing element is replaced with the new element
-     */
-    ue(element_index: number, data: any) {
-
-        let ele = this.elu[element_index];
-
-        if (data instanceof HTMLElement) {
-
-            this.elu[element_index] = data;
-
-            if (ele.parentElement)
-                ele.parentElement.replaceChild(data, ele);
-
-            return;
-        } else if (!(ele instanceof Text)) {
-
-            let node = new Text();
-
-            this.elu[element_index] = node;
-
-            if (ele.parentElement)
-                ele.parentElement.replaceChild(node, ele);
-        };
-
-        this.elu[element_index].data = data;
-    }
-
-    /**
      * Check to see of the index locations are not undefined
      * @param ids 
      */
@@ -825,7 +811,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             //@ts-ignore
             ele.wick_component = this;
 
-            this.elu.push(ele);
+            //this.elu.push(ele);
 
             if (ele.hasAttribute("w:ctr")) {
 
@@ -834,21 +820,42 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         } else {
 
+
             if (ele.hasAttribute("w:own"))
                 if (+ele.getAttribute("w:own") != this.affinity)
                     return 0;
 
             // Binding Text Node
-            if (ele.tagName == "W-B") {
+            if (ele.tagName == "W-E") {
+
+                const child = ele.children[0];
+
+                this.integrateElement(child, component_chain);
+
+                if (ele.hasAttribute("w:u"))
+                    this.se(parseInt(ele.getAttribute("w:u")), child);
+
+
+                ele.replaceWith(child);
+
+                return 0;
+
+
+            } else if (ele.tagName == "W-B") {
 
                 const text = document.createTextNode(ele.innerHTML);
 
                 ele.replaceWith(text);
 
+                if (ele.hasAttribute("w:u"))
+                    this.se(parseInt(ele.getAttribute("w:u")), text);
+
+
                 //@ts-ignore
                 ele = text;
 
-                this.elu.push(<any>ele);
+
+                //  this.elu.push(<any>ele);
 
                 return 0;
 
@@ -882,7 +889,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                     scope_component.elu[lu_index] = ele;
                 }
 
-                this.elu.push(ele);
+                if (ele.hasAttribute("w:u"))
+                    this.se(parseInt(ele.getAttribute("w:u")), ele);
+                //this.elu.push(ele);
 
                 //Special Wick Elements
 
@@ -905,19 +914,72 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         return sk;
     }
 
-    attachListener(
+
+
+
+    /**
+     * Updates an element with new data. If the data is an HTMLElement
+     * the existing element is replaced with the new element
+     */
+    ue(element_index: number, data: any) {
+
+        for (let ele of this.elu[element_index] ?? []) {
+
+            if (data instanceof HTMLElement) {
+
+                this.re(element_index, ele);
+                this.se(element_index, data);
+
+                if (ele.parentElement)
+                    ele.parentElement.replaceChild(data, ele);
+
+                continue;
+            } else if (!(ele instanceof Text)) {
+
+                let node = new Text();
+
+                this.re(element_index, ele);
+                this.se(element_index, node);
+
+                if (ele.parentElement)
+                    ele.parentElement.replaceChild(node, ele);
+
+                ele = node;
+            };
+
+            ele.data = data;
+        }
+    }
+
+    sa(
+        ele_index: number,
+        attribute_name: string,
+        attribute_value: string,
+    ) {
+
+        for (const ele of this.elu[ele_index] ?? []) {
+            if (attribute_name == "value")
+                ele.value = attribute_value;
+            else
+                ele.setAttribute(attribute_name, attribute_value);
+        }
+    }
+
+
+    al(
         ele_index: number,
         event_specifier: string,
         listener_function: (...args: any[]) => any,
         REQUIRES_THIS_BINDING: boolean = false
     ) {
 
-        const ele = this.elu[ele_index];
+        for (const ele of this.elu[ele_index] ?? []) {
+            const fn = REQUIRES_THIS_BINDING ? listener_function.bind(this) : listener_function;
 
-        const fn = REQUIRES_THIS_BINDING ? listener_function.bind(this) : listener_function;
+            ele.addEventListener(event_specifier, fn);
 
-        ele.addEventListener(event_specifier, fn);
-
+        }
+        //const ele = this.elu[ele_index];
         // this.listeners.push([ele_index, event_specifier, fn])
     }
 

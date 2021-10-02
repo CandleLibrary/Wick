@@ -59,8 +59,10 @@ export async function componentDataToCompiledHTML(
         }: DOMLiteral = html,
             children = c.map(i => ({ USED: false, child: i, id: comp_data.length - 1 }));
 
-        if (html.id != undefined)
+        if (html.id != undefined) {
             comp.element_index_remap.set(html.id, comp.element_counter);
+            node.attributes.set("w:u", html.id + "");
+        }
 
         if (namespace_id)
             node.namespace = namespace_id;
@@ -117,8 +119,11 @@ export async function componentDataToCompiledHTML(
             == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
             ? htmlState.IS_INTERLEAVED : 0;
 
-        if (html.id != undefined)
+        if (html.id != undefined) {
             comp.element_counter += 1;
+        }
+
+
 
         for (const { child } of children.filter(n => !n.USED)) {
 
@@ -563,8 +568,10 @@ async function resolveHTMLBinding(
 
     console.log({ html, b: hook.value, value });
 
-    if (child_html) {
+    node.tagName = "w-b";
 
+    if (child_html) {
+        node.tagName = "w-e";
         const converted_node = buildExportableDOMNode(child_html);
         console.log({ converted_node });
 
@@ -575,15 +582,9 @@ async function resolveHTMLBinding(
             undefined,
             converted_node
         );
+        node.children.push(html[0]);
 
-        node = html[0];
-
-    } else {
-        node.tagName = "w-b";
-        node.data = html.data || "";
-    }
-
-    if (value != undefined) {
+    } else if (value != undefined) {
 
         node.children.push({
             data: value + "",
@@ -592,11 +593,12 @@ async function resolveHTMLBinding(
             attributes: null,
             tagName: null,
         });
+    } else if (html.data) {
+        node.data = html.data || "";
     }
 
     if ((state & htmlState.IS_INTERLEAVED) > 0)
         node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
-
 
     return node;
 }
