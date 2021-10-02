@@ -30,6 +30,8 @@
 
 @IMPORT ./html.hcg as html
 
+@IMPORT ./markdown.hcg as md
+
 @IMPORT ../../../node_modules/@candlelib/js/source/grammar/javascript.hcg as js
 
 @IMPORT ../../../node_modules/@candlelib/css/source/grammar/css.hcg as css 
@@ -41,6 +43,8 @@
 @EXPORT js::statement as js_statement
 
 @EXPORT html::TAG as html
+
+@EXPORT md::markdown as md
 
 @EXPORT css::STYLE_SHEET as css_stylesheet
 
@@ -55,9 +59,7 @@
           js::javascript 
 
 # This allows JSX like html expressions within JS objects. 
-+> js::primary_expression > html::TAG  
-
-#   | t:css \: \{ css::CSS \}                                                                               f:r { $4 }              
++> js::primary_expression > html::TAG        
 
 +> html::BODY > 
 
@@ -67,9 +69,13 @@
 
 +> html::TAG > 
 
-          ( \<style | \<STYLE ) html::ATTRIBUTES? \>  css::CSS?  \</ (t:style | t:STYLE) \>                                  
+          ( \<style | \<STYLE ) html::ATTRIBUTES? \>  css::CSS?  ( \</style> | \</STYLE> )                                  
                                             
           f:r { { type:env.typ.HTML_STYLE,  attributes:$$2 || [], nodes:[$$4], pos } }
+     |    
+          ( \<md | \<MD ) html::ATTRIBUTES? \>  md::markdown?   ( \</md> | \</MD> )                                   
+                                            
+          f:r { { type:env.typ.MARKDOWN,  attributes:$$2 || [], nodes:[$$4], pos } }
     
 +> html::TAG_BODY_ITEM > 
 
