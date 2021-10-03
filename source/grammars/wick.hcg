@@ -30,7 +30,7 @@
 
 @IMPORT ./html.hcg as html
 
-@IMPORT ./markdown.hcg as md
+@IMPORT ./md.hcg as md
 
 @IMPORT ../../../node_modules/@candlelib/js/source/grammar/javascript.hcg as js
 

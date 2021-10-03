@@ -15,7 +15,7 @@
 
 <> GOAL_TAG > ! TAG
 
-<> TAG > \< (RST g:sp g:nl ) TAGNAME ATTRIBUTES? \> TAG_BODY?  \</ (RST g:sp g:nl ) TAGNAME \>                                     
+<> TAG > \< (RST g:sp g:nl ) TAGNAME ATTRIBUTES? \> TAG_BODY?  \</ (RST g:sp g:nl ) TAGNAME (RST g:sp g:nl ) \>                                     
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:$5 || [], VOID:false, pos } }
     | \< (RST g:sp g:nl ) TAGNAME ATTRIBUTES? \/>                                                             
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:false, pos } }

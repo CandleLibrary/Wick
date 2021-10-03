@@ -165,5 +165,12 @@ export function getElementAtIndex(comp: ComponentData, index: number, node: DOML
         }
 
     return null;
+};
+
+export function escape_html_string(string: string): string {
+    return string.replace(/>/g, "&gt;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br/>");
+    //.replace(/\s/g, "&#8199;");
 }
-;

@@ -1,69 +1,109 @@
-@NAME CandleLibrary WICKUP Parser
-
-@EXT md
-
-@SYMBOL ``` `` {{ {{{ }}} }} === ---
+# Copyright (C) 2021 Anthony Weathersby - Wick Markdown Parser
+# 
 
 @IMPORT ./html.hcg as html
 
-+> html::TAG_BODY_ITEM → WICKUP_PLUGIN
+<> markdown > lines
 
-+> html::TEXT_NODE → WICKUP_INLINE_ELEMENT
+    f:r { {type:"markdown", data:$1, pos } }
 
-<> WICKUP_PLUGIN → PRE_MD_BLK WICKUP_BLOCK 	↦return { ($sym2) ? $sym2.leader = $sym1 : null, $sym2 }
-   │ PRE_MD_BLK html::TEXT_NODE				↦return { $sym2 }
-   │ PRE_MD_BLK html::TAG 					↦return { $sym2 }
-   │ PRE_MD_BLK								↦cstr ^text
-   │ PRE_MD_BLK HORIZONTAL_RULE 			↦return { $sym2 }
+<> lines > g:nl? (line | code_block)
 
-<> PRE_MD_BLK → θnl θws(*)					↦return { $sym1 + $sym2.join("")  }
+    f:r { [$2] }
+    
+    | lines g:nl (line | code_block)?
 
-<> WICKUP_BLOCK → HEADER 
-   │ BLOCK_QUOTES				
-   │ CODE_BLOCK					
-   │ UNORDERED_LIST_ITEM
+    f:r { ($1.push($3 || [{type:"p"}, null, pos]), $1) }
 
+<> line >
 
-# Escaped symbol
-+> html::BODY_SYMBOLS → \\ θany 															↦r { $sym2 }
+    head? content
 
-<> HORIZONTAL_RULE → HORIZONTAL_RULE_BODY													↦r { fn.element_selector("hr", null, null,  env, lex, "HRB" ) }
-	│ HORIZONTAL_RULE_BODY (html::TEXT_NODE │ html::TAG)									↦return { $sym2 }
+     f:r { [$1 || {type:"p"}, $$2, pos] }
 
-<> HORIZONTAL_RULE_BODY → === ( = │ === )(*)												↦return { $sym1 }
-	│ --- ( - │--- )(*)	 																	↦return { $sym1 }
+<> code_block > ! \``` text? code_line(*) code_block_sentinel
 
-<> HEADER → \#(+) (IGN θws) html::TEXT_NODE(+)												↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex , "HEADER") }
+    f:r { [{type:"code", data:$2 }, $3, pos] }
 
-<> BLOCK_QUOTES → (\> θws)(+) θws(*)  (html::TEXT_NODE │ html::TAG)(+) 		↦r { fn.element_selector("blockquote", null, $sym3, env, lex, $sym1.length) }
+<> code_line >
 
-<> UNORDERED_LIST_ITEM → (( \+  │ \* │ θnum ) θws )(+) θws(*)  (html::TEXT_NODE │ html::TAG)(+)   ↦r { fn.element_selector("li", null, $sym3, env, lex, $sym1.length) }
-				
+        g:nl ( g:sp | g:id | g:num | g:sym )(*)
 
-<> WICKUP_INLINE_ELEMENT → LINK
-	│ ITALIC_BOLD_EMPHASIS
-	│ CODE_QUOTE		
+        f:r { { data: pos.slice().slice(1), pos } }
 
-<> CODE_BLOCK → \``` (IGN θws)  θid?  (IGN θws)  θnl (θnl? (html::BODY_SYMBOLS)(*")  		↦r { fn.element_selector("code", null,[new fn.text([$sym1 + $sym2], env)], env, lex)} )(+) (IGN θws θnl) \```  
-																							↦r { fn.element_selector("pre", null, $$sym4, env, lex) }
+<> code_block_sentinel >
 
-<> LINK → \[ html::ATTRIBUTE_BODY \]\( (html::TEXT_NODE │ html::TAG) \) 					↦r { fn.element_selector("a", [new fn.attribute(["href", "", $sym2])], [$sym5], env, lex) }
+    \``` | g:rec
 
+<[ recover code_block_sentinel_1 ] 
 
-<> ITALIC_BOLD_EMPHASIS → \{{{ html::TEXT_NODE(+) \}}}										↦r { fn.element_selector("i", null, [fn.element_selector("b", null, $sym2, env, lex)], env, lex) }
-	│ BOLD_EMPHASIS
+    consume nothing then set prod to code_block_sentinel
+>
 
-<> BOLD_EMPHASIS → \{{ html::TEXT_NODE(+) \}}												↦r { fn.element_selector("b", null, $sym2, env, lex) }
-	│ EMPHASIS
+<> content > ( text | space |  code_symbol | format_symbol | link | tag )(+)
 
-<> EMPHASIS → \{ html::TEXT_NODE(+) \}														↦r { fn.element_selector("i", null, $sym2, env, lex) }
+<> link > ( \[ | \![ ) ( text | space |  code_symbol | format_symbol | link )(+) \]( ( text_symbol(+\" ) ) \) 
+    f:r { {type:"link", nodes:$2, href:$4, pos } }
 
+<> space > g:sp(+)
+    f:r { { type:"space", length: $1.length, pos } }
 
-<> CODE_QUOTE → \`` CODE_QUOTE_SYMBOLS \`` 													↦r { fn.element_selector("code", null,  [new fn.text([$$sym2], env)], env, lex) }
+<> text > text_symbol(+\" )
+    f:r { { type:"text", length: $1.length, pos } }
 
-<> MD_TEXT_NODE → BODY_SYMBOLS2(+") 														↦cstr ^text
-	│ WICKUP_INLINE_ELEMENT
+<> tag > html::TAG 
 
-<> CODE_QUOTE_SYMBOLS → BODY_SYMBOLS2(+")
+<[ recover tag ]
 
-<> BODY_SYMBOLS2 → θid │ θsym │ θws │ θob │ θcb │ θop │ θnum │ θstr │ \#
+    consume nothing then reduce f:r {
+        { type:"text", length:pos.slice().trim(), pos }
+    } then set prod to tag
+>
+
+<> text_symbol > 
+        g:sym
+    |   g:id
+    |   g:num
+    |   \![
+    |   \[
+    |   \]
+    |   \.
+
+<> head > header_symbols        
+
+<> header_symbols > 
+    
+    tk:header_token
+        f:r { { type:"header", length:pos.length, pos } }
+
+    | tk:ol_token
+        f:r { { type:"ol", offset:pos.length, pos } }
+
+    | tk:ul_token
+        f:r { { type:"ul", offset:pos.length, pos } }
+
+    | tk:quote_token
+        f:r { { type:"quote", offset:pos.length, pos } }
+
+<> header_token > \# (+)
+
+<> ol_token > 
+    
+    (g:sp)(*) g:num \.
+
+<> ul_token > 
+    
+    (g:sp)(*) ( \- | \+ )
+
+<> quote_token > 
+    
+    (g:sp)(*) ( \> )
+
+<> code_symbol > \`
+    f:r { { type:"inline_code", pos } }
+
+<> format_symbol > 
+    \* 
+    f:r { { type:"fmA", pos } }
+    | \_ 
+    f:r { { type:"fmB", pos } }

@@ -2,10 +2,10 @@ import { bidirectionalTraverse, TraverseState } from "@candlelib/conflagrate";
 import { TraversedNode } from "@candlelib/conflagrate/build/types/types/traversed_node";
 import { exp, JSExpressionClass, JSNode, JSNodeType } from "@candlelib/js";
 import { rt } from "../../runtime/global.js";
-import { ComponentData, TemplateHTMLNode, PresetOptions } from "../../types/all.js";
+import { ComponentData, PresetOptions, TemplateHTMLNode } from "../../types/all.js";
 import { componentDataToCompiledHTML } from "../ast-build/html.js";
-import { html_void_tags, Is_Tag_From_HTML_Spec, Is_Tag_Void_Element } from "../common/html.js";
 import * as b_sys from "../build_system.js";
+import { html_void_tags, Is_Tag_Void_Element } from "../common/html.js";
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -17,6 +17,7 @@ import * as b_sys from "../build_system.js";
 export async function componentDataToHTML(
     comp: ComponentData,
     presets: PresetOptions = rt.presets,
+    html_indent: number = 0
 ): Promise<{ html: string, template_map: Map<string, TemplateHTMLNode>; }> {
 
     b_sys.enableBuildFeatures();
@@ -25,11 +26,9 @@ export async function componentDataToHTML(
 
     const { html: [html], templates: template_map } = await componentDataToCompiledHTML(comp, presets);
 
-    const html_string = htmlTemplateToString(html);
+    const html_string = htmlTemplateToString(html, html_indent);
 
     b_sys.disableBuildFeatures();
-
-    console.log(comp.element_index_remap);
 
     return { html: html_string, template_map };
 }
@@ -37,13 +36,15 @@ export async function componentDataToHTML(
 /**
  * Return an HTML string from a TemplateHTMLNode AST object
  */
-export function htmlTemplateToString(html: TemplateHTMLNode) {
+export function htmlTemplateToString(html: TemplateHTMLNode, html_indent: number = 0) {
 
     html.strings.length = 0;
 
     for (const { node, meta: { depth, parent, traverse_state } } of bidirectionalTraverse(html, "children")) {
 
-        const depth_str = "  ";
+        const depth_str = (parent?.tagName == "pre")
+            ? ""
+            : "  ".repeat(depth + (html_indent * 2));
 
         if (traverse_state == TraverseState.LEAF && (!node.tagName || Is_Tag_Void_Element(node.tagName))) {
 
@@ -51,19 +52,18 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
 
             if (node.tagName) {
 
-                let string = addAttributesToString(node, `<${node.tagName}`);
+                let string = depth_str + addAttributesToString(node, `<${node.tagName}`);
 
                 if (html_void_tags.has(node.tagName.toLowerCase()))
                     node.strings.push(string + "/>");
                 else
                     node.strings.push(string + `></${node.tagName}>`);
 
-            }
-            else
-                node.strings.push(...node.data.split("\n"));
+            } else if (node.data)
+                node.strings.push(node.data);
 
             if (parent)
-                parent.strings.push(...node.strings.map(s => depth_str + s));
+                parent.strings.push(...node.strings);
 
             continue;
         }
@@ -84,16 +84,25 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
             else
                 string = addAttributesToString(node, `<${node.tagName}`) + ">";
 
-            node.strings.push(string);
+            node.strings.push(depth_str + string);
         }
 
         if (traverse_state == TraverseState.EXIT || traverse_state == TraverseState.LEAF) {
             //Null container elements do not enclose their child elements
-            if (node.tagName !== "null")
-                node.strings.push(`</${node.tagName}>`);;
 
-            if (parent)
-                parent.strings.push(...node.strings.map(s => depth_str + s));
+
+            if (node.tagName?.toLocaleLowerCase() == "code") {
+                node.strings = [node.strings.join("") + `</${node.tagName}>`];
+            } else if (node.tagName !== "null")
+                node.strings.push(depth_str + `</${node.tagName}>`);;
+
+
+            if (parent) {
+                if (parent.tagName == "pre")
+                    parent.strings.push(...node.strings);
+                else
+                    parent.strings.push(...node.strings);
+            }
         }
     };
 
