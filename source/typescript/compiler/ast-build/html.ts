@@ -1,8 +1,9 @@
 import { JSNode } from "source/typescript/entry-point/wick-full.js";
 import { rt } from "../../runtime/global.js";
-import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, PresetOptions, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
-import { getStaticValue } from "../data/static_resolution.js";
-import { processHookForHTML } from "./hooks.js";
+import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, PresetOptions, STATIC_RESOLUTION_TYPE, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
+import * as b_sys from "../build_system.js";
+import { buildExportableDOMNode } from '../common/html.js';
+import { getExpressionStaticResolutionType, getStaticValue } from "../data/static_resolution.js";
 import {
     ContainerDataHook,
     ContainerFilterHook,
@@ -13,8 +14,7 @@ import {
     ContainerSortHook,
     ContainerUseIfHook
 } from "../features/container_features.js";
-import * as b_sys from "../build_system.js";
-import { buildExportableDOMNode } from '../common/html.js';
+import { processHookForHTML } from "./hooks.js";
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html

@@ -9,7 +9,7 @@ import {
 import { registerFeature } from '../build_system.js';
 import { getExtendTypeVal } from "../common/extended_types.js";
 import { AsyncFunction } from '../data/AsyncFunction.js';
-
+import * as utils from "../common/utils.js";
 
 
 export const ContainerDataHook = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);

@@ -4,6 +4,8 @@ import { PresetOptions } from "source/typescript/types/presets";
 import { WickRTComponent } from "../../runtime/component.js";
 import { ComponentData } from "../../types/component";
 import { DOMLiteral } from "../../types/html";
+import { createCompiledComponentClass } from '../ast-build/build.js';
+import { createClassStringObject } from '../ast-render/js.js';
 import { addBindingVariable } from './binding.js';
 import { ComponentHash } from "./hash_name.js";
 

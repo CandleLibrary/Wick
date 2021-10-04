@@ -1,13 +1,12 @@
 import { CSSNodeType, matchAll } from '@candlelib/css';
 import { exp, ext, JSNode, JSNodeType, JSNodeTypeLU, stmt } from '@candlelib/js';
-import { Node } from 'build/types/types/all.js';
 import { dir, log, trace } from '../entry-point/logger.js';
 import {
     DOMLiteral,
     HookHandlerPackage, HTMLHandler,
     HTMLNode, HTMLNodeType,
     HTMLNodeTypeLU,
-    JSHandler
+    JSHandler, Node
 } from "../types/all.js";
 import { addIndirectHook } from './ast-build/hooks.js';
 import { loadHTMLHandler, loadHTMLHandlerInternal, processBindingASTAsync as processBindingAsync } from "./ast-parse/html.js";

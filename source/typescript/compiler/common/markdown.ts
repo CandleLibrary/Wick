@@ -1,6 +1,5 @@
 import { Token } from '@candlelib/hydrocarbon';
-import { HTMLNodeClass } from 'build/types/entry-point/wick-server.js';
-import { HTMLNode, HTMLNodeType } from "../../types/all.js";
+import { HTMLNode, HTMLNodeType, HTMLNodeClass } from "../../types/all.js";
 import { escape_html_string } from './html.js';
 export function convertMarkdownToHTMLNodes(markdown_content) {
 

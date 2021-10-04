@@ -1,6 +1,5 @@
 import { JSNode, JSNodeType } from "@candlelib/js";
 import URL from "@candlelib/uri";
-import { traverse } from '../../../../../conflagrate/build/types/conflagrate.js';
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE, ComponentData, HTMLNode, HTMLNodeClass, PresetOptions } from "../../types/all.js";
 import { addBindingVariable, processUndefinedBindingVariables } from "../common/binding.js";
 import { ComponentDataClass, createComponentData } from "../common/component.js";

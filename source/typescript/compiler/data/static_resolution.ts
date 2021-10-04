@@ -9,10 +9,9 @@ import {
     renderCompressed,
     tools
 } from "@candlelib/js";
-import { Node } from 'build/types/types/wick_ast.js';
 import {
     BindingVariable, BINDING_VARIABLE_TYPE, ComponentData, HTMLNodeClass, PLUGIN_TYPE,
-    PresetOptions, STATIC_RESOLUTION_TYPE
+    PresetOptions, STATIC_RESOLUTION_TYPE, Node
 } from "../../types/all.js";
 import {
     getBindingStaticResolutionType,

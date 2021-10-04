@@ -1,5 +1,5 @@
 import { bidirectionalTraverse, traverse, TraverseState } from '@candlelib/conflagrate';
-import { JSExportDeclaration, JSImportClause, JSNodeType, JSStatementClass, renderCompressed } from '@candlelib/js';
+import { JSExportDeclaration, JSIdentifierBinding, JSImportClause, JSNodeType, JSStatementClass, renderCompressed } from '@candlelib/js';
 import { getPackageJsonObject } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
 import { parse_component, parse_js_exp, parse_js_stmt } from '../compiler/source-code-parse/parse.js';

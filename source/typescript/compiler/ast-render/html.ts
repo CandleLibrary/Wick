@@ -1,5 +1,4 @@
-import { bidirectionalTraverse, TraverseState } from "@candlelib/conflagrate";
-import { TraversedNode } from "@candlelib/conflagrate/build/types/types/traversed_node";
+import { bidirectionalTraverse, TraverseState, TraversedNode } from "@candlelib/conflagrate";
 import { exp, JSExpressionClass, JSNode, JSNodeType } from "@candlelib/js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData, PresetOptions, TemplateHTMLNode } from "../../types/all.js";

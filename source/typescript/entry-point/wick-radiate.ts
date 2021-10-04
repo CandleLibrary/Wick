@@ -1,5 +1,4 @@
 import { Router } from "../radiate/radiate.js";
-import { UserPresets } from '../types/presets.js';
 import wick from './wick-runtime.js';
 
 //Register wick as a global variable
