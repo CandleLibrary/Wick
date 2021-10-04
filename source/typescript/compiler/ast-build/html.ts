@@ -570,8 +570,12 @@ async function resolveHTMLBinding(
 
     node.tagName = "w-b";
 
+
+
     if (child_html) {
         node.tagName = "w-e";
+
+
         const converted_node = buildExportableDOMNode(child_html);
         console.log({ converted_node });
 

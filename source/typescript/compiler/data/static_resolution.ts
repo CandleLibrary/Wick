@@ -95,7 +95,6 @@ export async function getStaticValue(
                         value = Function(...input_args.keys(), `return (${data_string})`)(...input_args.values());
                     }
 
-
                 if (value.type && (value.type & HTMLNodeClass.HTML_ELEMENT)) {
                     html = value; value = null;
                 }

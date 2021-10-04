@@ -29,8 +29,6 @@ export async function componentDataToJSCached(
     INCLUDE_CSS: boolean = true
 ): Promise<typeof WickRTComponent> {
 
-
-
     const name = component.name;
 
     let comp: typeof WickRTComponent = presets.component_class.get(name);
@@ -51,8 +49,6 @@ export async function componentDataToJSCached(
         }
     }
 
-
-
     return comp;
 }
 
@@ -63,13 +59,9 @@ export async function componentDataToJS(
     INCLUDE_CSS: boolean = true
 ): Promise<typeof WickRTComponent> {
 
-
-
     const comp_class = await createCompiledComponentClass(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
     const class_strings = createClassStringObject(component, comp_class, presets);
-
-
 
     return componentStringToJS(class_strings, component, presets);
 }
@@ -80,8 +72,6 @@ export async function componentDataToJSStringCached(
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS: boolean = true
 ): Promise<ComponentClassStrings> {
-
-
 
     const name = component.name;
 
@@ -95,8 +85,6 @@ export async function componentDataToJSStringCached(
 
         presets.component_class_string.set(name, class_strings);
     }
-
-
 
     return class_strings;
 }

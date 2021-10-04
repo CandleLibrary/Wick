@@ -303,8 +303,6 @@ export async function processWickHTML_AST(ast: HTMLNode,
         if (html_node.type & HTMLNodeClass.HTML_ELEMENT || html_node.type == HTMLNodeType.WickBinding)
             html_node.id = ++ele_index;
 
-        console.log({ ele_index });
-
         if (!html_node.comp)
             html_node.comp = component.name;
 

@@ -1,6 +1,7 @@
 import { Logger } from "@candlelib/log";
 
 const wick_logger = Logger.createLogger("wick");
+
 export function warn(...args) {
     wick_logger.warn(...args);
 }
