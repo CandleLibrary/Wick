@@ -49,7 +49,7 @@ export function parse_component(input: string): { ast: Node, comments: Comment[]
     }
 };
 
-function parse_core(input: string, entry_point: number, run_title: string) {
+function parse_core(input: string, entry_point: number, location: string, run_title: string) {
     const run_tag = metrics.startRun(run_title);
     try {
 
@@ -64,21 +64,26 @@ function parse_core(input: string, entry_point: number, run_title: string) {
         metrics.endRun(run_tag);
     }
 }
-export function parse_js_stmt(input?: string): JSStatementClass {
-    return parse_core(input, entry_points.js_statement, "Parse JS Statement");
+export function parse_js_stmt(input?: string, loc: string = ""): JSStatementClass {
+    return parse_core(input, entry_points.js_statement, loc, "Parse JS Statement");
 };
-export function parse_js_exp(input?: string): JSExpressionClass {
-    return parse_core(input, entry_points.js_expression, "Parse JS Expression");
-};
-
-export function parse_css(input: string): CSSNode {
-    return parse_core(input, entry_points.css_stylesheet, "Parse CSS");
+export function parse_js_exp(input?: string, loc: string = ""): JSExpressionClass {
+    return parse_core(input, entry_points.js_expression, loc, "Parse JS Expression");
 };
 
-export function parse_css_selector(input: string): CSSNode {
-    return parse_core(input, entry_points.css_selector, "Parse CSS Selector");
+export function parse_css(input: string, loc: string = ""): CSSNode {
+    return parse_core(input, entry_points.css_stylesheet, loc, "Parse CSS");
 };
 
-export function parse_html(input: string): HTMLNode {
-    return parse_core(input, entry_points.html, "Parse HTML");
+export function parse_css_selector(input: string, loc: string = ""): CSSNode {
+    return parse_core(input, entry_points.css_selector, loc, "Parse CSS Selector");
+};
+
+export function parse_html(input: string, loc: string = ""): HTMLNode {
+    return parse_core(input, entry_points.html, loc, "Parse HTML");
+};
+
+export function parse_markdown(input: string, loc: string = ""): HTMLNode {
+    console.log({ input });
+    return parse_core(input, entry_points.md, loc, "Parse MARKDOWN");
 };
