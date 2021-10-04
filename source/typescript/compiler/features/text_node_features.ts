@@ -22,8 +22,6 @@ registerFeature(
 
                 const ast = await build_system.processBindingAsync(node, component, presets);
 
-                console.log(index);
-
                 build_system.addIndirectHook(component, TextNodeHookType, ast, index + 1);
 
                 // Skip processing this node in the outer scope, 
@@ -56,13 +54,9 @@ registerFeature(
 
                 const type = build_system.getExpressionStaticResolutionType(v, comp, presets);
 
-                console.log({ type, v });
-
                 if (type == 1)
                     return null;
 
-
-                console.log({ type, v });
 
                 const st = build_system.js.stmt<JSExpressionStatement>(`this.ue(${element_index}, 0)`);
 

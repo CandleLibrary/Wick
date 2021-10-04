@@ -566,18 +566,13 @@ async function resolveHTMLBinding(
             ? await getStaticValue(<JSNode>hook.value[0], comp, presets, model, parent_component)
             : null;
 
-    console.log({ html, b: hook.value, value });
-
     node.tagName = "w-b";
-
-
 
     if (child_html) {
         node.tagName = "w-e";
 
 
         const converted_node = buildExportableDOMNode(child_html);
-        console.log({ converted_node });
 
         const { html } = await componentDataToCompiledHTML(
             comp,
