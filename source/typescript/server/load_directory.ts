@@ -28,6 +28,33 @@ function IsEntryComponent(uri: URI): {
 		IS_ENTRY_COMPONENT: false
 	};
 }
+
+/**
+ * A mapping from an endpoint to a component and its (optional) associated
+ * template data.
+ */
+export type EndPoints = Map<string, {
+	comp: ComponentData;
+	template_data?: any;
+}>;
+
+/**
+ * A mapping from a local component path to a set of endpoints
+ */
+export type PageComponents = Map<string, {
+	endpoints: string[];
+}>;
+
+/**
+ * A mapping of all component file paths to their respective components
+ */
+export type Components = Map<string, {
+	comp: ComponentData;
+}>;
+
+/**
+ * A mapping of all component file paths to their respective components
+ */
 export async function loadComponentsFromDirectory(
 	working_directory: URI,
 	presets: PresetOptions = rt.presets,
@@ -44,24 +71,16 @@ export async function loadComponentsFromDirectory(
 		 */
 		output_name?: string;
 	} = IsEntryComponent): Promise<{
-		/**
-		 * A mapping from an endpoint to a component and its (optional) associated
-		 * template data.
-		 */
-		endpoints: Map<string, { comp: ComponentData; template_data?: any; }>;
-		/**
-		 * A mapping from a local component path to a set of endpoints
-		 */
-		page_components: Map<string, { endpoints: string[]; }>;
-		/**
-		 * A mapping of all component file paths to their respective components
-		 */
-		components: Map<string, { comp: ComponentData; }>;
+		make?: void,
+		endpoints: EndPoints;
+		page_components: PageComponents;
+		components: Components;
 	}> {
+	const endpoints: EndPoints = new Map();
 
-	const endpoints: Map<string, { comp: ComponentData; template_data?: any; }> = new Map();
-	const page_components = new Map();
-	const components = new Map();
+	const page_components: PageComponents = new Map();
+
+	const components: Components = new Map();
 
 	//Find all wick files and compile them into components. 
 	for await (const file_uri of traverseFilesFromRoot(
@@ -142,7 +161,7 @@ export async function loadComponentsFromDirectory(
 	};
 
 	for (const [, comp] of presets.components)
-		components.set(comp.location + "", comp);
+		components.set(comp.location + "", { comp });
 
 	return {
 		endpoints,

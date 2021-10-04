@@ -13,11 +13,12 @@ function getColumnRow(index, offset, set_size) {
 }
 
 //Poly fill for transitions if glow is not included
-function createTransition(val?: boolean) {
+function createTransition(val?: boolean): Transition {
     if (!rt.glow) {
         const trs = { add: () => null, addEventListener: (n, v) => v() };
+
         return {
-            in: trs, out: trs, play: () => null, addEventListener: (n, v) => v()
+            in: trs, out: trs, play: () => null, addEventListener: ((n, v) => { v(); })
         };
     }
     else return rt.glow.createTransition(val);
@@ -790,7 +791,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.offset_diff = 0;
     }
 
-    filterExpressionUpdate(transition = createTransition()) {
+    filterExpressionUpdate(transition: Transition = createTransition()) {
         // Filter the current components. 
         this.updateFilter();
         this.limitExpressionUpdate(transition);

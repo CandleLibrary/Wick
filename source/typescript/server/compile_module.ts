@@ -38,7 +38,7 @@ export async function compile_module(
 	working_directory: string
 ) {
 
-	const fsp = (await import("fs")).default.promises;
+	const fsp = (await import("fs")).promises;
 
 	const root = entry_file_path;
 
@@ -91,7 +91,7 @@ export async function compile_module(
 				if (node.type == JSNodeType.ImportDeclaration) {
 
 					const module_ref = node.nodes.length > 1 ? node.nodes[1].nodes[0] : node.nodes[0].nodes[0];
-
+					//@ts-ignore
 					const relative_file_path = module_ref.value;
 
 					const imported_module_path = await getResolvedModulePath(
@@ -103,7 +103,7 @@ export async function compile_module(
 					dependencies.add(imported_module_path + "");
 
 					mod_dependencies.push({ name: imported_module_path + "", specs: node.nodes[0] });
-
+					//@ts-ignore
 					module_ref.value = imported_module_path + "";
 
 					if (node.nodes.length > 1) {
@@ -164,6 +164,7 @@ export async function compile_module(
 							case JSNodeType.FunctionDeclaration:
 								//rename class functions to module names 
 								if (!target.nodes[0])
+									//@ts-ignore
 									target.nodes[0] = parse_js_exp(rename);
 								else {
 									const name = target.nodes[0].value;
@@ -210,9 +211,12 @@ export async function compile_module(
 
 								for (const { node } of traverse(target, "nodes").filter("type", JSNodeType.IdentifierBinding)) {
 
-									const name = node.value;
+									const name = (<JSIdentifierBinding><any>node).value;
+
 									const rename = mod_name + remap_list[i++];
+
 									const new_node = <JSStatementClass>parse_js_stmt(`var ${rename} = ${name};`);
+
 									export_refs.set(name, rename);
 									//@ts-ignore
 									module.nodes.push(new_node);
@@ -298,7 +302,10 @@ export async function compile_module(
 				if (node.type == JSNodeType.ExportDeclaration) {
 					if (!node.DEFAULT) {
 
+						//@ts-ignore
 						if (node.nodes[0]?.type == JSNodeType.Specifiers) {
+
+							//@ts-ignore
 							for (const specifier of node.nodes[0].nodes) {
 								const name = specifier.nodes[0].value;
 								if (imported_refs.has(name)) {

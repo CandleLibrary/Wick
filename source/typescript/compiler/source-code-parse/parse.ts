@@ -84,6 +84,5 @@ export function parse_html(input: string, loc: string = ""): HTMLNode {
 };
 
 export function parse_markdown(input: string, loc: string = ""): HTMLNode {
-    console.log({ input });
     return parse_core(input, entry_points.md, loc, "Parse MARKDOWN");
 };

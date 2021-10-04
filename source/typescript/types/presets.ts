@@ -146,7 +146,9 @@ export interface PresetOptions {
     active_template_data?: any;
 }
 
-
+enum ModuleType {
+    "local"
+}
 export interface UserPresets {
 
     repo?: [[string, string, ModuleType]];

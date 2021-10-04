@@ -264,7 +264,7 @@ export async function processFunctionFrameHook(
 ) {
     const run_tag = metrics.startRun("Function Frames");
 
-    for (const { node, meta: { mutate, skip } } of traverse(frame.ast, "nodes")
+    for (const { node, meta: { mutate, skip } } of traverse(<JSNode>frame.ast, "nodes")
         .makeMutable()
         .makeSkippable()
     ) {
@@ -400,8 +400,8 @@ export async function finalizeBindingExpression(
                     new_node = setPos(id, node.pos);
 
                 if (!component.root_frame.binding_variables.has(<string>name))
-                    //ts-ignore
-                    throw node.pos.returnError(`Undefined reference to ${name}`);
+
+                    node.pos.throw(`Undefined reference to ${name}`);
 
                 mutate(<any>new_node);
 
@@ -427,18 +427,18 @@ export async function finalizeBindingExpression(
                             index = comp_info.binding_records.get(name).index,
 
                             comp_var_name: string =
-                                getCompiledBindingVariableNameFromString(name, component, comp_info),
+                                getCompiledBindingVariableNameFromString(name, component, comp_info) || "",
 
                             assignment: JSCallExpression = <any>parse_js_exp(`this.${update_action}(${index})`),
 
                             exp_ = parse_js_exp(`${comp_var_name}${node.symbol[0]}1`),
 
                             { ast, NEED_ASYNC: NA } =
-                                await finalizeBindingExpression(ref, component, comp_info, presets);
+                                await finalizeBindingExpression(<JSNode>ref, component, comp_info, presets);
 
                         NEED_ASYNC = NA || NEED_ASYNC;
 
-                        exp_.nodes[0] = ast;
+                        exp_.nodes[0] = <any>ast;
 
                         assignment.nodes[1].nodes.push(<any>exp_);
 
@@ -479,11 +479,11 @@ export async function finalizeBindingExpression(
                                 await finalizeBindingExpression(ref, component, comp_info, presets),
 
                             { ast: a2, NEED_ASYNC: NA2 } =
-                                await finalizeBindingExpression(value, component, comp_info, presets);
+                                await finalizeBindingExpression(<JSNode>value, component, comp_info, presets);
 
                         NEED_ASYNC = NA1 || NA2 || NEED_ASYNC;
 
-                        node.nodes = [a1, a2];
+                        node.nodes = [<any>a1, <any>a2];
 
                         if (node.symbol == "=") {
                             assignment.nodes[1].nodes.push(node.nodes[1]);
