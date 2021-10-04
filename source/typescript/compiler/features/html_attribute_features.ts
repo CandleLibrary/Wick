@@ -49,9 +49,9 @@ registerFeature(
 
                 const { name, nodes: [ast] } = node.value[0];
 
-                const s = build_system.js.expr(`$$ele${element_index}.setAttribute("${name}",e)`);
+                const s = build_system.js.expr(`this.sa(${element_index},"${name}",e)`);
 
-                s.nodes[1].nodes[1] = ast;
+                s.nodes[1].nodes[2] = ast;
 
                 addWrite(s);
             },
