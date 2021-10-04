@@ -29,15 +29,14 @@
 import {
 	addCLIConfig,
 	getPackageJsonObject,
-	processCLIConfig,
-	traverseFilesFromRoot
+	processCLIConfig
 } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
 import { default_radiate_hooks, default_wick_hooks, RenderPage } from '../compiler/ast-render/webpage.js';
 import Presets from "../compiler/common/presets.js";
-import { compile_module } from './compile_module.js';
+import { compile_module } from '../server/compile_module.js';
+import { loadComponentsFromDirectory } from '../server/load_directory.js';
 import { ComponentData } from './wick-full.js';
-import wick from './wick-server.js';
 
 
 URI.server();
@@ -81,90 +80,13 @@ optionally hydrated with the associated support scripts.
 			//Find all components
 			//Build wick and radiate files 
 			const input_path = args.trailing_arguments.pop();
-			const fsp = (await import("fs")).default.promises;
-			const page_components = new Map();
-			const components: Map<string, { output_name: string, comp: ComponentData; }> = new Map();
 			const root_directory = URI.resolveRelative(input_path);
 			const output_directory = URI.resolveRelative("./www/");
+			//Compile a list of entry components
 			const presets = new Presets();
 
-			//Compile a list of entry components
-
-			function IsEntryComponent(uri: URI): {
-				IS_ENTRY_COMPONENT: boolean;
-				output_name?: string;
-			} {
-				if (uri.filename.slice(0, 5) == "page_") {
-					if (uri.filename == "page_home")
-						return {
-							IS_ENTRY_COMPONENT: true,
-							output_name: "root"
-						};
-
-					return {
-						IS_ENTRY_COMPONENT: true,
-						output_name: uri.filename.slice(5)
-					};
-
-				}
-
-				return {
-					IS_ENTRY_COMPONENT: false
-				};
-			}
-
-			//Find all wick and html files and compile them into components. 
-			for await (const file_uri of traverseFilesFromRoot(
-				root_directory, {
-				directory_evaluator_function: (uri) => {
-
-					const dir_name = uri.path.split("/").pop();
-
-					//Skip linux "hidden" directories
-					if (dir_name[0] == ".")
-						return false;
-
-					//Skip package repo folders
-					if (dir_name == "node_modules")
-						return false;
-
-					return true;
-				}
-			})) {
-
-				if (["html", "wick"].includes(file_uri.ext.toLowerCase())) {
-
-					const id = file_uri + "";
-
-					const { IS_ENTRY_COMPONENT, output_name } = IsEntryComponent(file_uri);
-
-					if (IS_ENTRY_COMPONENT) {
-
-						page_components.set(output_name, id);
-
-						try {
-
-							const comp = <any>await wick(file_uri, presets);
-
-							components.set(output_name, { output_name, comp });
-
-						} catch (e) {
-							console.error(e);
-							console.log(id);
-							return false;
-						}
-					}
-				} else if ([
-					"jpg", "jpeg", "png", "webp", "svg",
-					"tiff", "ico", "gif", "avif", "bmp",
-				].includes(file_uri.ext.toLowerCase())) {
-					console.log(file_uri + "");
-				} else if ([
-					"css", "js",
-				].includes(file_uri.ext.toLowerCase())) {
-					console.log(file_uri + "");
-				}
-			};
+			const { endpoints: components, page_components } = await loadComponentsFromDirectory(
+				root_directory, presets);
 
 			//Remap dependencies
 
@@ -274,7 +196,6 @@ async function buildComponentPage(
 		hooks.init_script_render = function () {
 			return `
 				import init_router from "/radiate.js";
-
 				init_router();`;
 		};
 
@@ -282,7 +203,6 @@ async function buildComponentPage(
 		hooks.init_script_render = function () {
 			return `
 			import w from "/wick.js";
-		
 			w.hydrate();`;
 		};
 
