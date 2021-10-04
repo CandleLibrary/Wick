@@ -71,6 +71,7 @@ const wick = Object.assign(wick_root, {
             for (const comp of hydrateComponentElements(elements)) {
                 comp.initialize();
                 comp.connect();
+                rt.root_components.push(comp);
             }
         });
     },

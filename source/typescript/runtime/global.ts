@@ -16,6 +16,13 @@ export interface WickRuntime {
      * Runtime Component Class Constructor
      */
     C: typeof WickRTComponent;
+    /**
+     * All top level components 
+     * (components that have been initiated
+     * through hydrateComponentElements )
+     * 
+     */
+    root_components: WickRTComponent[];
 
     /**
      * Utilized by radiate system
@@ -64,6 +71,8 @@ const rt: WickRuntime = (() => {
 
             return glow;
         },
+
+        root_components: [],
 
         get glow(): typeof GlowAnimation { return glow; },
 

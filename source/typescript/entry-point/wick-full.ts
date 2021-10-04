@@ -2,14 +2,13 @@
 import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlelib/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlelib/js";
 import URL from "@candlelib/uri";
-import { createCompiledComponentClass, createComponentTemplates } from "../compiler/ast-build/build.js";
+import { createCompiledComponentClass } from "../compiler/ast-build/build.js";
 import { parseSource } from "../compiler/ast-parse/source.js";
 import { componentDataToCSS } from "../compiler/ast-render/css.js";
 import { componentDataToHTML } from "../compiler/ast-render/html.js";
 import {
     componentDataToJS,
     componentDataToJSCached,
-    componentDataToJSStringCached
 } from "../compiler/ast-render/js.js";
 import * as b_sys from "../compiler/build_system.js";
 import { ComponentDataClass } from "../compiler/common/component.js";
@@ -276,6 +275,8 @@ const wick: WickLibrary = Object.assign(componentCreate,
 
         rt: rt,
 
+        root_components: [],
+
         get presets() { return rt.presets; },
 
         utils: {
@@ -285,6 +286,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
                 parser: parse_component,
                 render: renderWithFormatting,
             },
+
             server: async function (root_dir: string = "") {
                 await URL.server(root_dir);
             },
@@ -311,7 +313,6 @@ const wick: WickLibrary = Object.assign(componentCreate,
 
             componentToClassString: createCompiledComponentClass,
 
-
             componentDataToHTML,
             componentDataToCSS,
             componentDataToJSCached: componentDataToJSCached,
@@ -328,6 +329,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
         },
 
     });
+
 
 export default wick;
 
