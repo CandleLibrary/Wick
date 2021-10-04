@@ -1,19 +1,15 @@
 import { traverse } from '@candlelib/conflagrate';
 import { JSExportClause, JSIdentifier, JSImportDeclaration, JSNamedImports, JSNodeType } from '@candlelib/js';
-
 import {
-    HTMLNodeType,
     BindingVariable,
     BINDING_FLAG,
     BINDING_VARIABLE_TYPE, HTMLAttribute, HTMLNode,
-    HTMLNodeClass,
-    IndirectHook
+    HTMLNodeClass, HTMLNodeType, IndirectHook
 } from "../../types/all.js";
 import { registerFeature } from '../build_system.js';
-import { getExtendTypeVal } from '../common/extended_types.js';
 import { BindingIdentifierBinding } from '../common/js_hook_types.js';
+import { ExportToChildAttributeHook } from '../data/static_resolution.js';
 
-export const ExportToChildAttributeHook = getExtendTypeVal("data-export-to-child-through-attribute-hook", JSNodeType.StringLiteral);
 
 registerFeature(
 
@@ -22,6 +18,7 @@ registerFeature(
 
         const ExportToParentHook = build_system.registerHookType("data-export-to-parent-hook", JSNodeType.ExportDeclaration);
         const ImportFromChildAttributeHook = build_system.registerHookType("data-import-from-child-through-attribute-hook", JSNodeType.StringLiteral);
+
 
         build_system.registerJSParserHandler(
             // ###################################################################
@@ -113,6 +110,7 @@ registerFeature(
 
 
         build_system.registerJSParserHandler(
+
             // ###################################################################
             // EXPORTS
             //
@@ -129,6 +127,7 @@ registerFeature(
                     const [export_obj] = node.nodes;
 
                     if (export_obj.type & HTMLNodeClass.HTML_NODE) {
+
 
                         await build_system.processHTMLNode(<HTMLNode><any>export_obj, component, presets);
 

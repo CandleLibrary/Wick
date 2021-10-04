@@ -10,8 +10,8 @@ import {
     tools
 } from "@candlelib/js";
 import {
-    BindingVariable, BINDING_VARIABLE_TYPE, ComponentData, HTMLNodeClass, PLUGIN_TYPE,
-    PresetOptions, STATIC_RESOLUTION_TYPE, Node
+    BindingVariable, BINDING_VARIABLE_TYPE, ComponentData, HTMLNodeClass, Node, PLUGIN_TYPE,
+    PresetOptions, STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import {
     getBindingStaticResolutionType,
@@ -20,14 +20,14 @@ import {
     haveStaticPluginForRefName,
     Is_Statically_Resolvable_On_Server
 } from '../common/binding.js';
+import { getExtendTypeVal } from '../common/extended_types.js';
 import { convertObjectToJSNode } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-import { ExportToChildAttributeHook } from '../features/module_features.js';
 import { parse_js_exp } from '../source-code-parse/parse.js';
 import { AsyncFunction } from './AsyncFunction.js';
 const DataCache = new WeakMap();
 
-
+export const ExportToChildAttributeHook = getExtendTypeVal("data-export-to-child-through-attribute-hook", JSNodeType.StringLiteral);
 export async function getStaticAST(
     input_ast: JSNode & { cache_data: any; },
     component: ComponentData,
