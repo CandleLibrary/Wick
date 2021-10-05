@@ -92,10 +92,8 @@ registerFeature(
                     }
 
                     if (node.nodes[0].type == HTMLNodeType.HTML_STYLE) {
-
                         return new Promise(async res => {
-                            await build_system.processCSSNode(<any>node.nodes[0], component, presets, 0);
-
+                            await build_system.processCSSNode(<any>node.nodes[0], component, presets, component.location, 0);
                             res(null);
                         });
                     }

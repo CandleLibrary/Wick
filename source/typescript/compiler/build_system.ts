@@ -9,12 +9,26 @@ import {
     JSHandler, Node
 } from "../types/all.js";
 import { addIndirectHook } from './ast-build/hooks.js';
-import { loadHTMLHandler, loadHTMLHandlerInternal, processBindingASTAsync as processBindingAsync } from "./ast-parse/html.js";
-import { loadJSParseHandler, loadJSParseHandlerInternal } from "./ast-parse/js.js";
-import { processFunctionDeclaration, processNodeAsync, processWickCSS_AST, processWickHTML_AST as processHTMLNode, processWickJS_AST as processJSNode } from './ast-parse/parse.js';
+import {
+    loadHTMLHandler,
+    loadHTMLHandlerInternal,
+    processBindingASTAsync as processBindingAsync
+} from "./ast-parse/html.js";
+import {
+    loadJSParseHandler,
+    loadJSParseHandlerInternal
+} from "./ast-parse/js.js";
+import {
+    processFunctionDeclaration,
+    processNodeAsync,
+    processWickCSS_AST,
+    processWickHTML_AST as processHTMLNode,
+    processWickJS_AST as processJSNode
+} from './ast-parse/parse.js';
 import { parseComponentAST } from './ast-parse/source.js';
 import {
-    addBindingReference, addBindingVariable,
+    addBindingReference,
+    addBindingVariable,
     addDefaultValueToBindingVariable,
     addNameToDeclaredVariables,
     addReadFlagToBindingVariable,
@@ -75,10 +89,6 @@ export function getHookHandlers(): HookHandlerPackage[] {
 ;
 
 
-const pending_features: {
-    register: RegistrationFunction,
-    name: string;
-}[] = [];
 
 
 const registration_system = {
@@ -290,7 +300,7 @@ export function enableInternalRegistrationFeatures() {
     enableRegistrationFeatures();
     Object.assign(build_system, {
         registerJSParserHandler(js_parse_handler: JSHandler<JSNode>, ...types: JSNodeType[]) {
-            log(`    Registering JS Handler for ${types.map(g => JSNodeTypeLU[g]).join(" | ")}`);
+            log(`    Registering JS Handler for ${types.map(g => JSNodeTypeLU[g] ?? HTMLNodeTypeLU[g]).join(" | ")}`);
 
             loadJSParseHandlerInternal(js_parse_handler, ...types);
         },
@@ -377,10 +387,20 @@ export function disableParserFeatures() {
     disable_feature_function("processBindingAsync", () => { trace("processBindingAsync is disabled outside of parsing contexts"); });
 }
 
+
+var pending_features: {
+    register: RegistrationFunction,
+    name: string;
+}[] = [];
+
 export function registerFeature(
     feature_name: string,
     registration_function: RegistrationFunction
 ) {
+
+    if (!pending_features)
+        pending_features = [];
+
     //Ensure registry_function is a usable value
     if (typeof registration_function != "function") {
         throw new Error("[registration_function] parameter of registerFeature must be a function.");
@@ -394,12 +414,11 @@ export function registerFeature(
 }
 
 export async function loadFeatures() {
+
     enableInternalRegistrationFeatures();
 
-
-
     for (const { name, register } of pending_features) {
-        log(`\nLoading feature [${name}]`);
+        log(`Loading feature [${name}]`);
         current_name = name;
         await register(<any>build_system);
     }

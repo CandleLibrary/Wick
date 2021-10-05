@@ -34,11 +34,10 @@ const env = <WickParserEnvironment>{
         length,
 
         //JS
-        parseTemplate: JSParserEnvironment.functions.parseTemplate,
-        parseString: JSParserEnvironment.functions.parseString,
+        //parseTemplate: JSParserEnvironment.functions.parseTemplate,
+        //parseString: JSParserEnvironment.functions.parseString,
         reinterpretArrowParameters: JSParserEnvironment.functions.reinterpretArrowParameters,
         reinterpretParenthesized: JSParserEnvironment.functions.reinterpretParenthesized,
-        buildJSAST: JSParserEnvironment.functions.buildJSAST,
     },
 
     options: {
@@ -51,5 +50,6 @@ const env = <WickParserEnvironment>{
     }
 
 };
+
 
 export default env;
