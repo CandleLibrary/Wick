@@ -562,6 +562,7 @@ async function resolveHTMLBinding(
     //*
     const
         hook = getHookFromElement(html, comp)[0],
+        type = getExpressionStaticResolutionType(hook.value[0], comp, presets),
         { value, html: child_html } = hook
             ? await getStaticValue(<JSNode>hook.value[0], comp, presets, model, parent_component)
             : null;
@@ -584,14 +585,23 @@ async function resolveHTMLBinding(
         node.children.push(html[0]);
 
     } else if (value != undefined) {
-
-        node.children.push({
-            data: value + "",
-            children: [],
-            strings: [],
-            attributes: null,
-            tagName: null,
-        });
+        if (type == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
+            node = {
+                data: value + "",
+                children: [],
+                strings: [],
+                attributes: null,
+                tagName: null,
+            };
+        } else {
+            node.children.push({
+                data: value + "",
+                children: [],
+                strings: [],
+                attributes: null,
+                tagName: null,
+            });
+        }
     } else if (html.data) {
         node.data = html.data || "";
     }
