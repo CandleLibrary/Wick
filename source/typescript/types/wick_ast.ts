@@ -9,7 +9,7 @@ export const enum HTMLNodeClass {
 }
 
 export const WICK_AST_NODE_TYPE_BASE = 147;
-export const WICK_AST_NODE_TYPE_SIZE = 85;
+export const WICK_AST_NODE_TYPE_SIZE = 87;
 
 
 /**
@@ -104,7 +104,7 @@ export enum HTMLNodeType {
     HTML_BINDING_ELEMENT = ((230 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     CompiledBinding = ((231 << 23)),
     ComponentVariableDeclaration = ((232 << 23)),
-    MARKDOWN = ((233 << 23))
+    MARKDOWN = ((233 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT))
 };
 
 export enum HTMLNodeTypeLU {
@@ -195,6 +195,7 @@ export enum HTMLNodeTypeLU {
     HTML_BINDING_ELEMENT = HTMLNodeType.HTML_BINDING_ELEMENT,
     CompiledBinding = HTMLNodeType.CompiledBinding,
     ComponentVariableDeclaration = HTMLNodeType.ComponentVariableDeclaration,
+    MARKDOWN = HTMLNodeType.MARKDOWN,
 }
 
 
