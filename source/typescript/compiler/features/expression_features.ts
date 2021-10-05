@@ -1,5 +1,4 @@
 import { traverse } from '@candlelib/conflagrate';
-import { HTMLNode } from '@candlelib/html';
 import { JSIdentifierReference, JSNode, JSNodeType } from '@candlelib/js';
 import { HOOK_SELECTOR, HTMLNodeClass, HTMLNodeType } from "../../types/all.js";
 import { registerFeature } from '../build_system.js';
@@ -95,7 +94,7 @@ registerFeature(
                     if (node.nodes[0].type == HTMLNodeType.HTML_STYLE) {
 
                         return new Promise(async res => {
-                            await build_system.processCSSNode(<HTMLNode>node.nodes[0], component, presets, 0);
+                            await build_system.processCSSNode(<any>node.nodes[0], component, presets, 0);
 
                             res(null);
                         });
