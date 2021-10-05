@@ -109,6 +109,7 @@ import "../compiler/features/module_features.js";
 import "../compiler/features/string_features.js";
 import "../compiler/features/text_node_features.js";
 import "../compiler/features/template_features.js";
+import "../compiler/features/markdown_features.js";
 
 
 await b_sys.loadFeatures();
