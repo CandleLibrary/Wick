@@ -54,7 +54,6 @@ export async function parseSource(
 
     const run_tag = metrics.startRun("Parse Source Input");
 
-
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
     if (typeof (window) == "undefined") await URL.polyfill();
 
@@ -96,19 +95,26 @@ export async function parseSource(
             throw data.errors.pop();
 
     } catch (e) {
-        //console.log(e);
 
-        //Illegal URL, try parsing string
-        try {
-            data = await parse_component(<string>input);
 
-            if (data.error)
-                throw data.error;
+        if (typeof input == "string") {
 
-            source_url = new URL(root_url + "");
 
-        } catch (a) {
-            errors.push(e, a);
+            //Illegal URL, try parsing string
+            try {
+                data = await parse_component(<string>input);
+
+                if (data.error)
+                    throw data.error;
+
+                source_url = new URL(root_url + "");
+
+
+            } catch (a) {
+                errors.push(e, a);
+            }
+        } else {
+            errors.push(e);
         }
 
     } finally {
@@ -123,11 +129,14 @@ export async function parseSource(
         comments = []
     } = data;
 
-
-
-
     return <Promise<{ IS_NEW: boolean, comp: ComponentDataClass; }>>
-        <any>await parseComponentAST(ast, <string>input_string, source_url, presets, null, errors);
+        <any>await parseComponentAST(ast,
+            <string>input_string,
+            source_url,
+            presets,
+            null,
+            errors
+        );
 };
 
 export async function parseComponentAST(
@@ -141,6 +150,7 @@ export async function parseComponentAST(
 ): Promise<{ IS_NEW: boolean, comp: ComponentDataClass; }> {
 
     const run_tag = metrics.startRun("Parse Source AST");
+
 
     const
         component: ComponentData = createComponentData(source_string, url);
@@ -159,6 +169,9 @@ export async function parseComponentAST(
     if (parent)
         integrateParentComponentScope(parent, component);
 
+    component.errors.push(...parse_errors);
+
+
     if (ast)
         try {
 
@@ -175,28 +188,20 @@ export async function parseComponentAST(
 
                 processUndefinedBindingVariables(component, presets);
 
-                let indice = 0;
-
                 metrics.endRun(run_tag);
 
-                if (component.HAS_ERRORS)
-                    throw new Error("Component has errors");
-
-                return { IS_NEW: true, comp: component };
             }
 
         } catch (e) {
             console.error(e);
-            parse_errors.push(e, ...(component?.errors ?? []));
+            component.errors.push(e);
         }
-
-    if (parse_errors)
-        for (const e of parse_errors)
-            console.error(e);
 
     metrics.endRun(run_tag);
 
-    throw new Error(`Invalid Component ${url + ""}`);
+    component.HAS_ERRORS = component.errors.length > 0;
+
+    return { IS_NEW: true, comp: component };
 }
 function integrateParentComponentScope(
     parent: ComponentData,
@@ -272,7 +277,7 @@ export async function fetchASTFromRemote(url: URL) {
             errors.push(error);
 
     } catch (e) {
-        console.log(e);
+
         errors.push(e);
     }
 
