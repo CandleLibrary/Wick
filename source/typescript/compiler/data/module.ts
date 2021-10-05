@@ -27,15 +27,15 @@ function getModuleName(context: Context, module_name: string) {
  * is a wick component that can be parsed, false otherwise.
  * @param new_component_url
  * @param component
- * @param presets
+ * @param context
  * @param local_name
  * @returns
  */
-export async function importComponentData(new_component_url, component, presets, local_name: string): Promise<boolean> {
+export async function importComponentData(new_component_url, component, context: Context, local_name: string): Promise<boolean> {
 
     try {
 
-        const { IS_NEW, comp: new_comp_data } = await parseSource(new URI(new_component_url), presets, component.location);
+        const { IS_NEW, comp: new_comp_data } = await parseSource(new URI(new_component_url), context, component.location);
 
 
         if (new_comp_data.HAS_ERRORS) {
@@ -46,8 +46,8 @@ export async function importComponentData(new_component_url, component, presets,
 
             // If the ast is an HTML_NODE with a single style element, then integrate the 
             // css data into the current component. 
-            //const comp_data = await compileComponent(ast, string, resolved_url, presets);
-            //componentDataToJSCached(new_comp_data, presets);
+            //const comp_data = await compileComponent(ast, string, resolved_url, context);
+            //componentDataToJSCached(new_comp_data, context);
 
             if (!new_comp_data.HTML)
                 mergeComponentData(component, new_comp_data);
@@ -184,8 +184,8 @@ export async function importResource(
             flag = BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL;
             break;
 
-        case "@presets":
-            /* all ids within this node are imported form the presets object */
+        case "@context":
+            /* all ids within this node are imported form the context object */
             break;
     }
 

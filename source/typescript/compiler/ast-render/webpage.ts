@@ -33,7 +33,7 @@ type PageRenderHooks = {
 };
 
 
-function renderBasicWickPageInit(component_class_declarations, presets) {
+function renderBasicWickPageInit(component_class_declarations, context) {
     return `
     import w from "/@cl/wick-rt/";
 
@@ -41,7 +41,7 @@ function renderBasicWickPageInit(component_class_declarations, presets) {
 `;
 }
 
-function renderRadiatePageInit(component_class_declarations, presets) {
+function renderRadiatePageInit(component_class_declarations, context) {
     return `
     import init_router from "/@cl/wick-radiate/";
 
@@ -49,11 +49,11 @@ function renderRadiatePageInit(component_class_declarations, presets) {
 `;
 }
 
-function renderComponentInit(component_class_declarations, presets) {
+function renderComponentInit(component_class_declarations, context) {
     return `
     const w = wick;
 
-    await w.appendPresets(${renderPresets(presets)});
+    await w.appendPresets(${renderPresets(context)});
 
     ${component_class_declarations}
     `;

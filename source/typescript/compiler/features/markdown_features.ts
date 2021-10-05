@@ -15,7 +15,7 @@ registerFeature(
             {
                 priority: -99999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
                     return convertMarkdownToHTMLNodes(node.nodes[0]);
                 }
 

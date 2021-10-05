@@ -21,11 +21,11 @@ registerFeature(
             {
                 priority: -100000000, // <- Truly meant to be overridden
 
-                async prepareHTMLNode(attr, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(attr, host_node, host_element, index, skip, component, context) {
 
                     if (attr.IS_BINDING) {
 
-                        const ast = await build_system.processBindingAsync(attr.value, component, presets);
+                        const ast = await build_system.processBindingAsync(attr.value, component, context);
 
                         // Create an indirect hook for container data attribute
 
@@ -45,7 +45,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, presets, element_index, addWrite, addInit) => {
+            buildJS: (node, comp, context, element_index, addWrite, addInit) => {
 
                 const { name, nodes: [ast] } = node.value[0];
 
@@ -56,18 +56,18 @@ registerFeature(
                 addWrite(s);
             },
 
-            async buildHTML(hook, comp, presets, model, parents) {
+            async buildHTML(hook, comp, context, model, parents) {
 
                 const ast = hook.value[0].nodes[0];
 
 
                 if (
-                    build_system.getExpressionStaticResolutionType(ast, comp, presets)
+                    build_system.getExpressionStaticResolutionType(ast, comp, context)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const { value } = await build_system.getStaticValue(ast, comp, presets, model, parents);
+                    const { value } = await build_system.getStaticValue(ast, comp, context, model, parents);
 
                     if (value)
                         return <any>{

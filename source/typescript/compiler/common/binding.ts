@@ -303,13 +303,13 @@ export function getCompiledBindingVariableName(
         switch (binding.type) {
 
             case BINDING_VARIABLE_TYPE.MODULE_VARIABLE:
-                return `this.presets.api.${external_name}.default`;
+                return `this.context.api.${external_name}.default`;
 
             case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE:
-                return `this.presets.api.${external_name}.module`;
+                return `this.context.api.${external_name}.module`;
 
             case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
-                return `this.presets.api.${external_name}.module.${internal_name}`;
+                return `this.context.api.${external_name}.module.${internal_name}`;
 
             case BINDING_VARIABLE_TYPE.UNDECLARED:
                 const global_names = getSetOfEnvironmentGlobalNames();

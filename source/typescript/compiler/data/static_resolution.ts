@@ -272,16 +272,7 @@ export async function getDefaultBindingValueAST(
 
     return undefined;
 }
-/**
- * Runtime static can include ALL GLOBALS, AND NON LOCAL APIS
- * @param input_node
- * @param comp
- * @param presets
- * @param model
- * @param parent_comp
- * @param ASSUME_RUNTIME
- * @returns
- */
+
 /**
  * Returns a JSNode AST that represents the resolved value
  * of the node after taking into account BindingVariable references

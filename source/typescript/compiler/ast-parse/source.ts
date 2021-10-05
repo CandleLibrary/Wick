@@ -44,12 +44,12 @@ const empty_obj = {};
  * It will accept a string containing wick markup, or a URL that points to a wick component.
  * 
  * @param input {number}
- * @param presets {Context} - 
+ * @param context {Context} - 
  * @param root_url 
  */
 export async function parseSource(
     input: URL | string,
-    presets?: Context,
+    context?: Context,
     root_url: URL = new URL(URL.GLOBAL + "/")
 ): Promise<{ IS_NEW: boolean, comp: ComponentData; }> {
 
@@ -134,7 +134,7 @@ export async function parseSource(
         <any>await parseComponentAST(ast,
             <string>input_string,
             source_url,
-            presets,
+            context,
             null,
             errors
         );

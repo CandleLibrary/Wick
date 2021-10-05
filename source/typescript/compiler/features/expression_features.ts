@@ -24,7 +24,7 @@ registerFeature(
             {
                 priority: 1,
 
-                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                async prepareJSNode(node, parent_node, skip, component, context, frame) {
                     frame.IS_ASYNC = true;
                 }
 
@@ -38,8 +38,8 @@ registerFeature(
             {
                 priority: 1,
 
-                prepareJSNode(node, parent_node, skip, component, presets, frame) {
-                    if (presets.options.REMOVE_DEBUGGER_STATEMENTS)
+                prepareJSNode(node, parent_node, skip, component, context, frame) {
+                    if (context.options.REMOVE_DEBUGGER_STATEMENTS)
                         return null;
                 }
 
@@ -55,7 +55,7 @@ registerFeature(
             {
                 priority: 1,
 
-                prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                prepareJSNode(node, parent_node, skip, component, context, frame) {
                     const [expr] = node.nodes;
 
                     if (expr.type == JSNodeType.CallExpression) {
@@ -92,7 +92,7 @@ registerFeature(
 
                     if (node.nodes[0].type == HTMLNodeType.HTML_STYLE) {
                         return new Promise(async res => {
-                            await build_system.processCSSNode(<any>node.nodes[0], component, presets, component.location, 0);
+                            await build_system.processCSSNode(<any>node.nodes[0], component, context, component.location, 0);
                             res(null);
                         });
                     }
@@ -111,7 +111,7 @@ registerFeature(
             {
                 priority: 1,
 
-                prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                prepareJSNode(node, parent_node, skip, component, context, frame) {
                     for (const { node: id } of traverse(<JSNode>node, "nodes")
                         .filter("type", JSNodeType.IdentifierReference)
                     ) {
@@ -146,13 +146,13 @@ registerFeature(
             {
                 priority: 1,
 
-                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                async prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     if (node.type & HTMLNodeClass.HTML_ELEMENT) {
 
                         skip();
 
-                        return <any>await build_system.processHTMLNode(<any>node, component, presets, false);
+                        return <any>await build_system.processHTMLNode(<any>node, component, context, false);
                     }
                 }
             }, ...Object.values(HTMLNodeType).filter((i): i is HTMLNodeType => typeof i == "number")

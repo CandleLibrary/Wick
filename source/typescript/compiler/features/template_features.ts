@@ -26,7 +26,7 @@ registerFeature(
             {
                 priority: 99999999999,
 
-                async prepareJSNode(node, par, skip, comp, presets, frame) {
+                async prepareJSNode(node, par, skip, comp, context, frame) {
 
                     if (comp.TEMPLATE) {
 
@@ -58,7 +58,7 @@ registerFeature(
                                 if (!Array.isArray(ids))
                                     arg.pos.throw("Expecting return value to be an array ", comp.location.toString());
 
-                                presets.template_data.set(comp, ids);
+                                context.template_data.set(comp, ids);
 
                                 return null;
                             }

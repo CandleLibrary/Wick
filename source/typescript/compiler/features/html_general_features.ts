@@ -38,7 +38,7 @@ registerFeature(
             {
                 priority: -2,
 
-                prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
                     if (
                         node.name == "slot"
                         ||
@@ -59,7 +59,7 @@ registerFeature(
             {
                 priority: 10,
 
-                prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (host_node.IS_CONTAINER) {
 
@@ -101,9 +101,9 @@ registerFeature(
             {
                 priority: -99999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
-                    await build_system.processCSSNode(node, component, presets, component.location, host_node.id);
+                    await build_system.processCSSNode(node, component, context, component.location, host_node.id);
 
                     return null;
                 }
@@ -117,7 +117,7 @@ registerFeature(
             {
                 priority: -99999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     const url = String(getAttributeValue("url", node) || ""),
                         name = String(getAttributeValue("name", node) || "");
@@ -125,7 +125,7 @@ registerFeature(
                     await build_system.importResource(
                         url + "",
                         component,
-                        presets,
+                        context,
                         node,
                         "",
                         [{ local: name, external: name }],
@@ -146,7 +146,7 @@ registerFeature(
             {
                 priority: -99998,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
 
                     const
@@ -177,9 +177,9 @@ registerFeature(
                             BINDING_VARIABLE_TYPE.METHOD_VARIABLE
                         );
 
-                        await build_system.processFunctionDeclaration(fn_ast, component, presets);
+                        await build_system.processFunctionDeclaration(fn_ast, component, context);
                     } else
-                        await build_system.processJSNode(script, component, presets);
+                        await build_system.processJSNode(script, component, context);
 
                     return null;
                 }
@@ -194,13 +194,13 @@ registerFeature(
             {
                 priority: -99999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (component.local_component_names.has(node.tag)) {
 
                         const
                             name = component.local_component_names.get(node.tag),
-                            comp = presets.components.get(name);
+                            comp = context.components.get(name);
 
                         node.child_id = component.children.push(1) - 1;
 
@@ -234,7 +234,7 @@ registerFeature(
             {
                 priority: -999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
 
                     if (
@@ -247,7 +247,7 @@ registerFeature(
                             Object.assign({}, node),
                             node.pos.slice(),
                             component.location,
-                            presets,
+                            context,
                             component
                         );
 
@@ -290,7 +290,7 @@ registerFeature(
             {
                 priority: -998,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
 
                     if (node.tag.toLocaleLowerCase() == "radiate-element") {
@@ -301,7 +301,7 @@ registerFeature(
                             Object.assign({}, node),
                             node.pos.slice(),
                             component.location,
-                            presets,
+                            context,
                             component
                         );
 
@@ -351,14 +351,14 @@ registerFeature(
             {
                 priority: -99999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
 
                     if (component.local_component_names.has(node.tag)) {
 
                         const
                             name = component.local_component_names.get(node.tag),
-                            comp = presets.components.get(name);
+                            comp = context.components.get(name);
 
                         node.child_id = component.children.push(1) - 1;
 

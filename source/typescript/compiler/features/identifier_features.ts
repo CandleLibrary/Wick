@@ -18,7 +18,7 @@ registerFeature(
             {
                 priority: 1,
 
-                prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     const name = (<JSIdentifierReference>node).value;
 
@@ -49,7 +49,7 @@ registerFeature(
             {
                 priority: 1,
 
-                prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     if (node.type !== BindingIdentifierBinding) {
                         const name = tools.getIdentifierName(<JSIdentifierBinding>node);
@@ -70,7 +70,7 @@ registerFeature(
             {
                 priority: 1,
 
-                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                async prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     const
                         n = build_system.setPos(build_system.js.stmt("a,a;"), node.pos),
@@ -115,7 +115,7 @@ registerFeature(
 
                                 build_system.addBindingReference(<JSNode>binding, <JSNode>parent_node, frame);
 
-                                const new_node = await build_system.processNodeAsync(binding, frame, component, presets, true);
+                                const new_node = await build_system.processNodeAsync(binding, frame, component, context, true);
 
                                 build_system.addDefaultValueToBindingVariable(frame, l_name, <JSNode>new_node.nodes[1]);
 
@@ -172,9 +172,9 @@ registerFeature(
             {
                 priority: 1,
 
-                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                async prepareJSNode(node, parent_node, skip, component, context, frame) {
 
-                    node = await build_system.processNodeAsync(<JSNode>node, frame, component, presets, true);
+                    node = await build_system.processNodeAsync(<JSNode>node, frame, component, context, true);
 
                     const
                         [id] = node.nodes,
@@ -218,19 +218,19 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: async (node, comp, presets, _3, _, _1, _2) => {
+            buildJS: async (node, comp, context, _3, _, _1, _2) => {
 
                 const binding_var = build_system.getComponentBinding(node.value, comp);
 
                 if (
-                    build_system.getBindingStaticResolutionType(binding_var, comp, presets)
+                    build_system.getBindingStaticResolutionType(binding_var, comp, context)
                     ==
                     STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
                     &&
                     binding_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
                 ) {
 
-                    const value = await build_system.getStaticAST(<any>node, comp, presets, null, null, true);
+                    const value = await build_system.getStaticAST(<any>node, comp, context, null, null, true);
 
                     if (value) return <JSExpressionClass>value;
                 }

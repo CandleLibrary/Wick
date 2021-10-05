@@ -184,7 +184,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     hydrate(model?: Object) {
 
-        const presets = this.context, wrapper = this.wrapper;
+        const context = this.context, wrapper = this.wrapper;
 
         //   this.CONNECTED = true;
         //
@@ -200,9 +200,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
             this.wrapper.setModel({ comp: this });
         } else if /*Prevent recursion, which will be infinite */ (
-            presets.wrapper && this.name !== presets.wrapper.name
+            context.wrapper && this.name !== context.wrapper.name
         ) {
-            this.wrapper = new (presets.component_class.get(presets.wrapper.name))({ comp: this });
+            this.wrapper = new (context.component_class.get(context.wrapper.name))({ comp: this });
 
             this.ele.appendChild(this.wrapper.ele);
         }
@@ -999,7 +999,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         return <HTMLElement>temp_ele.firstElementChild;
     }
 
-    createElement(presets, parent_chain) {
+    createElement(context, parent_chain) {
 
         const ele = this.ce();
 

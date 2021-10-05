@@ -49,7 +49,7 @@ registerFeature(
             {
                 priority: 99999999999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (node.tag.toLowerCase() == "container") {
 
@@ -91,7 +91,7 @@ registerFeature(
                                     if (name == "use-if") {
 
                                         build_system.addIndirectHook(component, ContainerUseIfHook, {
-                                            expression: await build_system.processBindingAsync(value, component, presets),
+                                            expression: await build_system.processBindingAsync(value, component, context),
                                             comp_index: comp_index,
                                             container_id
                                         }, index);
@@ -126,11 +126,11 @@ registerFeature(
                                         Object.assign({}, ch),
                                         build_system.componentNodeSource(component, ch),
                                         new URI("auto_generated"),
-                                        presets,
+                                        context,
                                         component
                                     ));
                                 else
-                                    comp = presets.components.get(component.local_component_names.get(ch.tag));
+                                    comp = context.components.get(component.local_component_names.get(ch.tag));
 
                                 component.local_component_names.set(comp?.name, comp?.name);
 
@@ -175,7 +175,7 @@ registerFeature(
 
             buildHTML: _ => null,
 
-            buildJS: (node, comp, presets, index, write, init, _2) => {
+            buildJS: (node, comp, context, index, write, init, _2) => {
 
                 const {
                     expression,
@@ -206,14 +206,14 @@ registerFeature(
             {
                 priority: 99999999999,
 
-                async prepareHTMLNode(attr, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(attr, host_node, host_element, index, skip, component, context) {
 
                     if (attr.name == "data" && host_node.IS_CONTAINER) {
 
 
                         // Process the primary expression for Binding Refs and static
                         // data
-                        const ast = await build_system.processBindingAsync(attr.value, component, presets);
+                        const ast = await build_system.processBindingAsync(attr.value, component, context);
 
                         // Create an indirect hook for container data attribute
 
@@ -234,7 +234,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: async (node, comp, presets, element_index, on_write, init) => {
+            buildJS: async (node, comp, context, element_index, on_write, init) => {
 
 
                 const
@@ -242,7 +242,7 @@ registerFeature(
 
                     st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`);
 
-                const resolution_type = getExpressionStaticResolutionType(<JSNode>node.value[0], comp, presets);
+                const resolution_type = getExpressionStaticResolutionType(<JSNode>node.value[0], comp, context);
 
                 // If the value can be resolved to pure data (no functions) then replace the
                 // current AST with the resolved data AST
@@ -254,7 +254,7 @@ registerFeature(
                     (resolution_type ^ STATIC_RESOLUTION_TYPE.CONSTANT_STATIC)
                     == 0
                 ) {
-                    const val = await getStaticValue(<any>node.value[0], comp, presets);
+                    const val = await getStaticValue(<any>node.value[0], comp, context);
                     const st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`);
                     if (val) {
 
@@ -275,18 +275,18 @@ registerFeature(
                 return null;
             },
 
-            buildHTML: async (hook, comp, presets, model, parents) => {
+            buildHTML: async (hook, comp, context, model, parents) => {
                 const ast = hook.value[0];
                 const container_ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
 
                 if (
-                    getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, presets)
+                    getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, context)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                     &&
                     container_ele.component_names.length > 0
                 ) {
-                    return await getStaticValue(hook.value[0], comp, presets, model, parents);
+                    return await getStaticValue(hook.value[0], comp, context, model, parents);
                 }
 
                 return [];
@@ -300,13 +300,13 @@ registerFeature(
             {
                 priority: 99999999999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (node.name == "filter" && host_node.IS_CONTAINER) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
-                        const ast = await build_system.processBindingAsync(node.value, component, presets);
+                        const ast = await build_system.processBindingAsync(node.value, component, context);
 
                         // Create an indirect hook for container data attribute
 
@@ -342,13 +342,13 @@ registerFeature(
             {
                 priority: 99999999999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (node.name == "scrub" && host_node.IS_CONTAINER) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
-                        const ast = await build_system.processBindingAsync(node.value, component, presets);
+                        const ast = await build_system.processBindingAsync(node.value, component, context);
 
                         // Create an indirect hook for container data attribute
 
@@ -385,13 +385,13 @@ registerFeature(
             {
                 priority: 99999999999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (node.name == "sort" && host_node.IS_CONTAINER) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
-                        const ast = await build_system.processBindingAsync(node.value, component, presets);
+                        const ast = await build_system.processBindingAsync(node.value, component, context);
 
                         // Create an indirect hook for container data attribute
 
@@ -426,13 +426,13 @@ registerFeature(
             {
                 priority: 99999999999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (node.name == "limit" && host_node.IS_CONTAINER) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
-                        const ast = await build_system.processBindingAsync(node.value, component, presets);
+                        const ast = await build_system.processBindingAsync(node.value, component, context);
 
                         // Create an indirect hook for container data attribute
 
@@ -467,13 +467,13 @@ registerFeature(
             {
                 priority: 99999999999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (node.name == "offset" && host_node.IS_CONTAINER) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
-                        const ast = await build_system.processBindingAsync(node.value, component, presets);
+                        const ast = await build_system.processBindingAsync(node.value, component, context);
 
                         // Create an indirect hook for container data attribute
 
@@ -509,13 +509,13 @@ registerFeature(
             {
                 priority: 99999999999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (node.name == "shift" && host_node.IS_CONTAINER) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
-                        const ast = await build_system.processBindingAsync(node.value, component, presets);
+                        const ast = await build_system.processBindingAsync(node.value, component, context);
 
                         // Create an indirect hook for container data attribute
 
@@ -546,7 +546,7 @@ registerFeature(
 
         function createContainerDynamicValue(container_method_name: string) {
 
-            return function (node, comp, presets, index, write, _1, _2) {
+            return function (node, comp, context, index, write, _1, _2) {
 
                 const container_id = build_system.getElementAtIndex(comp, index).container_id;
 
@@ -558,13 +558,13 @@ registerFeature(
             };
         }
 
-        async function createContainerStaticValue(hook: IndirectHook<JSNode>, comp, presets, model, parents) {
+        async function createContainerStaticValue(hook: IndirectHook<JSNode>, comp, context, model, parents) {
 
 
-            if (build_system.getExpressionStaticResolutionType(hook.value[0], comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
+            if (build_system.getExpressionStaticResolutionType(hook.value[0], comp, context) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
 
 
-                const ast = await build_system.getStaticAST(hook.value[0], comp, presets, model, parents, false);
+                const ast = await build_system.getStaticAST(hook.value[0], comp, context, model, parents, false);
 
                 try {
                     return eval(renderCompressed(<JSNode>ast));
@@ -573,7 +573,7 @@ registerFeature(
         };
 
         function createContainerDynamicArrowCall(argument_size: number, container_method_name: string) {
-            return function (node, comp, presets, index, write, _1, _2) {
+            return function (node, comp, context, index, write, _1, _2) {
 
                 const container_id = build_system.getElementAtIndex(comp, index).container_id;
 
@@ -592,7 +592,7 @@ registerFeature(
 
         function createContainerStaticArrowFunction(argument_size: number = 1) {
 
-            return async function (hook: IndirectHook<JSNode>, comp, presets, model, parents) {
+            return async function (hook: IndirectHook<JSNode>, comp, context, model, parents) {
 
                 let arrow_argument_match = new Array(argument_size).fill(null);
 
@@ -605,12 +605,12 @@ registerFeature(
                 if (getListOfUnboundArgs(ast, comp, arrow_argument_match, build_system)) {
 
 
-                    if (build_system.getExpressionStaticResolutionType(ast, comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
+                    if (build_system.getExpressionStaticResolutionType(ast, comp, context) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
 
                         const arrow_expression_stmt = build_system.js.expr(`(${arrow_argument_match.map(v => v.value)}) => 1`);
 
                         arrow_expression_stmt.nodes[1] =
-                            await build_system.getStaticAST(ast, comp, presets, model, parents, false);
+                            await build_system.getStaticAST(ast, comp, context, model, parents, false);
 
                         try {
                             return eval(renderCompressed(arrow_expression_stmt));

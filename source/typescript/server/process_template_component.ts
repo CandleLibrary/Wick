@@ -22,9 +22,9 @@ export async function processTemplateComponent(
             context.active_template_data = template_data;
 
             /* const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
-                = await buildComponentPage(component, presets, template_data.page_name, output_directory);
+                = await buildComponentPage(component, context, template_data.page_name, output_directory);
 
-            presets.active_template_data = null;
+            context.active_template_data = null;
 
             USE_RADIATE_RUNTIME ||= A;
             USE_WICK_RUNTIME ||= B; */

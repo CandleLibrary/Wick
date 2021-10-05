@@ -22,7 +22,7 @@ registerFeature(
             {
                 priority: -10,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (node.name == "value" && (host_node.tag == "INPUT" || host_node.tag == "TEXTAREA")) {
 
@@ -31,7 +31,7 @@ registerFeature(
 
                             // Process the primary expression for Binding Refs and static
                             // data
-                            const ast = await build_system.processBindingAsync(node.value, component, presets);
+                            const ast = await build_system.processBindingAsync(node.value, component, context);
 
                             // Create an indirect hook for container data attribute
 
@@ -47,7 +47,7 @@ registerFeature(
 
                             // Process the primary expression for Binding Refs and static
                             // data
-                            const ast = await build_system.processBindingAsync(node.value, component, presets);
+                            const ast = await build_system.processBindingAsync(node.value, component, context);
 
                             // Create an indirect hook for container data attribute
 
@@ -63,7 +63,7 @@ registerFeature(
 
                             // Process the primary expression for Binding Refs and static
                             // data
-                            const ast = await build_system.processBindingAsync(node.value, component, presets);
+                            const ast = await build_system.processBindingAsync(node.value, component, context);
 
                             // Create an indirect hook for container data attribute
 
@@ -87,7 +87,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, presets, element_index, addOnBindingUpdate, addInitBindingInit) => {
+            buildJS: (node, comp, context, element_index, addOnBindingUpdate, addInitBindingInit) => {
                 const { expr, stmt } = build_system.js;
 
                 const
@@ -156,17 +156,17 @@ registerFeature(
                 }
             },
 
-            buildHTML: async (hook, comp, presets, model, parents) => {
+            buildHTML: async (hook, comp, context, model, parents) => {
 
                 const ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
 
                 if (
-                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, presets)
+                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, context)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const { value } = await build_system.getStaticValue(hook.value[0], comp, presets, model, parents);
+                    const { value } = await build_system.getStaticValue(hook.value[0], comp, context, model, parents);
 
                     if (value !== null)
                         return <any>{
@@ -185,7 +185,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, presets, element_index, addOnBindingUpdate, addInitBindingInit) => {
+            buildJS: (node, comp, context, element_index, addOnBindingUpdate, addInitBindingInit) => {
                 const { expr, stmt } = build_system.js,
                     ele_name = "$$ele" + element_index,
                     expression = node.value[0],
@@ -250,18 +250,18 @@ registerFeature(
                 }
             },
 
-            buildHTML: async (hook, comp, presets, model, parents) => {
+            buildHTML: async (hook, comp, context, model, parents) => {
 
 
                 const ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
 
                 if (
-                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, presets)
+                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, context)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const { value } = await build_system.getStaticValue(hook.value[0], comp, presets, model, parents);
+                    const { value } = await build_system.getStaticValue(hook.value[0], comp, context, model, parents);
 
                     if (value !== null)
                         return <any>{

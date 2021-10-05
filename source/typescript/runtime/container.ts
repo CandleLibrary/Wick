@@ -50,7 +50,7 @@ const component_attributes_default: [string?, string?][][] = [[[]]];
  *
  * @param      {Scope}  parent   The Scope parent object.
  * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
- * @param      {Object}  presets  The global presets object.
+ * @param      {Object}  context  The global context object.
  * @param      {HTMLElement}  element  The element that the Scope will _bind_ to. 
  */
 export class WickContainer implements Sparky, ObservableWatcher {

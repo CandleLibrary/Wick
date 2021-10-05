@@ -35,13 +35,13 @@ registerFeature(
             // hoisted to the root of the APP and is made available to all component. 
             // 
             // There is also the case of the Parent Module import @parent and the 
-            // "presets" or runtime import @presets, which are special none file
+            // "context" or runtime import @context, which are special none file
             // imports that wick will use to load data from the node's parent's 
-            // exports and the presets global object, respectively.
+            // exports and the context global object, respectively.
             {
                 priority: Infinity, //This handler cannot be overridden
 
-                async prepareJSNode(node: JSImportDeclaration, parent_node, skip, component, presets, frame) {
+                async prepareJSNode(node: JSImportDeclaration, parent_node, skip, component, context, frame) {
 
                     let url_value = "";
 
@@ -91,7 +91,7 @@ registerFeature(
                         await build_system.importResource(
                             url_value,
                             component,
-                            presets,
+                            context,
                             node,
                             (<any>imports?.nodes?.[0])?.value ?? "",
                             names,
@@ -122,14 +122,14 @@ registerFeature(
             {
                 priority: Infinity, //This handler cannot be overridden
 
-                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                async prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     const [export_obj] = node.nodes;
 
                     if (export_obj.type & HTMLNodeClass.HTML_NODE) {
 
 
-                        await build_system.processHTMLNode(<HTMLNode><any>export_obj, component, presets);
+                        await build_system.processHTMLNode(<HTMLNode><any>export_obj, component, context);
 
                         // Don't need this node, it will be assigned to the component's
                         // html slot.
@@ -170,7 +170,7 @@ registerFeature(
             {
                 priority: 10,
 
-                prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
                     if (node.name == "import" && node.value) {
 
@@ -212,13 +212,13 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, presets, element_index, addWrite, addInit) => {
+            buildJS: (node, comp, context, element_index, addWrite, addInit) => {
 
                 const ele = <HTMLNode><any>build_system.getElementAtIndex(comp, element_index);
 
                 const comp_name = ele.component_name;
 
-                const child_comp = presets.components.get(comp_name);
+                const child_comp = context.components.get(comp_name);
 
                 const { foreign, local, child_id } = node.value[0];
 
@@ -258,7 +258,7 @@ registerFeature(
                 }
             },
 
-            buildHTML: (node, comp, presets, model) => null
+            buildHTML: (node, comp, context, model) => null
         });
 
         build_system.registerHookHandler<IndirectHook<JSExportClause>, void>({
@@ -277,7 +277,7 @@ registerFeature(
                 return null;
             },
 
-            buildHTML: (node, comp, presets, model) => null
+            buildHTML: (node, comp, context, model) => null
         });
 
         function getBindingClassIndexID(binding: BindingVariable) {

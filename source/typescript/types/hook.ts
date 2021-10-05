@@ -225,7 +225,7 @@ export interface HookProcessor {
         host_ast_node: Node,
         element_index: number,
         component: ComponentData,
-        presets?: Context,
+        context?: Context,
         class_info?: CompiledComponentClass
     ): ProcessedHook;
 

@@ -18,7 +18,7 @@ registerFeature(
             {
                 priority: 1,
 
-                prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     if ((<JSStringLiteral>node).value[0] == "@") {
 
@@ -86,7 +86,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, presets, element_index, addOnBindingUpdate) => {
+            buildJS: (node, comp, context, element_index, addOnBindingUpdate) => {
                 //Replace the value with a 
                 const exp = convertAtLookupToElementRef(node, comp);
 
@@ -94,7 +94,7 @@ registerFeature(
                     return exp;
             },
 
-            buildHTML: (node, comp, presets, model) => null
+            buildHTML: (node, comp, context, model) => null
         });
 
 

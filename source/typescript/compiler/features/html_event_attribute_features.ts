@@ -17,7 +17,7 @@ registerFeature(
             {
                 priority: 10,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
 
 
@@ -25,7 +25,7 @@ registerFeature(
 
                         // Process the primary expression for Binding Refs and static
                         // data
-                        const ast = await build_system.processBindingAsync(node.value, component, presets);
+                        const ast = await build_system.processBindingAsync(node.value, component, context);
 
                         // Create an indirect hook for container data attribute
 
@@ -49,7 +49,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, presets, element_index, _1, addInit) => {
+            buildJS: (node, comp, context, element_index, _1, addInit) => {
                 // Replace the value with a 
                 // Get the on* attribute name
                 const
@@ -68,7 +68,7 @@ registerFeature(
                 addInit(s);
             },
 
-            buildHTML: (node, comp, presets, model) => null
+            buildHTML: (node, comp, context, model) => null
         });
     }
 );

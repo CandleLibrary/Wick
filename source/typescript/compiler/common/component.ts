@@ -122,7 +122,7 @@ export class ComponentData {
     children: number[];
 
     /**
-     * Name of a model defined in presets that will be auto assigned to the
+     * Name of a model defined in context that will be auto assigned to the
      * component instance when it is created.
      */
     global_model_name: string;
@@ -291,7 +291,7 @@ export class ComponentData {
         const class_strings = `
         const name = "${this.name}";
         const WickRTComponent = wick.rt.C;
-        const components= wick.rt.presets.component_class;
+        const components= wick.rt.context.component_class;
         
         if(!components.has(name)){
             const class_ = ${createClassStringObject(this, comp_class, context).class_string};

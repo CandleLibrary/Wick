@@ -42,7 +42,7 @@ export interface WickRuntime {
     gC(name: string): typeof WickRTComponent,
     context: Context;
     /**
-     * Replace the current presets with a new set.
+     * Replace the current context with a new set.
      * > Warning:  This will cause a lose of all currently
      * > compiled components.
      */
@@ -110,10 +110,10 @@ const rt: WickRuntime = (() => {
             } else {
 
                 //create new component
-                const presets = new Context(preset_options);
+                const context = new Context(preset_options);
 
-                //if (!rt.presets)
-                rt.context = <Context><any>presets;
+                //if (!rt.context)
+                rt.context = <Context><any>context;
             }
 
             return <Context>rt.context;

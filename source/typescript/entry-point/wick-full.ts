@@ -89,7 +89,7 @@ export interface WickCompiler {
 
 
     /**
-     * Configure the global presets object with the given
+     * Configure the global context object with the given
      * preset options.
      */
 
@@ -167,15 +167,15 @@ export interface WickCompiler {
  * @param input - String with Wick source text or a URL to a file containing source text.
  * 
  * @param context - An optional Presets object. If this is left undefined then the global 
- * presets object will be used, or a new global presets object will be created if not defined. This
- * argument is Presets object and the global presets object has not yet been set, then global presets
+ * context object will be used, or a new global context object will be created if not defined. This
+ * argument is Presets object and the global context object has not yet been set, then global context
  * will be set to the value of this argument.
  * 
  * @returns {Promise<ComponentData>}
  */
 async function componentCreate(input: string | URL, context: Context = rt.context): Promise<ComponentData> {
 
-    // Ensure there is a presets object attached to this component.
+    // Ensure there is a context object attached to this component.
     if (!context)
         context = new Context();
 
@@ -235,7 +235,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
 
         root_components: [],
 
-        get presets() { return rt.context; },
+        get context() { return rt.context; },
 
         utils: {
             parse: {

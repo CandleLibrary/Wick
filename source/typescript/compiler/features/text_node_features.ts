@@ -1,6 +1,7 @@
 import { JSExpressionClass, JSExpressionStatement, JSNode } from '@candlelib/js';
 import {
     HTMLNode, HTMLNodeType,
+    HTMLTextNode,
     IndirectHook, WickBindingNode
 } from "../../types/all.js";
 import { registerFeature } from './../build_system.js';
@@ -11,6 +12,8 @@ registerFeature(
     (build_system) => {
 
         const TextNodeHookType = build_system.registerHookType("text-node-hook", HTMLNodeType.HTMLText);
+
+
         /** ##########################################################
          * Text Node Binding
          */
@@ -18,9 +21,9 @@ registerFeature(
 
             priority: 1,
 
-            async prepareHTMLNode(node: WickBindingNode, _, _1, index, _2, component, presets) {
+            async prepareHTMLNode(node: WickBindingNode, _, _1, index, _2, component, context) {
 
-                const ast = await build_system.processBindingAsync(node, component, presets);
+                const ast = await build_system.processBindingAsync(node, component, context);
 
                 build_system.addIndirectHook(component, TextNodeHookType, ast, index + 1);
 
@@ -48,11 +51,11 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, presets, element_index, addOnBindingUpdate) => {
+            buildJS: (node, comp, context, element_index, addOnBindingUpdate) => {
 
                 const v = node.value[0];
 
-                const type = build_system.getExpressionStaticResolutionType(v, comp, presets);
+                const type = build_system.getExpressionStaticResolutionType(v, comp, context);
 
                 if (type == 1)
                     return null;
@@ -67,7 +70,7 @@ registerFeature(
                 return null;
             },
 
-            buildHTML: (node, comp, presets, model) => null
+            buildHTML: (node, comp, context, model) => null
         });
 
     }

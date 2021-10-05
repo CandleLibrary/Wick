@@ -83,10 +83,10 @@ optionally hydrated with the associated support scripts.
 			const root_directory = URI.resolveRelative(input_path);
 			const output_directory = URI.resolveRelative("./www/");
 			//Compile a list of entry components
-			const presets = new Context();
+			const context = new Context();
 
 			const { endpoints: components, page_components } = await loadComponentsFromDirectory(
-				root_directory, presets);
+				root_directory, context);
 
 			//Remap dependencies
 
@@ -100,7 +100,7 @@ optionally hydrated with the associated support scripts.
 
 				if (component.TEMPLATE) {
 
-					let data = presets.template_data.get(component);
+					let data = context.template_data.get(component);
 
 					for (const template_data of data) {
 
@@ -110,12 +110,12 @@ optionally hydrated with the associated support scripts.
 								component.location.toString()
 							);
 
-						presets.active_template_data = template_data;
+						context.active_template_data = template_data;
 
 						const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
-							= await buildComponentPage(component, presets, template_data.page_name, output_directory);
+							= await buildComponentPage(component, context, template_data.page_name, output_directory);
 
-						presets.active_template_data = null;
+						context.active_template_data = null;
 
 						USE_RADIATE_RUNTIME ||= A;
 						USE_WICK_RUNTIME ||= B;
@@ -123,7 +123,7 @@ optionally hydrated with the associated support scripts.
 				} else {
 
 					const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
-						= await buildComponentPage(component, presets, output_name, output_directory);
+						= await buildComponentPage(component, context, output_name, output_directory);
 
 					USE_RADIATE_RUNTIME ||= A;
 					USE_WICK_RUNTIME ||= B;

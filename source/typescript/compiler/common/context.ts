@@ -7,8 +7,8 @@ import { ComponentData } from './component.js';
 let CachedPresets = null;
 
 /**
-     * Default configuration options
-     */
+ * Default configuration options
+ */
 const DefaultPresets = <Context>{
     options: {
         USE_SHADOW: false,
@@ -317,11 +317,11 @@ export class Context {
                 obj[a] = this[a];
         }
 
-        const presets = new Context(obj);
+        const context = new Context(obj);
 
-        presets.processLink = this.processLink.bind(this);
+        context.processLink = this.processLink.bind(this);
 
-        return presets;
+        return context;
     }
 }
 

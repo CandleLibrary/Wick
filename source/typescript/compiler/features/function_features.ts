@@ -22,7 +22,7 @@ registerFeature(
             {
                 priority: 1,
 
-                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                async prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     const
                         [name_node] = node.nodes;
@@ -87,7 +87,7 @@ registerFeature(
                             // and convert back to normal variables. 
 
                             const function_frame = await build_system.
-                                processFunctionDeclaration(<JSNode>node, component, presets, root_name);
+                                processFunctionDeclaration(<JSNode>node, component, context, root_name);
 
                             //Grab references to the binding variables
                             const call_ids: JSIdentifierBinding[] = <any>function_frame.ast.nodes[1]?.nodes?.filter(
@@ -134,7 +134,7 @@ registerFeature(
                     skip(1);
 
                     return new Promise(async res => {
-                        await build_system.processFunctionDeclaration(<JSNode>node, component, presets, root_name);
+                        await build_system.processFunctionDeclaration(<JSNode>node, component, context, root_name);
                         res(null);
                     });
                 }
@@ -149,7 +149,7 @@ registerFeature(
                 types: [AutoCallFunction],
                 verify: () => true,
                 buildHTML: () => null,
-                buildJS(node, comp, presets, element_index, addOnBindingUpdate, addInitBindingInit) {
+                buildJS(node, comp, context, element_index, addOnBindingUpdate, addInitBindingInit) {
 
                     const [call_stmt, ...refs] = node.nodes;
 
@@ -165,13 +165,13 @@ registerFeature(
             {
                 priority: 1,
 
-                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                async prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     const function_frame = await build_system.
-                        processFunctionDeclaration(<JSNode>node, component, presets);
+                        processFunctionDeclaration(<JSNode>node, component, context);
 
                     /* const { ast } = await build_system.processJSNode(
-                        <JSNode>node, component, presets, null, frame, true
+                        <JSNode>node, component, context, null, frame, true
                     ); */
 
                     skip();
@@ -189,7 +189,7 @@ registerFeature(
             <JSHandler<JSFormalParameters>>{
                 priority: 1,
 
-                prepareJSNode(node, parent_node, skip, component, presets, frame) {
+                prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     if (parent_node == frame.ast) {
                         for (const { node: binding, meta } of traverse(node, "nodes", 4)

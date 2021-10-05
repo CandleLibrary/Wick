@@ -60,7 +60,7 @@ export interface ComponentDataS {
     children: number[];
 
     /**
-     * Name of a model defined in presets that will be auto assigned to the
+     * Name of a model defined in context that will be auto assigned to the
      * component instance when it is created.
      */
     global_model_name: string;

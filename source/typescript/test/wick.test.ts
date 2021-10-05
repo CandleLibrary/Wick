@@ -43,7 +43,7 @@ const WickTest: WickTestTools = <WickTestTools>{
 
 export function init() {
 
-    //Reset the presets objects
+    //Reset the context objects
 
     rt.context = new Context();
 
@@ -154,9 +154,9 @@ export function init() {
     /**
      * Returns the components HTML string representation
      */
-    ComponentData.prototype.getHTMLString = async function (presets = rt.context) {
+    ComponentData.prototype.getHTMLString = async function (context = rt.context) {
 
-        const html = await this.getHTMLTemplate(presets);
+        const html = await this.getHTMLTemplate(context);
 
         return htmlTemplateToString(html);
     };
@@ -164,9 +164,9 @@ export function init() {
     /**
      * Returns the HTML template object 
      */
-    ComponentData.prototype.getHTMLTemplate = async function (presets = rt.context) {
+    ComponentData.prototype.getHTMLTemplate = async function (context = rt.context) {
 
-        const { html } = await componentDataToCompiledHTML(this, presets);
+        const { html } = await componentDataToCompiledHTML(this, context);
 
 
         return html[0];
@@ -175,17 +175,17 @@ export function init() {
     /**
      * Returns a DOM tree of the component's HTML structure
      */
-    ComponentData.prototype.getRootElement = async function (presets = rt.context): Promise<HTML> {
+    ComponentData.prototype.getRootElement = async function (context = rt.context): Promise<HTML> {
 
-        return HTML(await this.getHTMLString(presets));
+        return HTML(await this.getHTMLString(context));
     };
 
     /**
      * Returns the template_map object 
      */
-    ComponentData.prototype.getHTMLTemplateMap = async function (presets = rt.context) {
+    ComponentData.prototype.getHTMLTemplateMap = async function (context = rt.context) {
 
-        const { template_map } = await componentDataToCompiledHTML(this, presets);
+        const { template_map } = await componentDataToCompiledHTML(this, context);
 
         return template_map;
     };
@@ -193,11 +193,11 @@ export function init() {
     /**
      * Returns the Templates template object 
      */
-    ComponentData.prototype.getComponentClassInfo = async function (presets = rt.context): Promise<ComponentData> {
+    ComponentData.prototype.getComponentClassInfo = async function (context = rt.context): Promise<ComponentData> {
         return await createCompiledComponentClass(this, rt.context, true, true);
     };
 
-    ComponentData.prototype.getCSSString = async function (presets = rt.context) {
+    ComponentData.prototype.getCSSString = async function (context = rt.context) {
 
         return componentDataToCSS(this);
     };
