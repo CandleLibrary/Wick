@@ -1,6 +1,7 @@
 import { copy, traverse } from "@candlelib/conflagrate";
 import { CSSNode } from "@candlelib/css";
 import { JSFunctionDeclaration, JSNode, JSNodeType, JSNodeTypeLU } from "@candlelib/js";
+import URI from '@candlelib/uri';
 import {
     ComponentData, ComponentStyle, FunctionFrame, HTMLNode,
     HTMLNodeClass,
@@ -370,25 +371,28 @@ export function processWickCSS_AST(
     ast: HTMLNode,
     component: ComponentData,
     presets: PresetOptions,
-    host_node_index: number,
-    url: string = ""
+    url: URI = component.location,
+    host_node_index: number = 1,
 ): Promise<void> {
     //Extract style sheet and add to the components stylesheets
-    if (url)
-        if (presets.styles.has(url)) {
-            component.CSS.push(presets.styles.get(url));
+
+    const INLINE = url != component.location;
+
+    if (!INLINE)
+        if (presets.styles.has(url + "")) {
+            component.CSS.push(presets.styles.get(url + ""));
             return;
         }
 
     const [stylesheet] = <CSSNode[]><unknown>ast.nodes,
         style: ComponentStyle = {
             data: stylesheet,
-            INLINE: !url,
             location: url,
             container_element_index: host_node_index
         };
-    if (url)
-        presets.styles.set(url, style);
+
+    if (!INLINE)
+        presets.styles.set(url + "", style);
 
     component.CSS.push(style);
 }

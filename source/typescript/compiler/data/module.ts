@@ -98,7 +98,7 @@ export async function importResource(
 
                     const css_ast = parse_css(css);
 
-                    processWickCSS_AST({ type: HTMLNodeType.HTML_STYLE, nodes: [<any>css_ast], pos: <any>css_ast.pos }, component, presets, null, uri + "");
+                    processWickCSS_AST({ type: HTMLNodeType.HTML_STYLE, nodes: [<any>css_ast], pos: <any>css_ast.pos }, component, presets, uri);
 
                 } catch (e) {
 

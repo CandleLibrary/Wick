@@ -103,11 +103,7 @@ registerFeature(
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-                    if (index == -1)
-                        await build_system.processCSSNode(node, component, presets, host_node.id, node.pos.source);
-                    else
-                        await build_system.processCSSNode(node, component, presets, host_node.id);
-
+                    await build_system.processCSSNode(node, component, presets, component.location, host_node.id);
 
                     return null;
                 }

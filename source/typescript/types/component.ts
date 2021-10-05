@@ -1,5 +1,5 @@
 import { CSSNode } from "@candlelib/css";
-import URL from "@candlelib/uri";
+import URI from "@candlelib/uri";
 import { WickRTComponent } from "../runtime/component.js";
 import { RuntimeComponent } from "../entry-point/wick-full.js";
 import { IntermediateHook, IndirectHook } from "./hook";
@@ -16,13 +16,10 @@ export interface ComponentStyle {
     data: CSSNode;
 
     /**
-     * If the style is defined within the same file
-     * as the component element, the style is considered
-     * inlined.
+     * The source file location for this 
+     * source code
      */
-    INLINE: boolean;
-
-    location: string;
+    location: URI;
 
     container_element_index: number;
 }
@@ -112,7 +109,7 @@ export interface ComponentData {
     /**
      * URL of source file for this component
      */
-    location: URL;
+    location: URI;
 
     /**
      * Mapping between import names and hash names of components that are 
