@@ -155,6 +155,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             this.integrateElement(existing_element, parent_chain.concat(this));
         } else
             this.ele = this.createElement(presets, [this]);
+
+        this.ele.setAttribute("wrt:c", this.name);
     }
 
     initialize(model?: any) {
@@ -247,11 +249,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     addChild(cp: WickRTComponent) {
 
+
+
         for (const ch of this.ch)
             if (ch == cp) continue;
 
         cp.par = this;
-
 
         this.ch.push(cp);
     }
@@ -900,8 +903,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                     ({ sk, PROCESS_CHILDREN } = process_container(ele, scope_component, sk, PROCESS_CHILDREN));
 
                 else if (ele.hasAttribute("w:c") && this.ele !== ele) {
-
-                    takeParentAddChild(this, hydrateComponentElement(ele, component_chain));
+                    hydrateComponentElement(ele, component_chain);
+                    //takeParentAddChild(this, );
 
                     PROCESS_CHILDREN = false;
                 }
