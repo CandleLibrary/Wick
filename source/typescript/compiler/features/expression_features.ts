@@ -68,8 +68,7 @@ registerFeature(
 
                                 expr.type = getExtendTypeVal("watch-call", JSNodeType.CallExpression);
 
-                                build_system.addHook(component, {
-                                    selector: HOOK_SELECTOR.WATCHED_FRAME_METHOD_CALL,
+                                build_system.addIndirectHook(component, expr.type, {
                                     hook_value: expr,
                                     host_node: node,
                                     html_element_index: 0,

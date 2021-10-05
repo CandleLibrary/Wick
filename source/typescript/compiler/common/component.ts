@@ -1,13 +1,14 @@
-import URL from "@candlelib/uri";
+import { default as URI, default as URL } from "@candlelib/uri";
 import { Lexer } from "@candlelib/wind";
-import { PresetOptions } from "source/typescript/types/presets";
 import { WickRTComponent } from "../../runtime/component.js";
-import { ComponentData } from "../../types/component";
-import { DOMLiteral } from "../../types/html";
+import { FunctionFrame, HTMLNode, IndirectHook, IntermediateHook } from "../../types/all.js";
+import { ComponentStyle } from "../../types/component";
+import { DOMLiteral, TemplateHTMLNode } from "../../types/html";
 import { createCompiledComponentClass } from '../ast-build/build.js';
 import { createClassStringObject } from '../ast-render/js.js';
 import { addBindingVariable } from './binding.js';
 import { ComponentHash } from "./hash_name.js";
+import { Context } from './context.js';
 
 export function createErrorComponent(
     errors: Error[],
@@ -72,34 +73,153 @@ export function createErrorComponent(
     return component;
 }
 
-export class ComponentDataClass implements ComponentData {
 
-    RADIATE: ComponentData["RADIATE"];
-    TEMPLATE: ComponentData["TEMPLATE"];
-    name: ComponentData["name"];
-    container_count: ComponentData["container_count"];
-    global_model_name: ComponentData["global_model_name"];
-    source: ComponentData["source"];
-    local_component_names: ComponentData["local_component_names"];
-    location: ComponentData["location"];
-    root_frame: ComponentData["root_frame"];
-    HAS_ERRORS: ComponentData["HAS_ERRORS"];
-    names: ComponentData["names"];
-    frames: ComponentData["frames"];
-    HTML: ComponentData["HTML"];
-    HTML_HEAD: ComponentData["HTML_HEAD"];
-    INLINE_HTML: ComponentData["INLINE_HTML"];
-    CSS: ComponentData["CSS"];
-    hooks: ComponentData["hooks"];
-    children: ComponentData["children"];
-    errors: ComponentData["errors"];
-    root_ele_claims: ComponentData["root_ele_claims"];
-    template: ComponentData["template"];
-    indirect_hooks: ComponentData["indirect_hooks"];
-    templates: ComponentData["templates"];
-    element_counter: ComponentData["element_counter"];
-    element_index_remap: ComponentData["element_index_remap"];
-    presets: PresetOptions;
+/**
+ * Primary store of data for a compiled component, including
+ * method contexts, CSS source and compiled information, and 
+ * HTML AST.
+ */
+export class ComponentData {
+
+    /**
+     * The radiate client side router should be used if 
+     * this true and the component is the root of the 
+     * component tree. 
+     */
+    RADIATE: boolean;
+
+    /**
+     * If true, this component serves as the basis for 
+     * a template. use `import {define_ids} from "@template"`
+     * to create components from this template. 
+     */
+    TEMPLATE: boolean;
+
+    /**
+     * True if errors were encountered when processing
+     * the component. Also, if true, this component will
+     * generate an error report element if it is mounted
+     * to the DOM.
+     */
+    HAS_ERRORS: boolean;
+
+    /**
+     * A list of errors encountered during the parse or
+     * compile phases. No attempt to render the component
+     * should be made if there are errors, as this output 
+     * from such a component is undefined.
+     */
+    errors: Error[];
+
+    /**
+     * Count of number of container tags identified in HTML
+     */
+    container_count: number;
+
+    /**
+     * Child id counter;
+     */
+    children: number[];
+
+    /**
+     * Name of a model defined in presets that will be auto assigned to the
+     * component instance when it is created.
+     */
+    global_model_name: string;
+
+    /**
+     * Functions blocks that identify the input and output variables that are consumed
+     * and produced by the function.
+     */
+    frames: FunctionFrame[];
+
+    /**
+     * Globally unique string identifying this particular component.
+     */
+    name: string;
+
+    /**
+     * Global string identifiers for this particular component
+     */
+    names: string[];
+
+    /**
+     * A linkage between a binding variable and any element that is
+     * modified by the binding variable, including HTML attributes,
+     * CSS attributes, and other binding variables.
+     */
+    hooks: IntermediateHook[];
+
+    /**
+     * The virtual DOM as described within a component with a .html extension or with a
+     */
+    HTML: DOMLiteral;
+
+    /**
+     * HTML elements that should be placed in the head of the document
+     */
+    HTML_HEAD: HTMLNode[];
+
+    /**
+     * HTML nodes that are defined within JS expressions and may
+     * be integrated into the root HTML element through bindings.
+     */
+    INLINE_HTML: HTMLNode[];
+
+    CSS: ComponentStyle[];
+
+    /**
+     * URL of source file for this component
+     */
+    location: URI;
+
+    /**
+     * Mapping between import names and hash names of components that are 
+     * referenced in other components.
+     */
+    local_component_names: Map<string, string>;
+
+    /**
+     * Original source string.
+     */
+    source: string;
+
+    /**
+     * The root function frame
+     */
+    root_frame: FunctionFrame;
+
+    /**
+     * Array of Lexers fenced to comment sections
+     */
+    comments?: Comment[];
+
+    /**
+     * List of foreign component hash names that claim this component's 
+     * root ele. The first element is the "owner" component that has full 
+     * control of the element. Subsequent listed components are "borrowers" 
+     * of the element.
+     */
+    root_ele_claims: string[];
+
+    /**
+     * A a template object for use with static pages
+     */
+    template: TemplateHTMLNode;
+
+    /**
+     * A list of component names that whose templates are needed to 
+     * correctly render this component.
+     */
+    templates: Set<string>;
+
+    indirect_hooks: IndirectHook<any>[];
+
+    element_counter: number;
+
+    element_index_remap: Map<number, number>;
+
+    context: Context;
 
     constructor(source_string: string, location: URL) {
 
@@ -145,7 +265,7 @@ export class ComponentDataClass implements ComponentData {
 
         this.template = null;
 
-        this.presets = null;
+        this.context = null;
 
         this.element_counter = -1;
 
@@ -153,15 +273,35 @@ export class ComponentDataClass implements ComponentData {
     }
 
     get class(): typeof WickRTComponent {
-        return this.presets.component_class.get(this.name);
+        return this.context.component_class.get(this.name);
     }
 
     get class_with_integrated_css() {
-        return this.presets.component_class.get(this.name);
+        return this.context.component_class.get(this.name);
     }
 
     get class_string() {
-        return this.presets.component_class_string.get(this.name);
+        return this.context.component_class_string.get(this.name);
+    }
+
+    async createPatch(context: Context, existing: string) {
+
+        const comp_class = await createCompiledComponentClass(this, context, true, true);
+
+        const class_strings = `
+        const name = "${this.name}";
+        const WickRTComponent = wick.rt.C;
+        const components= wick.rt.presets.component_class;
+        
+        if(!components.has(name)){
+            const class_ = ${createClassStringObject(this, comp_class, context).class_string};
+            components.set(name, class_);
+        }
+
+        return components.get(name);
+        `;
+
+        return class_strings;
     }
 
     createInstance(model: any = null): WickRTComponent {
@@ -176,7 +316,7 @@ export class ComponentDataClass implements ComponentData {
 }
 
 export function createComponentData(source_string: string, location: URL): ComponentData {
-    return new ComponentDataClass(source_string, location);
+    return new ComponentData(source_string, location);
 }
 
 /**

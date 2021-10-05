@@ -1,7 +1,7 @@
 import { JSNode, JSNodeBase } from "@candlelib/js";
-import { ComponentData } from "./component";
+import { ComponentData } from '../compiler/common/component.js';
+import { Context } from '../compiler/common/context.js';
 import { FunctionFrame } from "./function_frame";
-import { PresetOptions } from "./presets.js";
 import { HTMLNode } from "./wick_ast.js";
 
 
@@ -33,7 +33,7 @@ export interface JSHandler<T = JSNode> {
         parent_node: JSNode | HTMLNode,
         skip: (amount?: number) => void,
         component: ComponentData,
-        presets: PresetOptions,
+        context: Context,
         frame: FunctionFrame
     ):
         T

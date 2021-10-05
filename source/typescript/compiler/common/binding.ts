@@ -7,14 +7,15 @@ import {
     BINDING_FLAG,
     BINDING_VARIABLE_TYPE,
     CompiledComponentClass,
-    ComponentData,
     FunctionFrame, PLUGIN_TYPE,
-    PresetOptions, STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE
+    STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import { getOriginalTypeOfExtendedType } from "./extended_types.js";
 import { getExpressionStaticResolutionType } from '../data/static_resolution.js';
 import { getSetOfEnvironmentGlobalNames } from "./global_variables.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "./js_hook_types.js";
+import { Context } from './context.js';
+import { ComponentData } from './component.js';
 
 
 function getNonTempFrame(frame: FunctionFrame) {
@@ -253,7 +254,7 @@ export function getComponentBinding(internal_name: string, component: ComponentD
     return component.root_frame.binding_variables.get(internal_name);
 }
 
-export function processUndefinedBindingVariables(component: ComponentData, presets: PresetOptions) {
+export function processUndefinedBindingVariables(component: ComponentData, context: Context) {
 
     for (const binding_variable of component.root_frame.binding_variables.values()) {
 
@@ -353,10 +354,10 @@ export function getInternalName(binding: BindingVariable) {
 
 
 
-export function haveStaticPluginForRefName(name: string, presets: PresetOptions) {
+export function haveStaticPluginForRefName(name: string, context: Context) {
 
 
-    return presets.plugins.hasPlugin(PLUGIN_TYPE.STATIC_DATA_FETCH, name);
+    return context.plugins.hasPlugin(PLUGIN_TYPE.STATIC_DATA_FETCH, name);
 }
 
 /**
@@ -368,7 +369,7 @@ export function haveStaticPluginForRefName(name: string, presets: PresetOptions)
  * @param comp  - A ComponentData object that can resolutions on binding variables 
  *                that may be references in the ast. 
  * 
- * @param presets - A Presets object that can provide resolution on plugin module
+ * @param context - A Presets object that can provide resolution on plugin module
  *                  references within the ast. 
  * 
  * @param modules - An optional empty Set that will be used to record all module bindings that 
@@ -382,7 +383,7 @@ export function haveStaticPluginForRefName(name: string, presets: PresetOptions)
 export function getBindingStaticResolutionType(
     binding: BindingVariable,
     comp: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     modules: Set<BindingVariable> = null,
     globals: Set<BindingVariable> = null,
 ): STATIC_RESOLUTION_TYPE {
@@ -428,7 +429,7 @@ export function getBindingStaticResolutionType(
         }
 
         if (binding.default_val) {
-            const v = getExpressionStaticResolutionType(binding.default_val, comp, presets);
+            const v = getExpressionStaticResolutionType(binding.default_val, comp, context);
             type |= v;
         }
 
@@ -504,15 +505,15 @@ export function Variable_Is_Declared_In_Closure(var_name: string, frame: Functio
         return false;
 }
 
-export function Is_Statically_Resolvable_On_Server(binding: BindingVariable, comp: ComponentData, presets: PresetOptions): boolean {
+export function Is_Statically_Resolvable_On_Server(binding: BindingVariable, comp: ComponentData, context: Context): boolean {
     const modules: Set<BindingVariable> = new Set();
     const globals: Set<BindingVariable> = new Set();
-    const type = getBindingStaticResolutionType(binding, comp, presets, modules, globals);
+    const type = getBindingStaticResolutionType(binding, comp, context, modules, globals);
 
     if (type == STATIC_RESOLUTION_TYPE.INVALID)
 
         for (const module of modules)
-            if (!haveStaticPluginForRefName(module.internal_name, presets))
+            if (!haveStaticPluginForRefName(module.internal_name, context))
                 return false;
 
     return true;

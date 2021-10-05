@@ -4,48 +4,48 @@ import spark from "@candlelib/spark";
 import { htmlTemplateToString } from "../../build/library/compiler/ast-render/html.js";
 import { componentDataToTempAST } from "../../build/library/compiler/ast-build/html.js";
 import { hydrateComponentElements } from "../../build/library/runtime/html.js";
-import Presets from "../../build/library/compiler/common/presets.js";
+import { Context } from "../../build/library/compiler/common/context.js";
 import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
 import { createCompiledComponentClass } from "../../build/library/compiler/ast-build/build.js";
 import { createClassStringObject, componentDataToJS } from "../../build/library/compiler/ast-render/js.js";
 
-export async function getInstanceHTML(comp, presets) {
-    return (await componentDataToTempAST(comp, presets)).html[0];
+export async function getInstanceHTML(comp, context) {
+    return (await componentDataToTempAST(comp, context)).html[0];
 }
 
-export async function getRenderedHTML(comp, presets) {
-    const html = (await componentDataToTempAST(comp, presets)).html[0];
+export async function getRenderedHTML(comp, context) {
+    const html = (await componentDataToTempAST(comp, context)).html[0];
     return htmlTemplateToString(html);
 }
 
-function ensurePresets(presets = new Presets) {
-    return presets || new Presets;
+function ensureContext(context = new Context) {
+    return context || new Context;
 }
 
-export async function getHTMLString(source_string, presets) {
-    presets = ensurePresets(presets);
-    const component = await parseSource(source_string, presets);
-    const html = (await componentDataToTempAST(component, presets)).html[0];
+export async function getHTMLString(source_string, context) {
+    context = ensureContext(context);
+    const component = await parseSource(source_string, context);
+    const html = (await componentDataToTempAST(component, context)).html[0];
     return htmlTemplateToString(html);
 }
 
-export async function getClassString(source_string, presets) {
-    presets = ensurePresets(presets);
-    const component = await parseSource(source_string, presets);
-    const comp_info = await createCompiledComponentClass(component, presets);
-    return createClassStringObject(component, comp_info, presets).class_string;
+export async function getClassString(source_string, context) {
+    context = ensureContext(context);
+    const component = await parseSource(source_string, context);
+    const comp_info = await createCompiledComponentClass(component, context);
+    return createClassStringObject(component, comp_info, context).class_string;
 }
 
-export async function getCompInstance(source_string, model = null, presets = null) {
-    presets = ensurePresets(presets);
-    const component = await parseSource(source_string, presets);
-    const comp_info = await createCompiledComponentClass(component, presets);
-    return new (componentDataToJS(component, comp_info, presets))(presets, model);
+export async function getCompInstance(source_string, model = null, context = null) {
+    context = ensureContext(context);
+    const component = await parseSource(source_string, context);
+    const comp_info = await createCompiledComponentClass(component, context);
+    return new (componentDataToJS(component, comp_info, context))(context, model);
 }
 
 
-export async function createComponentInstance(comp, presets, model = null) {
-    const ele = html(await getRenderedHTML(comp, presets));
+export async function createComponentInstance(comp, context, model = null) {
+    const ele = html(await getRenderedHTML(comp, context));
 
     const components = hydrateComponentElements([ele]);
 

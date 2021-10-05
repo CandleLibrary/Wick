@@ -1,12 +1,12 @@
 import URI from '@candlelib/uri';
-import { PresetOptions, UserPresets } from "../types/presets.js";
+import { Context, UserPresets } from '../compiler/common/context.js';
 
 /**
  * Loads ES6 modules from a source path. 
  * @param incoming_options 
  * @param extant_presets 
  */
-export async function loadModules(incoming_options: UserPresets, extant_presets: PresetOptions) {
+export async function loadModules(incoming_options: UserPresets, extant_presets: Context) {
 
     for (const [id, url] of incoming_options.repo) {
 

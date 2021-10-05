@@ -6,6 +6,8 @@ import { Element } from './element.js';
 export const enum PageType {
     WICK_PAGE,
     WICK_MODAL,
+
+    WICK_TRANSITIONING_MODAL,
     STANDARD
 }
 
@@ -35,7 +37,7 @@ export class PageView {
         this.url = URL;
         this.eles = [];
         this.finalizing_view = null;
-        this.type = "normal";
+        this.type = PageType.STANDARD;
         this.ele = app_page;
         this.component = null;
         this.ele_backer = null;

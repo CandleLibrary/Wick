@@ -2,7 +2,7 @@ import HTML from "@candlelib/html";
 import { componentDataToTempAST } from "../build/library/compiler/ast-build/html.js";
 import { htmlTemplateToString } from "../build/library/compiler/ast-render/html.js";
 import { enableBuildFeatures } from "../build/library/compiler/build_system.js";
-import Presets from "../build/library/compiler/common/presets.js";
+import { Context } from "../build/library/compiler/common/context.js";
 import wick_server from "../build/library/entry-point/wick-server.js";
 import { assertTree } from "./test-tools/tools.js";
 
@@ -33,13 +33,13 @@ export default <div>
     </container>
 </div>`;
 
-    const presets = new Presets();
+    const context = new Context();
 
-    const component = await wick_server(source_string, presets);
+    const component = await wick_server(source_string, context);
 
     enableBuildFeatures();
 
-    const { html } = await componentDataToTempAST(component, presets);
+    const { html } = await componentDataToTempAST(component, context);
 
     assertTree({
         t: "div",
@@ -88,11 +88,11 @@ export default <div>
     <temp_comp export={ datas as data}></temp_comp>
 </div>`;
 
-    const presets = new Presets();
+    const context = new Context();
 
-    const component = await wick_server(source_string, presets);
+    const component = await wick_server(source_string, context);
 
-    const { html } = await componentDataToTempAST(component, presets);
+    const { html } = await componentDataToTempAST(component, context);
 
     const html_string = htmlTemplateToString(html[0]);
 
@@ -132,11 +132,11 @@ export default <div>
     <h2>{data.headerB + "-123"}</h2>
 </div>`;
 
-    const presets = new Presets();
+    const context = new Context();
 
-    const component = await wick_server(source_string, presets);
+    const component = await wick_server(source_string, context);
 
-    const { html } = await componentDataToTempAST(component, presets);
+    const { html } = await componentDataToTempAST(component, context);
 
     const html_string = htmlTemplateToString(html[0]);
 

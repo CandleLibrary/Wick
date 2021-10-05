@@ -1,6 +1,6 @@
 
 import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlelib/css";
-import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlelib/js";
+import { JSNode, JSNodeTypeLU } from "@candlelib/js";
 import URL from "@candlelib/uri";
 import { createCompiledComponentClass } from "../compiler/ast-build/build.js";
 import { parseSource } from "../compiler/ast-parse/source.js";
@@ -11,7 +11,7 @@ import {
     componentDataToJSCached,
 } from "../compiler/ast-render/js.js";
 import * as b_sys from "../compiler/build_system.js";
-import { ComponentDataClass } from "../compiler/common/component.js";
+import { ComponentData } from "../compiler/common/component.js";
 import { css_selector_helpers } from "../compiler/common/css.js";
 import { ComponentHash } from "../compiler/common/hash_name.js";
 
@@ -22,27 +22,17 @@ import { rt, WickRuntime } from "../runtime/global.js";
 import { Observable } from "../runtime/observable/observable.js";
 import { ObservableScheme } from "../runtime/observable/observable_prototyped.js";
 import { init, WickTest as test } from "../test/wick.test.js";
-import {
-    BindingVariable,
-    BINDING_FLAG,
-    BINDING_VARIABLE_TYPE,
-    ComponentData,
-    DOMLiteral,
-    ExtendedComponentData,
-    FunctionFrame,
-    HTMLNode,
-    HTMLNodeClass,
-    HTMLNodeTypeLU,
-    IntermediateHook,
-    ObservableModel,
-    ObservableWatcher,
-    PresetOptions
-} from "../types/all.js";
+
+import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from '../types/wick_ast.js';
+import { BindingVariable, BINDING_VARIABLE_TYPE } from '../types/binding.js';
+
+import { Context } from '../compiler/common/context.js';
+import { DOMLiteral } from '../types/html.js';
+
 // Load features. Only need side effects as the proper 
 // systems will automatically register themselves through the
 // build system
 import { log } from './logger.js';
-import { Presets } from "./wick-runtime.js";
 
 export * from "../compiler/source-code-render/render.js";
 export * from "../compiler/source-code-render/rules.js";
@@ -57,41 +47,7 @@ export {
 
     //tools
     test,
-
-    //Object Types
-    PresetOptions as Presets,
-    WickRTComponent as RuntimeComponent,
-    WickRTComponent,
-    HTMLNodeTypeLU as HTMLNodeType,
-    JSNodeTypeLU,
-    CSSNodeType,
-
-    //Pure Types
-    WickLibrary,
-    ExtendedComponentData as ExtendedComponent,
-    WickRuntime,
-    ComponentData as Component,
-    ComponentData,
-    ObservableModel,
-    ObservableWatcher,
-    DOMLiteral,
-    BindingVariable,
-    JSNode,
-    HTMLNode as HTMLNode,
-    CSSNode,
-    JSNodeType,
-    HTMLNodeClass as HTMLNodeClass,
-    FunctionFrame,
-    IntermediateHook as IntermediateBinding,
-    BINDING_VARIABLE_TYPE,
-    BINDING_FLAG as DATA_FLOW_FLAG,
-
-    /*Observables*/
-    Observable,
-
 };
-
-
 
 log("\n\n----------- Initializing Wick ---------------");
 
@@ -110,6 +66,7 @@ import "../compiler/features/string_features.js";
 import "../compiler/features/text_node_features.js";
 import "../compiler/features/template_features.js";
 import "../compiler/features/markdown_features.js";
+
 
 
 await b_sys.loadFeatures();
@@ -174,7 +131,7 @@ export interface WickCompiler {
          * Main store of parsing and runtime objects and 
          * options.
          */
-        Presets: typeof Presets;
+        Context: typeof Context;
 
         /**
          * Class type for runtime components
@@ -197,7 +154,7 @@ export interface WickCompiler {
         HTMLNodeType: typeof HTMLNodeTypeLU;
         HTMLNodeClass: typeof HTMLNodeClass;
         VARIABLE_REFERENCE_TYPE: BINDING_VARIABLE_TYPE;
-        PresetOptions: PresetOptions;
+        PresetOptions: Context;
     };
 }
 
@@ -209,29 +166,29 @@ export interface WickCompiler {
  * 
  * @param input - String with Wick source text or a URL to a file containing source text.
  * 
- * @param presets - An optional Presets object. If this is left undefined then the global 
+ * @param context - An optional Presets object. If this is left undefined then the global 
  * presets object will be used, or a new global presets object will be created if not defined. This
  * argument is Presets object and the global presets object has not yet been set, then global presets
  * will be set to the value of this argument.
  * 
- * @returns {Promise<ComponentDataClass>}
+ * @returns {Promise<ComponentData>}
  */
-async function componentCreate(input: string | URL, presets: PresetOptions = rt.presets): Promise<ComponentDataClass> {
+async function componentCreate(input: string | URL, context: Context = rt.context): Promise<ComponentData> {
 
     // Ensure there is a presets object attached to this component.
-    if (!presets)
-        presets = new Presets();
+    if (!context)
+        context = new Context();
 
-    if (!rt.presets)
-        rt.presets = presets;
+    if (!rt.context)
+        rt.context = context;
 
     b_sys.enableParserFeatures();
 
-    const { comp: comp_data } = await parseSource(input, presets);
+    const { comp: comp_data } = await parseSource(input, context);
 
     b_sys.disableParserFeatures();
 
-    comp_data.presets = presets;
+    comp_data.context = context;
 
     return comp_data;
 }
@@ -239,7 +196,7 @@ async function componentCreate(input: string | URL, presets: PresetOptions = rt.
 /**
  * Wick component parser and component library.
  */
-type WickLibrary = typeof componentCreate & WickCompiler & WickRuntime;
+export type WickLibrary = typeof componentCreate & WickCompiler & WickRuntime;
 
 /** README:USAGE
  * 
@@ -278,7 +235,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
 
         root_components: [],
 
-        get presets() { return rt.presets; },
+        get presets() { return rt.context; },
 
         utils: {
             parse: {
@@ -304,10 +261,10 @@ const wick: WickLibrary = Object.assign(componentCreate,
             setWrapper: async function (url) {
                 //create new component
 
-                if (!rt.presets)
-                    rt.presets = new Presets();
+                if (!rt.context)
+                    rt.context = new Context();
 
-                rt.presets.wrapper = await <any>wick(url);
+                rt.context.wrapper = await <any>wick(url);
             },
 
             componentToClass: componentDataToJS,
@@ -324,7 +281,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
 
         objects: {
             WickRTComponent,
-            Presets: Presets,
+            Context: Context,
             Observable,
             ObservableScheme
         },

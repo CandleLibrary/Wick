@@ -49,7 +49,11 @@ registerFeature(
 
                                 const initializer = AsyncFunction(`return (${renderCompressed(arg)})(...arguments)`);
 
-                                const ids = await initializer({});
+                                utils.set_working_directory(comp.location);
+
+                                const ids = await initializer(utils);
+
+                                utils.reset_working_directory();
 
                                 if (!Array.isArray(ids))
                                     arg.pos.throw("Expecting return value to be an array ", comp.location.toString());

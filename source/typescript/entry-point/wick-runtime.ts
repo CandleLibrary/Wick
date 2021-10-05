@@ -1,11 +1,10 @@
-import Presets from "../compiler/common/presets.js";
+import { UserPresets } from '../compiler/common/context.js';
 import { rt } from "../runtime/global.js";
 import {
     Element_Is_Wick_Component,
     Element_Is_Wick_Template, hydrateComponentElements
 } from "../runtime/html.js";
 import { loadModules } from "../runtime/load_modules.js";
-import { UserPresets } from '../types/presets.js';
 
 let
     nop = _ => !0,
@@ -41,7 +40,7 @@ const wick = Object.assign(wick_root, {
         wick.rt.setPresets(presets_options);
 
         // Load API modules
-        wick.init_module_promise = loadModules(presets_options, wick.rt.presets);
+        wick.init_module_promise = loadModules(presets_options, wick.rt.context);
 
         return wick.init_module_promise;
     },
@@ -121,11 +120,5 @@ export function gatherWickElements(dom: HTMLElement = window.document.body) {
 
     return pending_component_elements;
 }
-
-
-
-
-
-export { Presets };
 
 export default wick;

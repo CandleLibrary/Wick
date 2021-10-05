@@ -1,4 +1,5 @@
 import { log } from '../entry-point/logger.js';
+import { performance } from "perf_hooks";
 
 type RunTag = Readonly<{
     have_stack_name: boolean,

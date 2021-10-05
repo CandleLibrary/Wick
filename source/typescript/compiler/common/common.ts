@@ -1,7 +1,9 @@
 import { traverse } from "@candlelib/conflagrate";
 import { Lexer } from "@candlelib/wind";
-import { ComponentData, Node, PresetOptions } from "../../types/all.js";
+import { Node } from "../../types/all.js";
+import { ComponentData } from './component.js';
 import { ModuleHash } from "./hash_name.js";
+import { Context } from './context.js';
 
 /**
  * Set the givin Lexer as the pos val for each node
@@ -24,13 +26,13 @@ export function setPos<T>(node: T, pos: Lexer | any): T {
 }
 
 
-export function addPendingModuleToPresets(presets: PresetOptions, from_value: string): string {
+export function addPendingModuleToPresets(context: Context, from_value: string): string {
 
     const url = from_value.toString().trim();
 
     const hash = ModuleHash(url);
 
-    presets.repo.set(url, {
+    context.repo.set(url, {
         url: url,
         hash: hash,
         module: null

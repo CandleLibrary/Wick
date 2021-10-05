@@ -17,8 +17,8 @@ function createTransition(val?: boolean): Transition {
     if (!rt.glow) {
         const trs = { add: () => null, addEventListener: (n, v) => v() };
 
-        return {
-            in: trs, out: trs, play: () => null, addEventListener: ((n, v) => { v(); })
+        return <any>{
+            in: trs, out: trs, play: () => null, addEventListener: (<any>((n, v) => { v(); }))
         };
     }
     else return rt.glow.createTransition(val);

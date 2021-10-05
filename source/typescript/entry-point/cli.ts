@@ -33,10 +33,10 @@ import {
 } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
 import { default_radiate_hooks, default_wick_hooks, RenderPage } from '../compiler/ast-render/webpage.js';
-import Presets from "../compiler/common/presets.js";
+import { ComponentData } from '../compiler/common/component.js';
+import { Context } from "../compiler/common/context.js";
 import { compile_module } from '../server/compile_module.js';
 import { loadComponentsFromDirectory } from '../server/load_directory.js';
-import { ComponentData } from './wick-full.js';
 
 
 URI.server();
@@ -83,7 +83,7 @@ optionally hydrated with the associated support scripts.
 			const root_directory = URI.resolveRelative(input_path);
 			const output_directory = URI.resolveRelative("./www/");
 			//Compile a list of entry components
-			const presets = new Presets();
+			const presets = new Context();
 
 			const { endpoints: components, page_components } = await loadComponentsFromDirectory(
 				root_directory, presets);
@@ -170,7 +170,7 @@ processCLIConfig();
 
 async function buildComponentPage(
 	component: ComponentData,
-	presets: Presets,
+	context: Context,
 	output_name: string,
 	output_directory: URI,
 	template_data?: any
@@ -206,7 +206,7 @@ async function buildComponentPage(
 			w.hydrate();`;
 		};
 
-	const { page } = await RenderPage(component, presets, hooks, template_data);
+	const { page } = await RenderPage(component, context, hooks, template_data);
 
 	await fsp.writeFile(resolved_filepath + "/index.html", page, { encoding: 'utf8' });
 

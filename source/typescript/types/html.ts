@@ -1,6 +1,6 @@
 import { Lexer } from "@candlelib/wind";
-import { ComponentData } from "./component";
-import { PresetOptions } from "./presets.js";
+import { ComponentData } from '../compiler/common/component.js';
+import { Context } from '../compiler/common/context.js';
 import { HTMLNode } from "./wick_ast.js";
 
 
@@ -53,7 +53,7 @@ export interface HTMLHandler<T = HTMLNode, P = HTMLNode> {
         element_index: number,
         skip: () => void,
         component: ComponentData,
-        presets: PresetOptions
+        context: Context
     ):
         (T | P)
         | void

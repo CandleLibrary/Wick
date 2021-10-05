@@ -1,9 +1,10 @@
 import { JSNode, JSNodeType } from "@candlelib/js";
 import URL from "@candlelib/uri";
-import { BINDING_FLAG, BINDING_VARIABLE_TYPE, ComponentData, HTMLNode, HTMLNodeClass, PresetOptions } from "../../types/all.js";
+import { BINDING_FLAG, BINDING_VARIABLE_TYPE, HTMLNode, HTMLNodeClass } from "../../types/all.js";
 import { addBindingVariable, processUndefinedBindingVariables } from "../common/binding.js";
-import { ComponentDataClass, createComponentData } from "../common/component.js";
+import { ComponentData, createComponentData } from "../common/component.js";
 import { createParseFrame } from "../common/frame.js";
+import { Context } from '../common/context.js';
 import { metrics } from '../metrics.js';
 import { parse_component } from "../source-code-parse/parse.js";
 import { processWickHTML_AST, processWickJS_AST } from "./parse.js";
@@ -11,9 +12,9 @@ import { processWickHTML_AST, processWickJS_AST } from "./parse.js";
 export const component_cache = {};
 
 
-function addComponentNamesToPresets(component: ComponentData, presets: PresetOptions) {
+function addComponentNamesToPresets(component: ComponentData, context: Context) {
     for (const name of component.names)
-        presets.named_components.set(name.toUpperCase(), component);
+        context.named_components.set(name.toUpperCase(), component);
 }
 
 
@@ -43,14 +44,14 @@ const empty_obj = {};
  * It will accept a string containing wick markup, or a URL that points to a wick component.
  * 
  * @param input {number}
- * @param presets {PresetOptions} - 
+ * @param presets {Context} - 
  * @param root_url 
  */
 export async function parseSource(
     input: URL | string,
-    presets?: PresetOptions,
+    presets?: Context,
     root_url: URL = new URL(URL.GLOBAL + "/")
-): Promise<{ IS_NEW: boolean, comp: ComponentDataClass; }> {
+): Promise<{ IS_NEW: boolean, comp: ComponentData; }> {
 
     const run_tag = metrics.startRun("Parse Source Input");
 
@@ -129,7 +130,7 @@ export async function parseSource(
         comments = []
     } = data;
 
-    return <Promise<{ IS_NEW: boolean, comp: ComponentDataClass; }>>
+    return <Promise<{ IS_NEW: boolean, comp: ComponentData; }>>
         <any>await parseComponentAST(ast,
             <string>input_string,
             source_url,
@@ -143,11 +144,11 @@ export async function parseComponentAST(
     ast: HTMLNode | JSNode,
     source_string: string,
     url: URL,
-    presets: PresetOptions,
+    context: Context,
     parent: ComponentData = null,
     parse_errors: Error[] = [],
 
-): Promise<{ IS_NEW: boolean, comp: ComponentDataClass; }> {
+): Promise<{ IS_NEW: boolean, comp: ComponentData; }> {
 
     const run_tag = metrics.startRun("Parse Source AST");
 
@@ -155,12 +156,12 @@ export async function parseComponentAST(
     const
         component: ComponentData = createComponentData(source_string, url);
 
-    if (presets.components.has(component.name)) {
+    if (context.components.has(component.name)) {
         metrics.endRun(run_tag);
-        return { IS_NEW: false, comp: presets.components.get(component.name) };
+        return { IS_NEW: false, comp: context.components.get(component.name) };
     }
 
-    presets.components.set(component.name, component);
+    context.components.set(component.name, component);
 
     component.root_frame = createParseFrame(null, component);
 
@@ -180,13 +181,13 @@ export async function parseComponentAST(
                 const IS_SCRIPT = determineSourceType(ast);
 
                 if (IS_SCRIPT)
-                    await processWickJS_AST(<JSNode>ast, component, presets);
+                    await processWickJS_AST(<JSNode>ast, component, context);
                 else
-                    await processWickHTML_AST(getHTML_AST(ast), component, presets);
+                    await processWickHTML_AST(getHTML_AST(ast), component, context);
 
-                addComponentNamesToPresets(component, presets);
+                addComponentNamesToPresets(component, context);
 
-                processUndefinedBindingVariables(component, presets);
+                processUndefinedBindingVariables(component, context);
 
                 metrics.endRun(run_tag);
 
@@ -261,7 +262,7 @@ export async function fetchASTFromRemote(url: URL) {
 
     //TODO: Can throw
     try {
-        string = <string>await url.fetchText(false);
+        string = <string>await url.fetchText();
 
         // HACK -- if the source data is a css file, then wrap the source string into a <style></style> element string to enable 
         // the wick parser to parser the data correctly. 

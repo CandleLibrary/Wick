@@ -3,17 +3,18 @@ import { CSSNode } from "@candlelib/css";
 import { JSFunctionDeclaration, JSNode, JSNodeType, JSNodeTypeLU } from "@candlelib/js";
 import URI from '@candlelib/uri';
 import {
-    ComponentData, ComponentStyle, FunctionFrame, HTMLNode,
+    ComponentStyle, FunctionFrame, HTMLNode,
     HTMLNodeClass,
     HTMLNodeType,
     HTMLTextNode,
-    PresetOptions,
     WICK_AST_NODE_TYPE_BASE
 
 } from "../../types/all.js";
 import { getBindingRefCount, getRootFrame } from "../common/binding.js";
+import { ComponentData } from '../common/component.js';
 import { createParseFrame } from "../common/frame.js";
 import { buildExportableDOMNode } from "../common/html.js";
+import { Context } from '../common/context.js';
 import { html_handlers } from "./html.js";
 import { JS_handlers } from "./js.js";
 
@@ -49,25 +50,25 @@ export function incrementBindingRefCounters(function_frame: FunctionFrame) {
             root.binding_variables.get(name).ref_count += count;
 }
 
-export async function processFunctionDeclaration(node: JSNode, component: ComponentData, presets: PresetOptions, root_name = "") {
-    return await processWickJS_AST(node, component, presets, root_name, component.root_frame);
+export async function processFunctionDeclaration(node: JSNode, component: ComponentData, context: Context, root_name = "") {
+    return await processWickJS_AST(node, component, context, root_name, component.root_frame);
 }
 
-export async function processWickJS_AST(ast: JSNode, component: ComponentData, presets: PresetOptions, root_name = "", frame = null, TEMPORARY = false): Promise<FunctionFrame> {
+export async function processWickJS_AST(ast: JSNode, component: ComponentData, context: Context, root_name = "", frame = null, TEMPORARY = false): Promise<FunctionFrame> {
     return await processCoreAsync(
         ast,
         getFunctionFrame(ast, component, frame, TEMPORARY),
         component,
-        presets
+        context
     );
 }
 
-export function postProcessFunctionDeclarationSync(node: JSNode, component: ComponentData, presets: PresetOptions) {
+export function postProcessFunctionDeclarationSync(node: JSNode, component: ComponentData, context: Context) {
     return processCoreSync(
         node,
         getFunctionFrame(node, component, component.root_frame, true, false),
         component,
-        presets,
+        context,
     );
 }
 
@@ -75,12 +76,12 @@ export async function processCoreAsync(
     ast: JSNode,
     function_frame: FunctionFrame,
     component: ComponentData,
-    presets: PresetOptions
+    context: Context
 ) {
 
     function_frame.backup_ast = copy(ast);
 
-    function_frame.ast = <JSFunctionDeclaration>(await processNodeAsync(ast, function_frame, component, presets, true));
+    function_frame.ast = <JSFunctionDeclaration>(await processNodeAsync(ast, function_frame, component, context, true));
 
 
 
@@ -94,12 +95,12 @@ export function processCoreSync(
     ast: JSNode,
     function_frame: FunctionFrame,
     component: ComponentData,
-    presets: PresetOptions
+    context: Context
 ) {
 
     function_frame.backup_ast = copy(ast);
 
-    function_frame.ast = <JSFunctionDeclaration>processNodeSync(ast, function_frame, component, presets, true);
+    function_frame.ast = <JSFunctionDeclaration>processNodeSync(ast, function_frame, component, context, true);
 
     incrementBindingRefCounters(function_frame);
 
@@ -110,17 +111,17 @@ export function processNodeSync(
     ast: JSNode,
     function_frame: FunctionFrame,
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     SKIP_ROOT: boolean = false
 ) {
 
-    const gen = processNodeGenerator(ast, function_frame, component, presets, SKIP_ROOT);
+    const gen = processNodeGenerator(ast, function_frame, component, context, SKIP_ROOT);
 
     let val = gen.next();
 
     while (val.done == false) {
         const { node } = val.value;
-        val = gen.next(<JSNode>{
+        val = gen.next(<JSNode><any>{
             type: JSNodeType.StringLiteral,
             quote_type: "\"",
             value: `
@@ -137,7 +138,7 @@ export function processNodeSync(
  * @param ast 
  * @param function_frame 
  * @param component 
- * @param presets 
+ * @param context 
  * @param SKIP_ROOT 
  * @returns 
  */
@@ -145,10 +146,10 @@ export async function processNodeAsync(
     ast: JSNode,
     function_frame: FunctionFrame,
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     SKIP_ROOT: boolean = false
 ) {
-    const gen = processNodeGenerator(ast, function_frame, component, presets, SKIP_ROOT);
+    const gen = processNodeGenerator(ast, function_frame, component, context, SKIP_ROOT);
 
     let val = gen.next();
 
@@ -173,7 +174,7 @@ export function* processNodeGenerator(
     ast: JSNode,
     function_frame: FunctionFrame,
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     SKIP_ROOT: boolean = false
 ): Generator<{ promise: Promise<JSNode | void>; node: JSNode; }, JSNode, JSNode | void> {
 
@@ -194,7 +195,7 @@ export function* processNodeGenerator(
         for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
 
             const
-                pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_frame),
+                pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, context, function_frame),
                 result = (pending instanceof Promise)
                     ? yield { promise: pending, node }
                     : pending;
@@ -212,24 +213,24 @@ export function* processNodeGenerator(
     return extract.ast;
 }
 
-async function loadHTMLImports(ast: HTMLNode, component: ComponentData, presets: PresetOptions) {
+async function loadHTMLImports(ast: HTMLNode, component: ComponentData, context: Context) {
     if (ast.import_list)
         for (const import_ of <HTMLNode[]>(ast.import_list)) {
             for (const handler of html_handlers[(HTMLNodeType.HTML_IMPORT >>> 23) - WICK_AST_NODE_TYPE_BASE]) {
-                if (! await handler.prepareHTMLNode(import_, ast, import_, 0, () => { }, component, presets)) break;
+                if (! await handler.prepareHTMLNode(import_, ast, import_, 0, () => { }, component, context)) break;
             }
         }
 }
 
 export async function processWickHTML_AST(ast: HTMLNode,
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     USE_AS_PRIMARY_HTML: boolean = true
 ): Promise<HTMLNode> {
     //Process the import list
 
     //@ts-ignore
-    await loadHTMLImports(ast, component, presets);
+    await loadHTMLImports(ast, component, context);
 
     //Process the ast and return a node that  
     const receiver: {
@@ -280,7 +281,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
         for (const handler of html_handlers[Math.max((node.type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)]) {
 
             const
-                pending = handler.prepareHTMLNode(node, parent, last_element, ele_index, skip, component, presets),
+                pending = handler.prepareHTMLNode(node, parent, last_element, ele_index, skip, component, context),
                 result = (pending instanceof Promise) ? await pending : pending;
 
 
@@ -323,7 +324,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
                         ele_index,
                         () => { },
                         component,
-                        presets
+                        context
                     );
 
                     if (result instanceof Promise)
@@ -349,12 +350,12 @@ export async function processWickHTML_AST(ast: HTMLNode,
         if (USE_AS_PRIMARY_HTML)
             component.HTML = buildExportableDOMNode(receiver.ast);
         else
-            component.INLINE_HTML.push(receiver.ast);
+            component.INLINE_HTML.push(<any>receiver.ast);
 
         if (
             receiver.ast.component_name
         ) {
-            const sup_component = presets.components.get(receiver.ast.component_name);
+            const sup_component = context.components.get(receiver.ast.component_name);
 
             component.root_ele_claims = [...sup_component.root_ele_claims, component.name];
         } else {
@@ -370,7 +371,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
 export function processWickCSS_AST(
     ast: HTMLNode,
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     url: URI = component.location,
     host_node_index: number = 1,
 ): Promise<void> {
@@ -379,8 +380,8 @@ export function processWickCSS_AST(
     const INLINE = url != component.location;
 
     if (!INLINE)
-        if (presets.styles.has(url + "")) {
-            component.CSS.push(presets.styles.get(url + ""));
+        if (context.styles.has(url + "")) {
+            component.CSS.push(context.styles.get(url + ""));
             return;
         }
 
@@ -392,7 +393,7 @@ export function processWickCSS_AST(
         };
 
     if (!INLINE)
-        presets.styles.set(url + "", style);
+        context.styles.set(url + "", style);
 
     component.CSS.push(style);
 }

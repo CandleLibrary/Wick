@@ -1,8 +1,6 @@
 import spark, { Sparky } from "@candlelib/spark";
-import { BINDING_FLAG } from "../types/binding";
-import { ObservableModel, ObservableWatcher } from "../types/model";
-import { PresetOptions } from "../types/presets";
-import { takeParentAddChild } from "./common.js";
+import { Context } from '../compiler/common/context.js';
+import { BINDING_FLAG, ObservableModel, ObservableWatcher } from "../types/all";
 import { WickContainer } from "./container.js";
 import { rt } from "./global.js";
 import {
@@ -32,12 +30,11 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     ele: HTMLElement;
 
-    elu: (Element | Text)[][];
+    elu: (HTMLElement | Text)[][];
 
     CONNECTED: boolean;
 
-    presets: PresetOptions;
-
+    context: Context;
     nlu: object;
 
     lookup_function_table: BindingUpdateFunction[];
@@ -71,7 +68,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     name: string;
 
     protected wrapper?: WickRTComponent;
-
+    INITIALIZED: boolean;
     TRANSITIONED_IN: boolean;
     DESTROY_AFTER_TRANSITION: boolean;
 
@@ -100,7 +97,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         wrapper = null,
         parent_chain: WickRTComponent[] = [],
         default_model_name = "",
-        presets: PresetOptions = rt.presets,
+        context: Context = rt.context,
         element_affinity = 0
     ) {
 
@@ -135,7 +132,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         this._SCHD_ = 0;
         this.polling_id = -1;
-        this.presets = presets;
+        this.context = context;
 
         const parent = parent_chain[parent_chain.length - 1];
 
@@ -144,9 +141,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         //Create or assign global model whose name matches the default_model_name;
         if (default_model_name) {
-            if (!presets.models[default_model_name])
-                presets.models[default_model_name] = {};
-            model = presets.models[default_model_name];
+            if (!context.models[default_model_name])
+                context.models[default_model_name] = {};
+            model = context.models[default_model_name];
         }
 
         this.wrapper = wrapper;
@@ -154,7 +151,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         if (existing_element) {
             this.integrateElement(existing_element, parent_chain.concat(this));
         } else
-            this.ele = this.createElement(presets, [this]);
+            this.ele = this.createElement(context, [this]);
 
         this.ele.setAttribute("wrt:c", this.name);
     }
@@ -187,7 +184,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     hydrate(model?: Object) {
 
-        const presets = this.presets, wrapper = this.wrapper;
+        const presets = this.context, wrapper = this.wrapper;
 
         //   this.CONNECTED = true;
         //
@@ -302,13 +299,13 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     removeCSS() {
 
-        const cache = this.presets.css_cache[this.name];
+        const cache = this.context.css_cache[this.name];
 
         if (cache) {
             cache.count--;
             if (cache.count <= 0) {
                 cache.css_ele.parentElement.removeChild(cache.css_ele);
-                this.presets.css_cache[this.name] = null;
+                this.context.css_cache[this.name] = null;
             }
         }
     }
@@ -317,9 +314,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (style_string) {
 
-            if (!this.presets.css_cache[this.name]) {
+            if (!this.context.css_cache[this.name]) {
 
-                const { window: { document }, css_cache } = this.presets,
+                const { window: { document }, css_cache } = this.context,
                     css_ele = document.createElement("style");
 
                 css_ele.innerHTML = style_string;
@@ -328,7 +325,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                 css_cache[this.name] = { css_ele, count: 1 };
             } else
-                this.presets.css_cache[this.name].count++;
+                this.context.css_cache[this.name].count++;
 
             this.ele.classList.add(this.name);
         }
@@ -831,7 +828,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             // Binding Text Node
             if (ele.tagName == "W-E") {
 
-                const child = ele.children[0];
+                const child = <any>ele.children[0];
 
                 this.integrateElement(child, component_chain);
 
@@ -865,7 +862,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             } else {
 
                 if (ele.tagName == "A")
-                    rt.presets.processLink(ele);
+                    rt.context.processLink(ele);
 
                 // Attribute that affect scope assignment
 
@@ -873,7 +870,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                     // Element outside the scope of the current component
 
-                    this.par.elu[+ele.hasAttribute("w:o")] = ele;
+                    this.par.se(+ele.hasAttribute("w:o"), ele);
 
                     //@ts-ignore
                     iterateElementChildren(ele, this.par, component_chain);
@@ -889,7 +886,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                     scope_component = component_chain[comp_index];
 
-                    scope_component.elu[lu_index] = ele;
+                    scope_component.se(lu_index, ele);
                 }
 
                 if (ele.hasAttribute("w:u"))
@@ -962,9 +959,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         for (const ele of this.elu[ele_index] ?? []) {
             if (attribute_name == "value")
-                ele.value = attribute_value;
+                (<HTMLInputElement>ele).value = attribute_value;
             else
-                ele.setAttribute(attribute_name, attribute_value);
+                (<HTMLElement>ele).setAttribute(attribute_name, attribute_value);
         }
     }
 

@@ -1,7 +1,7 @@
 
 import GlowAnimation from '@candlelib/glow';
-import Presets from "../compiler/common/presets.js";
-import { PresetOptions, UserPresets } from "../types/presets";
+import { Context, UserPresets } from "../compiler/common/context.js";
+
 import { WickRTComponent } from "./component.js";
 
 export const global_object = (typeof global !== "undefined") ? global : window;
@@ -40,13 +40,13 @@ export interface WickRuntime {
      * @param name 
      */
     gC(name: string): typeof WickRTComponent,
-    presets: PresetOptions;
+    context: Context;
     /**
      * Replace the current presets with a new set.
      * > Warning:  This will cause a lose of all currently
      * > compiled components.
      */
-    setPresets: (preset_options?: UserPresets) => Presets,
+    setPresets: (preset_options?: UserPresets) => Context,
     /**
      * Template elements mapped to component names
      */
@@ -76,21 +76,21 @@ const rt: WickRuntime = (() => {
 
         get glow(): typeof GlowAnimation { return glow; },
 
-        get p() { return rt.presets; },
+        get p() { return rt.context; },
 
         get C() { return WickRTComponent; },
 
         router: null,
 
-        presets: null,
+        context: null,
         /**
          * Registers component
          * @param component - A WickTt
          * @returns 
          */
-        rC: component => (rt.presets.component_class.set(component.name, component), component),
+        rC: component => (rt.context.component_class.set(component.name, component), component),
 
-        gC: component_name => rt.presets.component_class.get(component_name),
+        gC: component_name => rt.context.component_class.get(component_name),
 
         templates: new Map,
 
@@ -101,22 +101,22 @@ const rt: WickRuntime = (() => {
 
         setPresets: (preset_options: UserPresets) => {
 
-            if (rt.presets) {
+            if (rt.context) {
 
                 if (preset_options)
                     //@ts-ignore
-                    rt.presets.integrate_new_options(preset_options);
+                    rt.context.integrate_new_options(preset_options);
 
             } else {
 
                 //create new component
-                const presets = new Presets(preset_options);
+                const presets = new Context(preset_options);
 
                 //if (!rt.presets)
-                rt.presets = <Presets><any>presets;
+                rt.context = <Context><any>presets;
             }
 
-            return <Presets>rt.presets;
+            return <Context>rt.context;
         },
 
         init: null,
@@ -124,7 +124,7 @@ const rt: WickRuntime = (() => {
         addAPI(obj) {
 
             for (const name in obj)
-                rt.presets.api[name] = { default: obj[name] };
+                rt.context.api[name] = { default: obj[name] };
         }
     };
 })();

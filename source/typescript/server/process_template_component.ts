@@ -1,13 +1,15 @@
-import { ComponentData, PresetOptions } from '../types/all';
+import { ComponentData } from '../compiler/common/component';
+import { Context } from '../compiler/common/context';
+
 
 export async function processTemplateComponent(
     component: ComponentData,
-    presets: PresetOptions
+    context: Context
 ) {
 
     if (component.TEMPLATE) {
 
-        let data = presets.template_data.get(component);
+        let data = context.template_data.get(component);
 
         for (const template_data of data) {
 
@@ -17,15 +19,15 @@ export async function processTemplateComponent(
                     component.location.toString()
                 );
 
-            presets.active_template_data = template_data;
+            context.active_template_data = template_data;
 
-            const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
+            /* const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
                 = await buildComponentPage(component, presets, template_data.page_name, output_directory);
 
             presets.active_template_data = null;
 
             USE_RADIATE_RUNTIME ||= A;
-            USE_WICK_RUNTIME ||= B;
+            USE_WICK_RUNTIME ||= B; */
         }
     }
 }

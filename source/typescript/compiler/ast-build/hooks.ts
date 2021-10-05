@@ -4,11 +4,9 @@ import {
     BindingVariable, BINDING_FLAG,
     BINDING_VARIABLE_TYPE,
     CompiledComponentClass,
-    ComponentData,
     HookTemplatePackage,
     IndirectHook,
     Node,
-    PresetOptions,
     STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import { ExtendedType } from "../../types/hook";
@@ -30,7 +28,8 @@ import {
 import { ErrorHash } from "../common/hash_name.js";
 import { convertObjectToJSNode, Expression_Contains_Await, getPropertyAST } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-
+import { ComponentData } from '../common/component.js';
+import { Context } from '../common/context.js';
 
 
 export function addIndirectHook<T>(
@@ -77,14 +76,14 @@ export function collectBindingReferences(ast: JSNode, component: ComponentData):
 
 export async function processIndirectHook(
     comp: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     indirect_hook: IndirectHook,
     class_info: CompiledComponentClass
 ) {
     await processHookForClass(
         indirect_hook,
         comp,
-        presets,
+        context,
         class_info,
         indirect_hook.ele_index,
         indirect_hook.ALLOW_STATIC_REPLACE
@@ -94,7 +93,7 @@ export async function processIndirectHook(
 export async function processHookForHTML(
     indirect_hook: IndirectHook,
     comp: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     model: any,
     parent_components: ComponentData[]
 
@@ -108,7 +107,7 @@ export async function processHookForHTML(
         if (handler.types.includes(indirect_hook.type) && handler.verify(indirect_hook)) {
 
             let
-                result = handler.buildHTML(copy(indirect_hook), comp, presets, model, parent_components);
+                result = handler.buildHTML(copy(indirect_hook), comp, context, model, parent_components);
 
             if (result instanceof Promise)
                 result = await result;
@@ -131,7 +130,7 @@ export async function processHookForClass(
 
     component: ComponentData,
 
-    presets: PresetOptions,
+    context: Context,
 
     class_info: CompiledComponentClass,
     /**
@@ -192,7 +191,7 @@ export async function processHookForClass(
                         result = await handler.buildJS(
                             node,
                             component,
-                            presets,
+                            context,
                             element_index,
                             addOnBindingUpdateAst,
                             addInitAST,
@@ -230,7 +229,7 @@ export async function processHookForClass(
 
         // Update pending binding records 
         for (const name of component_variables)
-            await addBindingRecord(class_info, name, component, presets);
+            await addBindingRecord(class_info, name, component);
     }
 
     for (const { ast, meta_binding_nodes } of pending_write_asts) {
@@ -241,7 +240,7 @@ export async function processHookForClass(
 
         if (
             ALLOW_STATIC_REPLACE &&
-            getExpressionStaticResolutionType(ast, component, presets)
+            getExpressionStaticResolutionType(ast, component, context)
             ==
             STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
         )
@@ -265,7 +264,7 @@ export async function processHookForClass(
                 ((binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE)
                     &&
                     (
-                        getBindingStaticResolutionType(binding, component, presets)
+                        getBindingStaticResolutionType(binding, component, context)
                         &
                         (STATIC_RESOLUTION_TYPE.WITH_MODEL | STATIC_RESOLUTION_TYPE.WITH_PARENT)
                     ) == 0)
@@ -273,7 +272,7 @@ export async function processHookForClass(
                 //Template constants should always be resolved
                 binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT
             ) {
-                const { value } = await getStaticValue(node, component, presets, null, null, true);
+                const { value } = await getStaticValue(node, component, context, null, null, true);
 
                 if (value)
                     mutate(convertObjectToJSNode(value));
@@ -299,7 +298,7 @@ export async function processHookForClass(
             class_info.write_records.push({ ast, component_variables, HAS_ASYNC, NO_LOCAL_BINDINGS });
 
         for (const name of component_variables)
-            await addBindingRecord(class_info, name, component, presets);
+            await addBindingRecord(class_info, name, component);
     }
 
     return extract.ast;
@@ -453,8 +452,7 @@ function processBindingVariables(
 export async function addBindingRecord(
     class_info: CompiledComponentClass,
     name: string,
-    component: ComponentData,
-    presets: PresetOptions = null
+    component: ComponentData
 ) {
 
 

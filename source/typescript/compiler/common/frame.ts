@@ -1,6 +1,6 @@
 import { ext, JSExpressionClass, JSNode, JSNodeClass, JSNodeType, JSStatementClass } from "@candlelib/js";
-import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
+import { ComponentData } from './component.js';
 import { getGenericMethodNode } from "./js.js";
 /**
  * Create a new function frame whose ultimately use is to be 

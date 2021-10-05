@@ -150,7 +150,7 @@ export function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponen
         comp_constructors = ele
             .getAttribute("w:ctr")
             .split(" ")
-            .map(name => parent.presets.component_class.get(name)),
+            .map(name => parent.context.component_class.get(name)),
 
         comp_attributes = (ele
             .getAttribute("w:ctr-atr") ?? "")

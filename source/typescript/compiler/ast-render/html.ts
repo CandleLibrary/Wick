@@ -1,21 +1,23 @@
-import { bidirectionalTraverse, TraverseState, TraversedNode } from "@candlelib/conflagrate";
+import { bidirectionalTraverse, TraversedNode, TraverseState } from "@candlelib/conflagrate";
 import { exp, JSExpressionClass, JSNode, JSNodeType } from "@candlelib/js";
 import { rt } from "../../runtime/global.js";
-import { ComponentData, PresetOptions, TemplateHTMLNode } from "../../types/all.js";
+import { TemplateHTMLNode } from "../../types/all.js";
 import { componentDataToCompiledHTML } from "../ast-build/html.js";
 import * as b_sys from "../build_system.js";
+import { ComponentData } from '../common/component.js';
 import { html_void_tags, Is_Tag_Void_Element } from "../common/html.js";
+import { Context } from '../common/context.js';
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
  * tree and template html elements for components referenced in containers. 
  * 
  * @param comp 
- * @param presets 
+ * @param context 
  */
 export async function componentDataToHTML(
     comp: ComponentData,
-    presets: PresetOptions = rt.presets,
+    context: Context = rt.context,
     html_indent: number = 0
 ): Promise<{ html: string, template_map: Map<string, TemplateHTMLNode>; }> {
 
@@ -23,7 +25,7 @@ export async function componentDataToHTML(
 
     comp.element_counter = 0;
 
-    const { html: [html], templates: template_map } = await componentDataToCompiledHTML(comp, presets);
+    const { html: [html], templates: template_map } = await componentDataToCompiledHTML(comp, context);
 
     const html_string = htmlTemplateToString(html, html_indent);
 

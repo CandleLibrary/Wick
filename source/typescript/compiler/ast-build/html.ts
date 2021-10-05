@@ -1,8 +1,10 @@
 import { JSNode } from "source/typescript/entry-point/wick-full.js";
 import { rt } from "../../runtime/global.js";
-import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, PresetOptions, STATIC_RESOLUTION_TYPE, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
+import { ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, STATIC_RESOLUTION_TYPE, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
 import * as b_sys from "../build_system.js";
+import { ComponentData } from '../common/component.js';
 import { buildExportableDOMNode } from '../common/html.js';
+import { Context } from '../common/context.js';
 import { getExpressionStaticResolutionType, getStaticValue } from "../data/static_resolution.js";
 import {
     ContainerDataHook,
@@ -21,14 +23,14 @@ import { processHookForHTML } from "./hooks.js";
  * tree and template html elements for components referenced in containers.
  *
  * @param comp
- * @param presets
+ * @param context
  * @param template_map
  * @param html
  * @param root
  */
 export async function componentDataToCompiledHTML(
     comp: ComponentData,
-    presets: PresetOptions = rt.presets,
+    context: Context = rt.context,
     model = null,
     template_map: TemplatePackage["templates"] = new Map,
     html: DOMLiteral = comp.HTML,
@@ -71,7 +73,7 @@ export async function componentDataToCompiledHTML(
             await addContainer(
                 <ContainerDomLiteral>html,
                 comp,
-                presets,
+                context,
                 state,
                 comp_data,
                 template_map,
@@ -80,12 +82,12 @@ export async function componentDataToCompiledHTML(
                 parent_component
             );
 
-        else if (component_name && presets.components.has(component_name)) {
+        else if (component_name && context.components.has(component_name)) {
 
             ({ node, state } =
                 await addComponent(
                     html,
-                    presets,
+                    context,
                     component_name,
                     state,
                     node,
@@ -102,16 +104,16 @@ export async function componentDataToCompiledHTML(
 
             if (tag_name == "SLOT" && extern_children.length > 0) {
 
-                let r_ = await processSlot(template_map, slot_name, extern_children, parent_component, presets, model);
+                let r_ = await processSlot(template_map, slot_name, extern_children, parent_component, context, model);
 
                 if (r_.html.length > 0)
                     return r_;
             }
 
-            await processElement(html, comp, presets, model, node, parent_component, tag_name, state, comp_data, template_map);
+            await processElement(html, comp, context, model, node, parent_component, tag_name, state, comp_data, template_map);
 
         } else if (IS_BINDING)
-            node = await resolveHTMLBinding(html, state, node, comp_data, comp, presets, model, parent_component);
+            node = await resolveHTMLBinding(html, state, node, comp_data, comp, context, model, parent_component);
         else
             processTextNode(node, data);
 
@@ -129,7 +131,7 @@ export async function componentDataToCompiledHTML(
 
             const { html } = await componentDataToCompiledHTML(
                 comp,
-                presets,
+                context,
                 model,
                 template_map,
                 child,
@@ -156,7 +158,7 @@ function processTextNode(node: TemplateHTMLNode, data: string) {
 
 async function processElement(html: DOMLiteral,
     comp: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     model: any,
     node: TemplateHTMLNode,
     parent_component: ComponentData[],
@@ -165,7 +167,7 @@ async function processElement(html: DOMLiteral,
     comp_data: string[],
     template_map: TemplatePackage["templates"]
 ) {
-    await processHooks(html, comp, presets, model, node, parent_component, template_map);
+    await processHooks(html, comp, context, model, node, parent_component, template_map);
 
     const COMPONENT_IS_ROOT_ELEMENT = comp.HTML == html;
 
@@ -202,7 +204,7 @@ async function processSlot(
     slot_name: string,
     extern_children: { USED: boolean; child: DOMLiteral; id: number; }[],
     parent_component: ComponentData[],
-    presets: PresetOptions,
+    context: Context,
     model: any
 ) {
     let r_ = { html: [], template_map };
@@ -218,7 +220,7 @@ async function processSlot(
                 pkg.child.host_component_index = pkg.id;
                 r_.html.push(...(await componentDataToCompiledHTML(
                     parent_component,
-                    presets,
+                    context,
                     model,
                     template_map,
                     pkg.child,
@@ -238,7 +240,7 @@ async function processSlot(
                 pkg.child.host_component_index = pkg.id;
                 r_.html.push(...(await componentDataToCompiledHTML(
                     parent_component,
-                    presets,
+                    context,
                     model,
                     template_map,
                     pkg.child,
@@ -289,7 +291,7 @@ function processAttributes(
 
 async function addComponent(
     html: DOMLiteral,
-    presets: PresetOptions,
+    context: Context,
     component_name: string,
     state: htmlState,
     node: TemplateHTMLNode,
@@ -300,14 +302,14 @@ async function addComponent(
     comp_data: string[],
     model: any = null
 ) {
-    const c_comp = presets.components.get(component_name);
+    const c_comp = context.components.get(component_name);
 
     if (htmlState.IS_COMPONENT & state)
         state |= htmlState.IS_INTERLEAVED;
 
     ({ html: [node] } = await componentDataToCompiledHTML(
         c_comp,
-        presets,
+        context,
         model,
         template_map,
         c_comp.HTML,
@@ -334,7 +336,7 @@ async function addComponent(
 async function addContainer(
     html: ContainerDomLiteral,
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     state: htmlState,
     comp_data: string[],
     template_map: TemplatePackage["templates"],
@@ -351,14 +353,14 @@ async function addContainer(
 
     for (const name of component_names) {
 
-        const comp = presets.components.get(name);
+        const comp = context.components.get(name);
 
         if (!template_map.has(comp.name) && comp.name != component.name) {
 
-            await ensureComponentHasTemplates(comp, presets);
+            await ensureComponentHasTemplates(comp, context);
 
             for (const name of comp.templates)
-                template_map.set(name, presets.components.get(name).template);
+                template_map.set(name, context.components.get(name).template);
 
             template_map.set(comp.name, comp.template);
 
@@ -374,9 +376,9 @@ async function addContainer(
     setScopeAssignment(state, node, html);
 
     //get data hook 
-    await processHooks(html, component, presets, model, node, parent_components, template_map);
+    await processHooks(html, component, context, model, node, parent_components, template_map);
 
-    await processContainerHooks(html, component, presets, model, node, parent_components, template_map);
+    await processContainerHooks(html, component, context, model, node, parent_components, template_map);
 
     processAttributes(html.attributes, component, state, comp_data, node, component.HTML == html);
 }
@@ -384,7 +386,7 @@ async function addContainer(
 
 export async function ensureComponentHasTemplates(
     comp: ComponentData,
-    presets: PresetOptions
+    context: Context
 ): Promise<TemplateHTMLNode> {
     if (!comp.template) {
 
@@ -400,7 +402,7 @@ export async function ensureComponentHasTemplates(
 
         b_sys.enableBuildFeatures();
 
-        const { html, templates } = await componentDataToCompiledHTML(comp, presets);
+        const { html, templates } = await componentDataToCompiledHTML(comp, context);
 
         comp.template.children.push(...html);
 
@@ -415,7 +417,7 @@ export async function ensureComponentHasTemplates(
 async function processContainerHooks(
     html: ContainerDomLiteral,
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     model: any,
     node: TemplateHTMLNode,
     parent_components: ComponentData[],
@@ -433,42 +435,42 @@ async function processContainerHooks(
 
     if (data_hook) {
 
-        let data = await processHookForHTML(data_hook, component, presets, model, parent_components);
+        let data = await processHookForHTML(data_hook, component, context, model, parent_components);
 
         if (Array.isArray(data) && data.length > 0) {
 
             let limit = data.length, offset = 0, shift = 1;
 
             if (filter_hook) {
-                const arrow_filter = await processHookForHTML(filter_hook, component, presets, model, parent_components);
+                const arrow_filter = await processHookForHTML(filter_hook, component, context, model, parent_components);
 
                 if (arrow_filter)
                     data = data.filter(arrow_filter);
             }
 
             if (sort_hook) {
-                const sort_filter = await processHookForHTML(sort_hook, component, presets, model, parent_components);
+                const sort_filter = await processHookForHTML(sort_hook, component, context, model, parent_components);
 
                 if (sort_filter)
                     data = data.sort(sort_filter);
             }
 
             if (limit_hook) {
-                const pending_limit = await processHookForHTML(limit_hook, component, presets, model, parent_components);
+                const pending_limit = await processHookForHTML(limit_hook, component, context, model, parent_components);
 
                 if (typeof pending_limit == "number")
                     limit = Math.max(0, Math.min(pending_limit, data.length));
             }
 
             if (shift_hook) {
-                const pending_shift = await processHookForHTML(shift_hook, component, presets, model, parent_components);
+                const pending_shift = await processHookForHTML(shift_hook, component, context, model, parent_components);
 
                 if (typeof pending_shift == "number")
                     shift = Math.max(1, pending_shift);
             }
 
             if (offset_hook) {
-                const pending_offset = await processHookForHTML(offset_hook, component, presets, model, parent_components);
+                const pending_offset = await processHookForHTML(offset_hook, component, context, model, parent_components);
 
                 if (typeof pending_offset == "number")
                     offset = Math.max(0, Math.min(pending_offset, data.length));
@@ -482,13 +484,13 @@ async function processContainerHooks(
 
                     comp_name = html.component_names[0],
 
-                    child_comp = presets.components.get(comp_name);
+                    child_comp = context.components.get(comp_name);
 
                 //Don't forget use-if hooks which may be present in the above component types.
 
                 for (const model of data) {
 
-                    const result = await componentDataToCompiledHTML(child_comp, presets, model, template_map);
+                    const result = await componentDataToCompiledHTML(child_comp, context, model, template_map);
 
                     node.children.push(result.html[0]);
                 }
@@ -500,7 +502,7 @@ async function processContainerHooks(
 async function processHooks(
     html: DOMLiteral,
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     model: any,
     node: TemplateHTMLNode,
     parent_components: ComponentData[],
@@ -524,7 +526,7 @@ async function processHooks(
         )
     ) {
 
-        const { html, templates } = (await processHookForHTML(hook, component, presets, model, parent_components) || {});
+        const { html, templates } = (await processHookForHTML(hook, component, context, model, parent_components) || {});
 
         if (html) {
             if (html.attributes)
@@ -555,16 +557,16 @@ async function resolveHTMLBinding(
     node: TemplateHTMLNode,
     comp_data: string[],
     comp: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     model: any = null,
     parent_component: ComponentData[]
 ): Promise<TemplateHTMLNode> {
     //*
     const
         hook = getHookFromElement(html, comp)[0],
-        type = getExpressionStaticResolutionType(hook.value[0], comp, presets),
+        type = getExpressionStaticResolutionType(hook.value[0], comp, context),
         { value, html: child_html } = hook
-            ? await getStaticValue(<JSNode>hook.value[0], comp, presets, model, parent_component)
+            ? await getStaticValue(<JSNode>hook.value[0], comp, context, model, parent_component)
             : null;
 
     node.tagName = "w-b";
@@ -577,7 +579,7 @@ async function resolveHTMLBinding(
 
         const { html } = await componentDataToCompiledHTML(
             comp,
-            presets,
+            context,
             model,
             undefined,
             converted_node

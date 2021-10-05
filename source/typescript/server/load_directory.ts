@@ -1,10 +1,10 @@
 import { Logger } from '@candlelib/log';
 import { traverseFilesFromRoot } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
-import { ComponentData } from '../entry-point/wick-full.js';
+import { ComponentData } from '../compiler/common/component.js';
+import { Context } from '../compiler/common/context.js';
 import wick from '../entry-point/wick-server.js';
 import { rt } from '../runtime/global.js';
-import { PresetOptions } from '../types/all.js';
 
 function IsEntryComponent(uri: URI): {
 	IS_ENTRY_COMPONENT: boolean;
@@ -57,7 +57,7 @@ export type Components = Map<string, {
  */
 export async function loadComponentsFromDirectory(
 	working_directory: URI,
-	presets: PresetOptions = rt.presets,
+	context: Context = rt.context,
 	/**
 	 * A function that can be used to determine
 	 * weather a component file should be used
@@ -110,13 +110,13 @@ export async function loadComponentsFromDirectory(
 
 				try {
 
-					const comp: ComponentData = await wick(file_uri, presets);
+					const comp: ComponentData = await wick(file_uri, context);
 
 					const endpoints_strings = [];
 
 					if (comp.TEMPLATE) {
 						let i = 0;
-						for (const data of presets.active_template_data(comp)) {
+						for (const data of context.active_template_data(comp)) {
 							if (data.endpoint) {
 								endpoints.set(data.endpoint, { comp, template_data: data });
 								endpoints_strings.push(data.endpoint);
@@ -160,7 +160,7 @@ export async function loadComponentsFromDirectory(
 		}
 	};
 
-	for (const [, comp] of presets.components)
+	for (const [, comp] of context.components)
 		components.set(comp.location + "", { comp });
 
 	return {

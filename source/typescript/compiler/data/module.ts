@@ -4,23 +4,22 @@ import { error } from '../../entry-point/logger.js';
 import {
     BINDING_FLAG,
     BINDING_VARIABLE_TYPE,
-    ComponentData,
     FunctionFrame,
     HTMLNode,
     HTMLNodeType,
-    PresetOptions
 } from "../../types/all.js";
 import { processWickCSS_AST } from '../ast-parse/parse.js';
 import { parseSource } from "../ast-parse/source.js";
 import { addBindingVariable, addWriteFlagToBindingVariable } from "../common/binding.js";
 import { addPendingModuleToPresets } from '../common/common.js';
-import { mergeComponentData } from '../common/component.js';
+import { ComponentData, mergeComponentData } from '../common/component.js';
+import { Context } from '../common/context.js';
 import { parse_css } from '../source-code-parse/parse.js';
-function getModuleName(presets: PresetOptions, module_name: string) {
-    if (!presets.repo.has(module_name))
-        return addPendingModuleToPresets(presets, module_name);
+function getModuleName(context: Context, module_name: string) {
+    if (!context.repo.has(module_name))
+        return addPendingModuleToPresets(context, module_name);
     else
-        return presets.repo.get(module_name).hash;
+        return context.repo.get(module_name).hash;
 }
 
 /**
@@ -73,7 +72,7 @@ export async function importComponentData(new_component_url, component, presets,
 export async function importResource(
     from_value: string,
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     node: HTMLNode | JSNode,
     default_name: string = "",
     names: { local: string; external: string; }[] = [],
@@ -98,7 +97,7 @@ export async function importResource(
 
                     const css_ast = parse_css(css);
 
-                    processWickCSS_AST({ type: HTMLNodeType.HTML_STYLE, nodes: [<any>css_ast], pos: <any>css_ast.pos }, component, presets, uri);
+                    processWickCSS_AST({ type: HTMLNodeType.HTML_STYLE, nodes: [<any>css_ast], pos: <any>css_ast.pos }, component, context, uri);
 
                 } catch (e) {
 
@@ -113,11 +112,11 @@ export async function importResource(
                 !(await importComponentData(
                     from_value,
                     component,
-                    presets,
+                    context,
                     default_name
                 ))
             ) {
-                let external_name = getModuleName(presets, from_value.trim());
+                let external_name = getModuleName(context, from_value.trim());
 
                 for (const name of names)
                     if (name.external == "namespace")
@@ -155,8 +154,8 @@ export async function importResource(
 
         case "@registered":
             const comp_name = default_name.toUpperCase();
-            if (default_name && presets.named_components.has(comp_name))
-                component.local_component_names.set(comp_name, presets.named_components.get(comp_name).name);
+            if (default_name && context.named_components.has(comp_name))
+                component.local_component_names.set(comp_name, context.named_components.get(comp_name).name);
             return;
 
         case "@parent":

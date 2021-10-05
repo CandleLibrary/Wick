@@ -11,7 +11,6 @@ import {
 import URI from '@candlelib/uri';
 import {
     BINDING_VARIABLE_TYPE,
-    ComponentData,
     ContainerDomLiteral, HTMLAttribute,
     HTMLContainerNode,
     HTMLNodeClass,
@@ -25,6 +24,7 @@ import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "../common/exten
 import { getElementAtIndex } from "../common/html.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 import { convertObjectToJSNode } from '../common/js.js';
+import { ComponentData } from '../common/component.js';
 
 
 export const ContainerDataHook = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);

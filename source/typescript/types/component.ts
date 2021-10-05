@@ -1,13 +1,13 @@
 import { CSSNode } from "@candlelib/css";
 import URI from "@candlelib/uri";
 import { WickRTComponent } from "../runtime/component.js";
-import { RuntimeComponent } from "../entry-point/wick-full.js";
 import { IntermediateHook, IndirectHook } from "./hook";
 import { Comment } from "./comment.js";
 import { WickComponentErrorStore } from "./errors.js";
 import { FunctionFrame } from "./function_frame";
 import { DOMLiteral, TemplateHTMLNode } from "./html.js";
 import { HTMLNode } from "./wick_ast.js";
+import { ComponentData } from '../compiler/common/component';
 
 
 export type ComponentClassStrings = { class_string: string; source_map: string; };
@@ -24,7 +24,7 @@ export interface ComponentStyle {
     container_element_index: number;
 }
 
-export interface ComponentData {
+export interface ComponentDataS {
     /**
      * The radiate client side router should be used if 
      * this true and the component is the root of the 
@@ -166,8 +166,8 @@ interface Extension {
     errors: WickComponentErrorStore;
     pending: Promise<Extension & ComponentData>;
     mount: (data?: object, ele?: HTMLElement) => Promise<WickRTComponent>;
-    class: typeof RuntimeComponent;
-    class_with_integrated_css: typeof RuntimeComponent;
+    class: typeof WickRTComponent;
+    class_with_integrated_css: typeof WickRTComponent;
     class_string: string;
 }
 /**

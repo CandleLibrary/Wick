@@ -2,9 +2,9 @@
 import { getPackageJsonObject } from "@candlelib/paraffin";
 import URL from "@candlelib/uri";
 import { rt } from "../../runtime/global.js";
-import { PresetOptions } from "../../types/all.js";
-import { ComponentData } from "../../types/component";
 import { createCompiledComponentClass } from "../ast-build/build.js";
+import { ComponentData } from '../common/component.js';
+import { Context } from '../common/context.js';
 import { metrics } from '../metrics.js';
 import { renderCompressed } from "../source-code-render/render.js";
 import { componentDataToCSS } from "./css.js";
@@ -28,8 +28,8 @@ type PageRenderHooks = {
      * component_class_declarations...
      * ```
      */
-    init_script_render: (component_class_declarations: string, presets: PresetOptions) => string;
-    init_components_render: (component_class_declarations: string, presets: PresetOptions) => string;
+    init_script_render: (component_class_declarations: string, context: Context) => string;
+    init_components_render: (component_class_declarations: string, context: Context) => string;
 };
 
 
@@ -80,7 +80,7 @@ export const default_wick_hooks = {
  */
 export async function RenderPage(
     comp: ComponentData,
-    presets: PresetOptions = rt.presets,
+    context: Context = rt.context,
     hooks: PageRenderHooks = comp.RADIATE
         ? default_radiate_hooks
         : default_wick_hooks,
@@ -135,7 +135,7 @@ export async function RenderPage(
 
                     applicable_components.add(comp_name);
 
-                    candidate_components.push(presets.components.get(comp_name));
+                    candidate_components.push(context.components.get(comp_name));
                 }
 
             };
@@ -150,7 +150,7 @@ export async function RenderPage(
      */
 
     const
-        { html, template_map } = await componentDataToHTML(comp, presets),
+        { html, template_map } = await componentDataToHTML(comp, context, 1),
 
         templates = [...template_map.values()].map(htmlTemplateToString).join("\n");
 
@@ -158,9 +158,9 @@ export async function RenderPage(
 
     for (const comp of components_to_process) {
 
-        const class_info = await createCompiledComponentClass(comp, presets, false, false);
+        const class_info = await createCompiledComponentClass(comp, context, false, false);
 
-        const { class_string } = createClassStringObject(comp, class_info, presets, "w.rt.C");
+        const { class_string } = createClassStringObject(comp, class_info, context, "w.rt.C");
 
         if (comp.HTML_HEAD.length > 0) {
             for (const node of comp.HTML_HEAD) {
@@ -174,8 +174,8 @@ export async function RenderPage(
     }
 
     const page = comp.RADIATE
-        ? renderRadiatePageString(presets, templates, html, head, script, style, hooks)
-        : renderWickPageString(presets, templates, html, head, script, style, hooks);
+        ? renderRadiatePageString(context, templates, html, head, script, style, hooks)
+        : renderWickPageString(context, templates, html, head, script, style, hooks);
 
     //metrics.report();
     metrics.clearMetrics();
@@ -184,7 +184,7 @@ export async function RenderPage(
 }
 
 function renderWickPageString(
-    presets: PresetOptions,
+    context: Context,
     templates: string,
     html: string,
     head: string,
@@ -194,31 +194,31 @@ function renderWickPageString(
 ): string {
     return `<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta name="generator" content="${name}-${version}"> 
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        ${head.split("\n").join("\n    ")}
-        <style id="wick-app-style">
-        ${style.split("\n").join("\n            ")}
-        </style>       
+  <head>
+    <meta name="generator" content="${name}-${version}"> 
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    ${head.split("\n").join("\n    ")}
+    <style id="wick-app-style">
+    ${style.split("\n").join("\n            ")}
+    </style>       
 
-    </head>
-    <body>
-        ${html.split("\n").join("\n        ")}
-        ${templates.split("\n").join("\n        ")}
-        <script type=module id="wick-init-script">
-            ${hooks.init_script_render(script.split("\n").join("\n            "), presets)}
-        </script>
-        <script type=module id="wick-component-script">
-            ${hooks.init_components_render(script.split("\n").join("\n            "), presets)}
-        </script>
-    </body>
+  </head>
+  <body>
+${html}
+${templates.split("\n")}
+    <script type=module id="wick-init-script">
+        ${hooks.init_script_render(script.split("\n").join("\n            "), context)}
+    </script>
+    <script type=module id="wick-component-script">
+        ${hooks.init_components_render(script.split("\n").join("\n            "), context)}
+    </script>
+  </body>
 </html>`;
 }
 
 function renderRadiatePageString(
-    presets: PresetOptions,
+    context: Context,
     templates: string,
     html: string,
     head: string,
@@ -279,19 +279,19 @@ function renderRadiatePageString(
         ${html.split("\n").join("\n        ")}
         ${templates.split("\n").join("\n        ")}
         <script type=module id="wick-init-script">
-            ${hooks.init_script_render(script.split("\n").join("\n            "), presets)}
+            ${hooks.init_script_render(script.split("\n").join("\n            "), context)}
         </script>
         <script type=module id="wick-component-script">
-            ${hooks.init_components_render(script.split("\n").join("\n            "), presets)}
+            ${hooks.init_components_render(script.split("\n").join("\n            "), context)}
         </script>
     </body>
 </html>`;
 }
 
 
-function renderPresets(presets: PresetOptions) {
+function renderPresets(context: Context) {
     const out_value = {
-        repo: [...presets.repo.values()].map(repo => [repo.hash, repo.url])
+        repo: [...context.repo.values()].map(repo => [repo.hash, repo.url])
     };
     return JSON.stringify(out_value);
 }

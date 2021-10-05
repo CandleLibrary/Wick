@@ -1,7 +1,8 @@
 import { traverse } from "@candlelib/conflagrate";
 import { CSSNode, CSSNodeType } from "@candlelib/css";
 import { CSSSelectorNode } from "@candlelib/css/build/types/types/node";
-import { ComponentData, ComponentStyle } from "../../types/all.js";
+import { ComponentStyle } from "../../types/all.js";
+import { ComponentData } from '../common/component.js';
 import { getElementAtIndex } from "../common/html.js";
 import { parse_css_selector } from "../source-code-parse/parse.js";
 import { renderWithFormatting } from "../source-code-render/render.js";

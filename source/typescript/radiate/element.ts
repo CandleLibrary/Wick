@@ -175,7 +175,7 @@ export class Element {
 
         history.pushState({}, "ignored title", link_url);
 
-        window.onpopstate();
+        window.onpopstate(new PopStateEvent("wick-bubble"));
     }
 
     setComponents() {

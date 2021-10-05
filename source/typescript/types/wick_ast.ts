@@ -1,7 +1,7 @@
 import { CSSNode } from "@candlelib/css";
 import { Token } from '@candlelib/hydrocarbon';
 import { JSNode } from "@candlelib/js";
-import { ComponentData } from "./component";
+import { ComponentData } from '../compiler/common/component';
 
 export const enum HTMLNodeClass {
     HTML_NODE = (1 << 20),
@@ -104,7 +104,7 @@ export enum HTMLNodeType {
     HTML_BINDING_ELEMENT = ((230 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     CompiledBinding = ((231 << 23)),
     ComponentVariableDeclaration = ((232 << 23)),
-    MARKDOWN = ((233 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT))
+    MARKDOWN = ((233 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT)
 };
 
 export enum HTMLNodeTypeLU {

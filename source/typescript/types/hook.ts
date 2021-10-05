@@ -1,10 +1,11 @@
 import { CSSNode, CSSNodeType } from "@candlelib/css";
 import { JSNode, JSNodeType, JSStatementClass } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
-import { ComponentData, HookTemplatePackage, HTMLNode, HTMLNodeType, PresetOptions } from "./all.js";
+import { HookTemplatePackage, HTMLNode, HTMLNodeType } from "./all.js";
 import { CompiledComponentClass } from "./class_information";
 import { Node, WickBindingNode } from "./wick_ast.js";
-
+import { ComponentData } from '../compiler/common/component.js';
+import { Context } from '../compiler/common/context.js';
 export type ExtendedType = CSSNodeType | JSNodeType | HTMLNodeType | number;
 
 interface filterFunction {
@@ -27,7 +28,7 @@ interface buildJSFunction<T, U = T> {
          */
         comp: ComponentData,
 
-        presets: PresetOptions,
+        context: Context,
 
         /**
          * The index number of the ele the hook belongs
@@ -71,7 +72,7 @@ interface buildHTMLFunction<T = IndirectHook<JSNode>> {
     (
         hook: T,
         comp: ComponentData,
-        presets: PresetOptions,
+        context: Context,
         model: any,
         /**
          * A FIFO stack of the current component's parent 
@@ -224,14 +225,14 @@ export interface HookProcessor {
         host_ast_node: Node,
         element_index: number,
         component: ComponentData,
-        presets?: PresetOptions,
+        presets?: Context,
         class_info?: CompiledComponentClass
     ): ProcessedHook;
 
     getDefaultHTMLValue(
         hook: IntermediateHook,
         component: ComponentData,
-        presets: PresetOptions,
+        context: Context,
         model: any,
         parent_component: ComponentData[],
     ): (HookTemplatePackage | Promise<HookTemplatePackage>);

@@ -16,8 +16,8 @@ import { createCompiledComponentClass } from "../compiler/ast-build/build.js";
 import { componentDataToCompiledHTML } from "../compiler/ast-build/html.js";
 import { componentDataToCSS } from "../compiler/ast-render/css.js";
 import { htmlTemplateToString } from "../compiler/ast-render/html.js";
-import { ComponentDataClass } from "../compiler/common/component.js";
-import Presets from "../compiler/common/presets.js";
+import { ComponentData } from "../compiler/common/component.js";
+import { Context } from "../compiler/common/context.js";
 import { WickRTComponent } from "../runtime/component.js";
 import { rt } from "../runtime/global.js";
 import { ComponentData } from "../types/component";
@@ -31,7 +31,7 @@ export interface WickTestTools {
 
 let ENABLED = false;
 const WickTest: WickTestTools = <WickTestTools>{
-    reset() { rt.presets = new Presets(); },
+    reset() { rt.context = new Context(); },
     getCompiledCSSString(comp: ComponentData, name = comp.name) {
         const restore_name = comp.name;
         comp.name = name;
@@ -45,7 +45,7 @@ export function init() {
 
     //Reset the presets objects
 
-    rt.presets = new Presets();
+    rt.context = new Context();
 
     if (ENABLED) return;
 
@@ -154,7 +154,7 @@ export function init() {
     /**
      * Returns the components HTML string representation
      */
-    ComponentDataClass.prototype.getHTMLString = async function (presets = rt.presets) {
+    ComponentData.prototype.getHTMLString = async function (presets = rt.context) {
 
         const html = await this.getHTMLTemplate(presets);
 
@@ -164,7 +164,7 @@ export function init() {
     /**
      * Returns the HTML template object 
      */
-    ComponentDataClass.prototype.getHTMLTemplate = async function (presets = rt.presets) {
+    ComponentData.prototype.getHTMLTemplate = async function (presets = rt.context) {
 
         const { html } = await componentDataToCompiledHTML(this, presets);
 
@@ -175,7 +175,7 @@ export function init() {
     /**
      * Returns a DOM tree of the component's HTML structure
      */
-    ComponentDataClass.prototype.getRootElement = async function (presets = rt.presets): Promise<HTML> {
+    ComponentData.prototype.getRootElement = async function (presets = rt.context): Promise<HTML> {
 
         return HTML(await this.getHTMLString(presets));
     };
@@ -183,7 +183,7 @@ export function init() {
     /**
      * Returns the template_map object 
      */
-    ComponentDataClass.prototype.getHTMLTemplateMap = async function (presets = rt.presets) {
+    ComponentData.prototype.getHTMLTemplateMap = async function (presets = rt.context) {
 
         const { template_map } = await componentDataToCompiledHTML(this, presets);
 
@@ -193,11 +193,11 @@ export function init() {
     /**
      * Returns the Templates template object 
      */
-    ComponentDataClass.prototype.getComponentClassInfo = async function (presets = rt.presets): Promise<ComponentDataClass> {
-        return await createCompiledComponentClass(this, rt.presets, true, true);
+    ComponentData.prototype.getComponentClassInfo = async function (presets = rt.context): Promise<ComponentData> {
+        return await createCompiledComponentClass(this, rt.context, true, true);
     };
 
-    ComponentDataClass.prototype.getCSSString = async function (presets = rt.presets) {
+    ComponentData.prototype.getCSSString = async function (presets = rt.context) {
 
         return componentDataToCSS(this);
     };

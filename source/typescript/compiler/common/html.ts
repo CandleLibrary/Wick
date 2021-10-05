@@ -1,4 +1,5 @@
-import { ComponentData, ContainerDomLiteral, DOMLiteral, HTMLContainerNode, HTMLNode } from "../../types/all.js";
+import { ContainerDomLiteral, DOMLiteral, HTMLContainerNode, HTMLNode } from "../../types/all.js";
+import { ComponentData } from './component.js';
 
 export const html_void_tags = new Set([
     "area",
@@ -121,7 +122,7 @@ export function buildExportableDOMNode(
         node.attributes = [];
 
         for (const attrib of ast.attributes)
-            node.attributes.push([attrib.name, attrib.value]);
+            node.attributes.push([attrib.name, attrib.value.toString()]);
 
     }
 

@@ -1,21 +1,19 @@
 import { copy, traverse } from "@candlelib/conflagrate";
 import {
-    exp, JSCallExpression,
+    JSCallExpression,
     JSFunctionDeclaration,
     JSMethod,
     JSNode,
     JSNodeType as JST,
     stmt
 } from "@candlelib/js";
-import { parse_js_exp } from '../source-code-parse/parse.js';
+import { ComponentData } from '../common/component.js';
 import {
     BindingVariable,
     BINDING_VARIABLE_TYPE,
     CompiledComponentClass,
-    ComponentData,
     FunctionFrame,
-    HTMLNodeClass,
-    PresetOptions
+    HTMLNodeClass
 } from "../../types/all.js";
 import { componentDataToCSS } from "../ast-render/css.js";
 import {
@@ -28,7 +26,6 @@ import {
     getComponentBinding
 } from "../common/binding.js";
 import { setPos } from "../common/common.js";
-import { createErrorComponent } from "../common/component.js";
 import {
     appendStmtToFrame,
     createBuildFrame,
@@ -41,6 +38,7 @@ import {
     BindingIdentifierReference
 } from "../common/js_hook_types.js";
 import { metrics } from '../metrics.js';
+import { parse_js_exp } from '../source-code-parse/parse.js';
 import {
     addBindingRecord,
     processHookASTs as processResolvedHooks,
@@ -48,19 +46,20 @@ import {
     processIndirectHook
 } from "./hooks.js";
 import { componentDataToCompiledHTML, ensureComponentHasTemplates } from "./html.js";
+import { Context } from '../common/context.js';
 
 export async function createComponentTemplates(
-    presets: PresetOptions,
+    context: Context,
     template_container: Map<string, HTMLElement> = new Map
 ) {
 
-    const components = presets.components;
+    const components = context.components;
 
     if (typeof document != undefined && document.createElement)
 
         for (const [name, component] of components.entries()) {
 
-            const template = await ensureComponentHasTemplates(component, presets);
+            const template = await ensureComponentHasTemplates(component, context);
 
             if (!template_container.has(name)) {
 
@@ -76,14 +75,14 @@ export async function createComponentTemplates(
 /**
  * Produces a compiled component class from 
  * @param component 
- * @param presets 
+ * @param context 
  * @param INCLUDE_HTML 
  * @param INCLUDE_CSS 
  * @returns 
  */
 export async function createCompiledComponentClass(
     component: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS: boolean = true
 ): Promise<CompiledComponentClass> {
@@ -98,11 +97,11 @@ export async function createCompiledComponentClass(
 
         //HTML INFORMATION
         if (INCLUDE_HTML)
-            await processHTML(component, class_info, presets);
+            await processHTML(component, class_info, context);
 
         //CSS INFORMATION
         if (INCLUDE_CSS)
-            processCSS(component, class_info, presets);
+            processCSS(component, class_info, context);
 
         //Javascript Information.
         if (component.HAS_ERRORS === false && component.root_frame) {
@@ -113,10 +112,10 @@ export async function createCompiledComponentClass(
             } = createLookupTables(class_info);
 
             for (const hook of component.indirect_hooks)
-                await processIndirectHook(component, presets, hook, class_info);
+                await processIndirectHook(component, context, hook, class_info);
 
             for (const frame of component.frames)
-                await processFunctionFrameHook(component, presets, frame, class_info);
+                await processFunctionFrameHook(component, context, frame, class_info);
 
             processResolvedHooks(component, class_info);
 
@@ -147,7 +146,7 @@ export async function createCompiledComponentClass(
 
             //Ensure there is an async init method
             for (const function_block of out_frames)
-                await makeComponentMethod(function_block, component, class_info, presets);
+                await makeComponentMethod(function_block, component, class_info, context);
 
         }
 
@@ -165,7 +164,7 @@ export async function createCompiledComponentClass(
 function processCSS(
     component: ComponentData,
     class_info: CompiledComponentClass,
-    presets: PresetOptions
+    context: Context
 ) {
     let style;
 
@@ -186,7 +185,7 @@ function processCSS(
 async function processHTML(
     component: ComponentData,
     class_info: CompiledComponentClass,
-    presets: PresetOptions
+    context: Context
 ) {
     const run_tag = metrics.startRun("HTML");
 
@@ -194,7 +193,7 @@ async function processHTML(
         const
             frame = createBuildFrame("ce"),
             return_stmt = stmt("return this.makeElement(a);"),
-            { html: [html] } = (await componentDataToCompiledHTML(component, presets));
+            { html: [html] } = (await componentDataToCompiledHTML(component, context));
 
         return_stmt.nodes[0].nodes[1].nodes[0] = parse_js_exp(`\`${htmlTemplateToString(html).replace(/(\`)/g, "\\\`")}\``);
 
@@ -258,7 +257,7 @@ export function createClassInfoObject(): CompiledComponentClass {
 
 export async function processFunctionFrameHook(
     comp: ComponentData,
-    presets: PresetOptions,
+    context: Context,
     frame: FunctionFrame,
     class_info: CompiledComponentClass,
 ) {
@@ -276,11 +275,11 @@ export async function processFunctionFrameHook(
             node.type == BindingIdentifierReference
         ) {
 
-            await addBindingRecord(class_info, node.value, comp, presets);
+            await addBindingRecord(class_info, node.value, comp);
 
         } else if (node.type > 0xFFFFFFFF) {
 
-            const new_node = await processHookForClass(node, comp, presets, class_info, -1, false);
+            const new_node = await processHookForClass(node, comp, context, class_info, -1, false);
 
             if (new_node != node)
                 mutate(new_node);
@@ -306,7 +305,7 @@ async function makeComponentMethod(
     frame: FunctionFrame,
     component: ComponentData,
     ci: CompiledComponentClass,
-    presets: PresetOptions
+    context: Context
 ) {
 
     if (frame.ast && !frame.IS_ROOT) {
@@ -319,7 +318,7 @@ async function makeComponentMethod(
 
 
 
-        const { NEED_ASYNC } = await finalizeBindingExpression(cpy, component, ci, presets);
+        const { NEED_ASYNC } = await finalizeBindingExpression(cpy, component, ci, context);
 
         cpy.ASYNC = NEED_ASYNC || frame.IS_ASYNC || cpy.ASYNC;
 
@@ -346,7 +345,7 @@ export async function finalizeBindingExpression(
     mutated_node: JSNode,
     component: ComponentData,
     comp_info: CompiledComponentClass,
-    presets: PresetOptions
+    context: Context
 ): Promise<{
     ast: JSNode,
     NEED_ASYNC: boolean;
@@ -434,7 +433,7 @@ export async function finalizeBindingExpression(
                             exp_ = parse_js_exp(`${comp_var_name}${node.symbol[0]}1`),
 
                             { ast, NEED_ASYNC: NA } =
-                                await finalizeBindingExpression(<JSNode>ref, component, comp_info, presets);
+                                await finalizeBindingExpression(<JSNode>ref, component, comp_info, context);
 
                         NEED_ASYNC = NA || NEED_ASYNC;
 
@@ -476,10 +475,10 @@ export async function finalizeBindingExpression(
                             assignment: JSCallExpression = <any>parse_js_exp(`this.${update_action}(${index})`),
 
                             { ast: a1, NEED_ASYNC: NA1 } =
-                                await finalizeBindingExpression(ref, component, comp_info, presets),
+                                await finalizeBindingExpression(ref, component, comp_info, context),
 
                             { ast: a2, NEED_ASYNC: NA2 } =
-                                await finalizeBindingExpression(<JSNode>value, component, comp_info, presets);
+                                await finalizeBindingExpression(<JSNode>value, component, comp_info, context);
 
                         NEED_ASYNC = NA1 || NA2 || NEED_ASYNC;
 

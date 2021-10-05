@@ -3,8 +3,9 @@
 import glow from '@candlelib/glow';
 import URI from '@candlelib/uri';
 import Wick, { gatherWickElements } from '../entry-point/wick-runtime.js';
+import { ComponentElement } from '../runtime/component.js';
 import { Element } from "./element.js";
-import { PageView } from "./page.js";
+import { PageType, PageView } from "./page.js";
 
 type GlowAnimation = typeof glow;
 
@@ -23,7 +24,7 @@ export {
  * Returns the `<modal>` element from the document DOM, or creates and 
  * appends a new one to `<body>`.
  */
-function getModalContainer(router: Router) {
+function getModalContainer(router: Router): HTMLElement {
 
     let modal_container = document.getElementsByTagName("radiate-modals")[0];
 
@@ -45,7 +46,7 @@ function getModalContainer(router: Router) {
         });
     }
 
-    return modal_container;
+    return <any>modal_container;
 }
 
 /** 
@@ -95,7 +96,7 @@ export class Router {
         this.glow = glow;
 
         this.wick = wick;
-        wick.rt.presets.processLink = (temp, source) => {
+        wick.rt.context.processLink = (temp, source) => {
             if (!temp.onclick) temp.onclick = (e) => {
 
                 let link = e.currentTarget;
@@ -233,13 +234,13 @@ export class Router {
 
             iframe = document.createElement("iframe"),
 
-            page = new PageView(URL, iframe);
+            page = new PageView(URL, <ComponentElement><any>iframe);
 
         iframe.src = url_string;
 
         iframe.classList.add("modal", "comp_wrap");
 
-        page.type = "modal";
+        page.type = PageType.WICK_MODAL;
 
         this.pages[url_string] = page;
 
@@ -280,7 +281,7 @@ export class Router {
 
         let current_view = this.current_view;
 
-        if (page.type == "modal" || page.type == "transitioning_modal") {
+        if (page.type == PageType.WICK_MODAL || page.type == PageType.WICK_TRANSITIONING_MODAL) {
 
             page.SHOULD_CLOSE = false;
 
@@ -297,7 +298,7 @@ export class Router {
             if (IS_SAME_PAGE)
                 return;
 
-            let FORCE_CLOSE = (page.type == "transitioning_modal");
+            let FORCE_CLOSE = (page.type == PageType.WICK_TRANSITIONING_MODAL);
 
             this.modal_stack = this.modal_stack.reduce((r, a) => {
 
@@ -317,7 +318,7 @@ export class Router {
 
             this.current_view = null;
 
-            if (page.type != "transitioning_modal") {
+            if (page.type != PageType.WICK_TRANSITIONING_MODAL) {
                 page.connect(getModalContainer(this), wurl);
                 page.transitionIn(transition.in);
 
@@ -394,7 +395,7 @@ export class Router {
         /* 
             App elements: There should only be one. 
         */
-        let app_source: HTMLElement = DOM.getElementById("app");
+        let app_source: ComponentElement = <ComponentElement>DOM.getElementById("app");
 
         var dom_app = document.getElementById("app");
 
@@ -414,11 +415,11 @@ export class Router {
 
             var page: PageView = null;
 
-            gatherWickElements(DOM);
+            gatherWickElements(<HTMLElement><any>DOM);
 
             if (document == DOM) {
                 // APP_PAGE Element is used as a stage for all element containers
-                var app_page = document.createElement(dom_app.tagName);
+                var app_page: ComponentElement = <ComponentElement>document.createElement(dom_app.tagName);
 
                 app_page.classList.add(...dom_app.classList.toString().split(" "));
 
@@ -458,7 +459,7 @@ export class Router {
             if (app_source.dataset.modal == "true" || pending_modal_reply) {
 
                 page.setType("modal", this);
-                let modal = document.createElement("radiate-modal");
+                let modal: ComponentElement = <ComponentElement>document.createElement("radiate-modal");
                 modal.innerHTML = app_source.innerHTML;
                 app_source.innerHTML = "";
                 app_source = modal;

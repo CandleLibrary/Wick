@@ -1,9 +1,10 @@
 import { exp } from "@candlelib/js";
-import { ComponentData, HTMLHandler, PresetOptions } from "../../types/all.js";
+import { HTMLHandler } from "../../types/all.js";
 import {
     HTMLNode, HTMLNodeType,
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
+import { ComponentData } from '../common/component.js';
 import { processNodeAsync } from "./parse.js";
 
 const default_handler = {
@@ -39,10 +40,10 @@ export function loadHTMLHandler(handler: HTMLHandler, ...types: HTMLNodeType[]) 
  * Process a wick `{ expression }` binding node.
  * @param node 
  * @param component 
- * @param presets 
+ * @param context 
  * @returns 
  */
-export async function processBindingASTAsync(node: string | WickBindingNode, component: ComponentData, presets: PresetOptions) {
+export async function processBindingASTAsync(node: string | WickBindingNode, component: ComponentData, context: Presets) {
     let ast = null;
 
     if (typeof node !== "object") {
@@ -50,5 +51,5 @@ export async function processBindingASTAsync(node: string | WickBindingNode, com
     } else
         ast = node.primary_ast;
 
-    return processNodeAsync(ast, component.root_frame, component, presets);
+    return processNodeAsync(ast, component.root_frame, component, context);
 }
