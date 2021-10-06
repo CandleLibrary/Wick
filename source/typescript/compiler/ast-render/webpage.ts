@@ -23,7 +23,7 @@ type PageRenderHooks = {
      * ```js
      * import w from "/@cl/wick.runtime/"
      *
-     * w.setPresets({})
+     * w.appendPresets({})
      *
      * component_class_declarations...
      * ```
@@ -137,22 +137,21 @@ export async function RenderPage(
 
                     candidate_components.push(context.components.get(comp_name));
                 }
-
-            };
+            }
         }
     }
 
     //Optionally transform HTML before rendering to string 
 
     /** WARNING!!
-     * Transforming a components html structure can lead to 
+     * Transforming a component's html structure can lead to 
      * incompatible component code. Handle this with care
      */
 
     const
         { html, template_map } = await componentDataToHTML(comp, context, 1),
 
-        templates = [...template_map.values()].map(htmlTemplateToString).join("\n");
+        templates = [...template_map.values()].map(t => htmlTemplateToString(t, 1)).join("\n");
 
     let script = "", style = "", head = "";
 
@@ -177,7 +176,6 @@ export async function RenderPage(
         ? renderRadiatePageString(context, templates, html, head, script, style, hooks)
         : renderWickPageString(context, templates, html, head, script, style, hooks);
 
-    //metrics.report();
     metrics.clearMetrics();
 
     return { templates, html, head, script, style, page };
@@ -200,18 +198,18 @@ function renderWickPageString(
     <meta name="viewport" content="width=device-width, initial-scale=1">
     ${head.split("\n").join("\n    ")}
     <style id="wick-app-style">
-    ${style.split("\n").join("\n            ")}
+    ${style.split("\n").join("\n    ")}
     </style>       
 
   </head>
   <body>
 ${html}
-${templates.split("\n")}
+${templates}
     <script type=module id="wick-init-script">
-        ${hooks.init_script_render(script.split("\n").join("\n            "), context)}
+        ${hooks.init_script_render(script.split("\n").join("\n      "), context)}
     </script>
     <script type=module id="wick-component-script">
-        ${hooks.init_components_render(script.split("\n").join("\n            "), context)}
+        ${hooks.init_components_render(script.split("\n").join("\n      "), context)}
     </script>
   </body>
 </html>`;
@@ -228,63 +226,55 @@ function renderRadiatePageString(
 ): string {
     return `<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta name="generator" content="${name}-${version}"> 
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        ${head.split("\n").join("\n    ")}
+  <head>
+    <meta name="generator" content="${name}-${version}"> 
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    ${head.split("\n").join("\n    ")}
 
-        <style id="wick-boiler-plate">
+    <style id="wick-boiler-plate">
+        body {
+            position:absolute; top:0;
+            left:0; width:100%;
+            height:100%; padding:0;
+            margin:0; border:none;
+        }
+        li { list-style:none }
+        a { text-decoration:none }
+    </style>
+    <style id="wick-app-style">
+    ${style.split("\n").join("\n            ")}
+    </style>
 
-            body {
-                position:absolute; top:0;
-                left:0; width:100%;
-                height:100%; padding:0;
-                margin:0; border:none;
-            }
+    <style id="radiate">
+        radiate-modals {
+            position:fixed;
+            top:0;
+            left:0;
+        }
 
-            li { 
-                list-style:none
-            }
+        radiate-modal {
 
-            a {
-                text-decoration:none
-            }
+        }
 
-        </style>
-        <style id="wick-app-style">
-        ${style.split("\n").join("\n            ")}
-        </style>
-
-        <style id="radiate">
-            radiate-modals {
-                position:fixed;
-                top:0;
-                left:0;
-            }
-
-            radiate-modal {
-
-            }
-
-            radiate-modals iframe{
-                border: none;
-                width:100vh;
-                height:100vh;
-            }
-        </style>
-    </head>
-    <body>
-        <script> document.body.hidden = true; </script>
-        ${html.split("\n").join("\n        ")}
-        ${templates.split("\n").join("\n        ")}
-        <script type=module id="wick-init-script">
-            ${hooks.init_script_render(script.split("\n").join("\n            "), context)}
-        </script>
-        <script type=module id="wick-component-script">
-            ${hooks.init_components_render(script.split("\n").join("\n            "), context)}
-        </script>
-    </body>
+        radiate-modals iframe{
+            border: none;
+            width:100vh;
+            height:100vh;
+        }
+    </style>
+  </head>
+  <body>
+    <script> document.body.hidden = true; </script>
+${html}
+${templates}
+    <script type=module id="wick-init-script">
+      ${hooks.init_script_render(script.split("\n").join("\n      "), context)}
+    </script>
+    <script type=module id="wick-component-script">
+      ${hooks.init_components_render(script.split("\n").join("\n      "), context)}
+    </script>
+  </body>
 </html>`;
 }
 
