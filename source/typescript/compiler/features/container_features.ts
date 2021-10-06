@@ -1,4 +1,4 @@
-import { traverse } from '@candlelib/conflagrate';
+import { copy, traverse } from '@candlelib/conflagrate';
 import {
     JSExpressionStatement,
     JSIdentifier,
@@ -247,17 +247,14 @@ registerFeature(
                 // If the value can be resolved to pure data (no functions) then replace the
                 // current AST with the resolved data AST
 
+                const PURE_STATIC = (resolution_type ^ STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) == 0;
 
                 // Static bindings will never change, thus they can be set once in the init
                 // function of the component
-                if (
-                    (resolution_type ^ STATIC_RESOLUTION_TYPE.CONSTANT_STATIC)
-                    == 0
-                ) {
+                if (PURE_STATIC) {
                     const val = await getStaticValue(<any>node.value[0], comp, context);
                     const st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`);
                     if (val) {
-
 
                         const ast = convertObjectToJSNode(val);
 
@@ -265,9 +262,7 @@ registerFeature(
                     }
 
                     init(st);
-                }
-
-                if (!(resolution_type & STATIC_RESOLUTION_TYPE.CONSTANT_STATIC)) {
+                } else {
                     st.nodes[0].nodes[1].nodes = <any>node.value;
                     on_write(st);
                 }
@@ -575,15 +570,19 @@ registerFeature(
         function createContainerDynamicArrowCall(argument_size: number, container_method_name: string) {
             return function (node, comp, context, index, write, _1, _2) {
 
+                const ast = node.value[0];
+
                 const container_id = build_system.getElementAtIndex(comp, index).container_id;
 
                 let arrow_argument_match = new Array(argument_size).fill(null);
 
-                if (getListOfUnboundArgs(node, comp, arrow_argument_match, build_system)) {
+                const ast_copy = copy(ast);
+
+                if (getListOfUnboundArgs(ast_copy, comp, arrow_argument_match, build_system)) {
 
                     const arrow_expression_stmt = stmt(`$$ctr${container_id}.${container_method_name}((${arrow_argument_match.map(i => i.value).join(",")}) => 1)`);
 
-                    arrow_expression_stmt.nodes[0].nodes[1].nodes[0].nodes[1] = node.nodes[0];
+                    arrow_expression_stmt.nodes[0].nodes[1].nodes[0].nodes[1] = ast_copy;
 
                     write(arrow_expression_stmt);
                 }

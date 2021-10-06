@@ -132,8 +132,11 @@ registerFeature(
 
                                 meta.skip();
 
-                            } else
+                            } else {
+                                const new_node = await build_system.processNodeAsync(binding, frame, component, context, true);
+                                meta.mutate(new_node);
                                 build_system.addNameToDeclaredVariables(l_name, frame);
+                            }
 
                         } else {
                             if (frame.IS_ROOT) {

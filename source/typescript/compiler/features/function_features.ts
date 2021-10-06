@@ -1,8 +1,9 @@
 import { copy, traverse } from '@candlelib/conflagrate';
 import { JSCallExpression, JSFormalParameters, JSIdentifier, JSIdentifierBinding, JSNode, JSNodeType } from '@candlelib/js';
 import {
-    BINDING_VARIABLE_TYPE, HTMLNodeType, IndirectHook, JSHandler, WickBindingNode
+    BINDING_VARIABLE_TYPE, HTMLNodeType, IndirectHook, JSHandler
 } from "../../types/all.js";
+import { parse_js_stmt } from '../source-code-parse/parse.js';
 import { registerFeature } from './../build_system.js';
 import { BindingIdentifierReference } from './../common/js_hook_types.js';
 
@@ -12,7 +13,7 @@ registerFeature(
     (build_system) => {
 
         const BindingFunction = build_system.registerHookType("binding-function", JSNodeType.FunctionDeclaration);
-        const EventFunction = build_system.registerHookType("lifecycle-function", HTMLNodeType.HTMLAttribute);
+        const EventFunction = build_system.registerHookType("dom-event-function", HTMLNodeType.HTMLAttribute);
 
         // ###################################################################
         // Function Declaration
@@ -63,23 +64,11 @@ registerFeature(
                             (<JSIdentifier>name_node).value = internal_method_name;
                         } else {
 
-                            //For use with DOM on* methods
-                            build_system.addHook(component, {
-                                selector: name,
-                                hook_value: <WickBindingNode>{
-                                    type: HTMLNodeType.WickBinding,
-                                    primary_ast: Object.assign(
-                                        {},
-                                        name_node,
-                                        { type: JSNodeType.IdentifierReference }
-                                    ),
-                                    value: name.slice(2),
-                                    IS_BINDING: true
-                                },
-                                host_node: node,
-                                html_element_index: 0,
-                                pos: node.pos
-                            });
+                            build_system.addIndirectHook(
+                                component, EventFunction,
+                                { action: name.slice(2) }
+                            );
+
                         }
                     } else if (name[0] == "$") {
 
@@ -127,16 +116,17 @@ registerFeature(
 
                             build_system.addIndirectHook(component, BindingFunction, [call], 0, false);
 
+                            skip(1);
+
                             return null;
                         }
                     }
 
                     skip(1);
 
-                    return new Promise(async res => {
-                        await build_system.processFunctionDeclaration(<JSNode>node, component, context, root_name);
-                        res(null);
-                    });
+                    await build_system.processFunctionDeclaration(<JSNode>node, component, context, root_name);
+
+                    return null;
                 }
 
             }, JSNodeType.FunctionDeclaration, JSNodeType.FunctionExpression
@@ -202,6 +192,26 @@ registerFeature(
 
             }, JSNodeType.FormalParameters
         );
+
+        build_system.registerHookHandler<IndirectHook<{ nodes: [JSNode], action: string; }>, JSNode | void>({
+
+            name: "On Event Function Hook",
+
+            types: [EventFunction],
+
+            verify: () => true,
+
+            buildJS: (node, comp, context, element_index, _1, addInit) => {
+                // Replace the value with a 
+                // Get the on* attribute name
+                const
+                    { action } = node.value[0];
+
+                addInit(parse_js_stmt(`this.ele.addEventListener("${action}", this.on${action}.bind(this))`));
+            },
+
+            buildHTML: (node, comp, context, model) => null
+        });
 
     }
 

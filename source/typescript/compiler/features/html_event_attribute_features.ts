@@ -1,8 +1,9 @@
-import { JSNode, JSNodeType, stmt } from '@candlelib/js';
+import { JSNode, JSNodeType } from '@candlelib/js';
 import {
     HTMLAttribute, HTMLNodeType,
     IndirectHook
 } from "../../types/all.js";
+import { parse_js_stmt } from '../source-code-parse/parse.js';
 import { registerFeature } from './../build_system.js';
 import { getListOfUnboundArgs } from './container_features.js';
 
@@ -58,9 +59,9 @@ registerFeature(
                 let arrow_argument_match = new Array(1).fill(null), s = null;
 
                 if (getListOfUnboundArgs(ast, comp, arrow_argument_match, build_system)) {
-                    s = stmt(`this.al(${element_index}, "${action}", ${arrow_argument_match[0].value}=>a)`);
+                    s = parse_js_stmt(`this.al(${element_index}, "${action}", ${arrow_argument_match[0].value}=>a)`);
                 } else {
-                    s = stmt(`this.al(${element_index}, "${action}", _=>a)`);
+                    s = parse_js_stmt(`this.al(${element_index}, "${action}", _=>a)`);
                 }
 
                 s.nodes[0].nodes[1].nodes[2].nodes[1] = ast;
