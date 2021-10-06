@@ -368,7 +368,7 @@ export async function finalizeBindingExpression(
                  * Convert convenience names to class property accessors
                  */
                 if (node.value.slice(0, 5) == ("$$ele")) {
-                    mutate(<any>parse_js_exp(`this.elu[${node.value.slice(5)}]`));
+                    mutate(<any>parse_js_exp(`this.elu[${node.value.slice(5)}][0]`));
                     skip();
                 } else if (node.value.slice(0, 5) == ("$$ctr")) {
                     mutate(<any>parse_js_exp(`this.ctr[${node.value.slice(5)}]`));

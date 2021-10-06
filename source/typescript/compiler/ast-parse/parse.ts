@@ -278,6 +278,19 @@ export async function processWickHTML_AST(ast: HTMLNode,
 
         let html_node = node;
 
+        if (html_node.type & HTMLNodeClass.HTML_ELEMENT) {
+            component.ele_hash += <any>html_node.tag;
+            for (const attrib of html_node.attributes)
+                if (!attrib.IS_BINDING)
+                    component.ele_hash += attrib.name + attrib.value;
+                else
+                    component.ele_hash += attrib.name + "binding";
+
+        } else if (html_node.type == HTMLNodeType.WickBinding) {
+            component.ele_hash += html_node.pos.slice();
+        } else if (html_node.type == HTMLNodeType.HTMLText)
+            component.text_hash += <any>html_node.pos.slice();
+
         for (const handler of html_handlers[Math.max((node.type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)]) {
 
             const
@@ -314,6 +327,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
             last_element = html_node;
 
             for (const { node: attrib, meta: meta2 } of traverse(html_node, "attributes").skipRoot().makeMutable()) {
+
 
                 for (const handler of attribute_handlers) {
 
@@ -379,6 +393,8 @@ export function processWickCSS_AST(
 
     const INLINE = url != component.location;
 
+    component.css_hash += ast.pos.slice();
+
     if (!INLINE)
         if (context.styles.has(url + "")) {
             component.CSS.push(context.styles.get(url + ""));
@@ -391,6 +407,8 @@ export function processWickCSS_AST(
             location: url,
             container_element_index: host_node_index
         };
+
+
 
     if (!INLINE)
         context.styles.set(url + "", style);
