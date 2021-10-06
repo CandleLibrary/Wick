@@ -881,9 +881,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                     scope_component.se(lu_index, ele);
                 }
 
-                if (ele.hasAttribute("w:u"))
-                    this.se(parseInt(ele.getAttribute("w:u")), ele);
-                //this.elu.push(ele);
 
                 //Special Wick Elements
 
@@ -892,13 +889,17 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                     ({ sk, PROCESS_CHILDREN } = process_container(ele, scope_component, sk, PROCESS_CHILDREN));
 
                 else if (ele.hasAttribute("w:c") && this.ele !== ele) {
+
                     hydrateComponentElement(ele, component_chain);
-                    //takeParentAddChild(this, );
 
                     PROCESS_CHILDREN = false;
                 }
             }
         }
+
+        if (ele.hasAttribute("w:u"))
+            this.se(parseInt(ele.getAttribute("w:u")), ele);
+
 
         if (PROCESS_CHILDREN)
             iterateElementChildren(ele, scope_component, component_chain);
