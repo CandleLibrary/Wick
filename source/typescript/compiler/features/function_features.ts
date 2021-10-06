@@ -124,6 +124,7 @@ registerFeature(
                             //@ts-ignore
                             call.nodes[1].nodes.push(...call_ids.map(copy).map(i => (i.type = BindingIdentifierReference, i)));
 
+                            console.log({ c: call.pos.slice() });
 
                             build_system.addIndirectHook(component, AutoCallFunction, [call], 0, false);
 
@@ -150,10 +151,9 @@ registerFeature(
                 verify: () => true,
                 buildHTML: () => null,
                 buildJS(node, comp, context, element_index, addOnBindingUpdate, addInitBindingInit) {
+                    const [call_stmt, ...refs] = node.value[0].nodes;
 
-                    const [call_stmt, ...refs] = node.nodes;
-
-                    addOnBindingUpdate(call_stmt, ...refs);
+                    addOnBindingUpdate(node.value[0]);
 
                     return null;
                 }
