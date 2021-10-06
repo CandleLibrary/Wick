@@ -77,7 +77,7 @@ export function prependStmtToFrame({ ast }: FunctionFrame, ...stmt: JSNode[]) {
 
     for (const node of stmt.reverse())
         if (node.type & (JSNodeClass.DECLARATION | JSNodeClass.STATEMENT)) {
-            if (node.nodes.length == 0) continue;
+            if (node.nodes && node.nodes.length == 0) continue;
             ast.nodes[2].nodes.unshift(<JSStatementClass>node);
         } else
             ast.nodes[2].nodes.unshift({ type: JSNodeType.ExpressionStatement, nodes: [<JSExpressionClass>node], pos: node.pos });
