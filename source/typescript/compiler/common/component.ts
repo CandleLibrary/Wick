@@ -284,26 +284,6 @@ export class ComponentData {
         return this.context.component_class_string.get(this.name);
     }
 
-    async createPatch(context: Context, existing: string) {
-
-        const comp_class = await createCompiledComponentClass(this, context, true, true);
-
-        const class_strings = `
-        const name = "${this.name}";
-        const WickRTComponent = wick.rt.C;
-        const components= wick.rt.context.component_class;
-        
-        if(!components.has(name)){
-            const class_ = ${createClassStringObject(this, comp_class, context).class_string};
-            components.set(name, class_);
-        }
-
-        return components.get(name);
-        `;
-
-        return class_strings;
-    }
-
     createInstance(model: any = null): WickRTComponent {
         return new this.class(model);
     }
