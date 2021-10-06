@@ -100,7 +100,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         context: Context = rt.context,
         element_affinity = 0
     ) {
-
         this.name = this.constructor.name;
 
         this.nlu = undefined;
@@ -141,9 +140,11 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         //Create or assign global model whose name matches the default_model_name;
         if (default_model_name) {
+
             if (!context.models[default_model_name])
                 context.models[default_model_name] = {};
-            model = context.models[default_model_name];
+
+            this.model = context.models[default_model_name];
         }
 
         this.wrapper = wrapper;
@@ -156,18 +157,18 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.ele.setAttribute("wrt:c", this.name);
     }
 
-    initialize(model?: any) {
+    initialize(model: any = this.model) {
 
         if (this.INITIALIZED)
             return;
 
         this.INITIALIZED = true;
 
-
         for (const child of this.ch)
-            child.initialize(null);
+            child.initialize();
 
         this.model = model;
+
         this.CONNECTED = true;
 
         this.init(this);
@@ -175,6 +176,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.async_init();
 
         this.model = null;
+
         this.setModel(model);
 
         this.CONNECTED = false;
@@ -182,17 +184,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         return this;
     }
 
-    hydrate(model?: Object) {
+    hydrate() {
 
         const context = this.context, wrapper = this.wrapper;
-
-        //   this.CONNECTED = true;
-        //
-        //   this.init(this);
-        //
-        //   this.setModel(model);
-        //
-        //   this.CONNECTED = false;
 
         if (wrapper) {
 
@@ -213,12 +207,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             console.error(e);
         }
 
-        //  this.async_init();
-
         rt.OVERRIDABLE_onComponentCreate(this);
 
         for (const child of this.ch)
-            child.hydrate(null);
+            child.hydrate();
 
         return this;
     }
