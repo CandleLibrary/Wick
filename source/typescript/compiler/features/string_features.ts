@@ -70,7 +70,7 @@ registerFeature(
                     if (html_nodes.length > 0)
 
                         expression = (html_nodes.length == 1)
-                            ? build_system.js.expr(`$$ele${html_nodes[0].element_index}; `)
+                            ? build_system.js.expr(`$$ele${html_nodes[0].element_index}`)
                             : build_system.js.expr(`[${html_nodes.map(e => `$$ele${e.element_index}`).join(",")}]`);
 
             }
