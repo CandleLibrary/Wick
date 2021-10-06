@@ -11,7 +11,8 @@ registerFeature(
     "CandleLibrary WICK: JS Functions",
     (build_system) => {
 
-        const AutoCallFunction = build_system.registerHookType("auto-call-function-hook", HTMLNodeType.HTMLAttribute);
+        const BindingFunction = build_system.registerHookType("binding-function", JSNodeType.FunctionDeclaration);
+        const EventFunction = build_system.registerHookType("lifecycle-function", HTMLNodeType.HTMLAttribute);
 
         // ###################################################################
         // Function Declaration
@@ -124,9 +125,7 @@ registerFeature(
                             //@ts-ignore
                             call.nodes[1].nodes.push(...call_ids.map(copy).map(i => (i.type = BindingIdentifierReference, i)));
 
-                            console.log({ c: call.pos.slice() });
-
-                            build_system.addIndirectHook(component, AutoCallFunction, [call], 0, false);
+                            build_system.addIndirectHook(component, BindingFunction, [call], 0, false);
 
                             return null;
                         }
@@ -146,8 +145,8 @@ registerFeature(
         build_system.registerHookHandler
             <IndirectHook<[JSCallExpression, ...JSIdentifierBinding[]]>, JSCallExpression | JSIdentifierBinding>
             ({
-                name: "Automatically Calls Function on binding updates",
-                types: [AutoCallFunction],
+                name: "Automatically Call Function After Binding Variable Updates",
+                types: [BindingFunction],
                 verify: () => true,
                 buildHTML: () => null,
                 buildJS(node, comp, context, element_index, addOnBindingUpdate, addInitBindingInit) {
@@ -158,6 +157,7 @@ registerFeature(
                     return null;
                 }
             });
+
         /* ###################################################################
          * ARROW EXPRESSION
          */
