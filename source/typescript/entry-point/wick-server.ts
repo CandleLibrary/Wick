@@ -38,7 +38,7 @@ await URL.server();
 await HTML.server();
 
 export type { ComponentData } from '../compiler/common/component';
-export type { Context } from '../compiler/common/context';
+export type { Context, UserPresets } from '../compiler/common/context';
 export type { WickRTComponent } from '../runtime/component';
 export type { WickRuntime } from '../runtime/global';
 export * from "../server/load_directory.js";
