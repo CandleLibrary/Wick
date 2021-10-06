@@ -29,6 +29,10 @@ export function renderNew(node: Node): string {
     return experimentalRender(node, wick_mappings, wick_renderers);
 }
 
+export function renderNewFormatted(node: Node): string {
+    return experimentalRender(node, wick_mappings, wick_renderers, true);
+}
+
 export function renderCompressed(
     node: Node
 ) {
