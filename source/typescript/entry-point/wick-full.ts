@@ -33,6 +33,7 @@ import { DOMLiteral } from '../types/html.js';
 // systems will automatically register themselves through the
 // build system
 import { log } from './logger.js';
+import wick_runtime from './wick-runtime';
 
 export * from "../compiler/source-code-render/render.js";
 export * from "../compiler/source-code-render/rules.js";
@@ -196,7 +197,7 @@ async function componentCreate(input: string | URL, context: Context = rt.contex
 /**
  * Wick component parser and component library.
  */
-export type WickLibrary = typeof componentCreate & WickCompiler & WickRuntime;
+export type WickLibrary = typeof componentCreate & WickCompiler & typeof wick_runtime;
 
 /** README:USAGE
  * 

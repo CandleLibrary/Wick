@@ -1,10 +1,13 @@
-import { UserPresets } from '../compiler/common/context.js';
+import { Context, UserPresets } from '../compiler/common/context.js';
+import { WickRTComponent } from '../runtime/component.js';
 import { rt } from "../runtime/global.js";
 import {
     Element_Is_Wick_Component,
     Element_Is_Wick_Template, hydrateComponentElements
 } from "../runtime/html.js";
 import { loadModules } from "../runtime/load_modules.js";
+import { Observable } from '../runtime/observable/observable.js';
+import { ObservableScheme } from '../runtime/observable/observable_prototyped.js';
 
 let
     nop = _ => !0,
@@ -34,6 +37,18 @@ const wick = Object.assign(wick_root, {
 
     init_module_promise: null,
 
+    objects: {
+        WickRTComponent: WickRTComponent,
+        Context: Context,
+        Observable: Observable,
+        ObservableScheme: ObservableScheme
+    },
+    /**
+     * Integrate the givin set of UserPresets with
+     * the runtime context.
+     * @param presets_options 
+     * @returns 
+     */
     async appendPresets(presets_options: UserPresets) {
 
 
