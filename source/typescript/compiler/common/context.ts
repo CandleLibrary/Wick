@@ -339,7 +339,7 @@ export interface UserPresets {
 
     options?: Context["options"];
 
-    schemes: any;
+    schemes?: any;
 
-    models: any;
+    models?: any;
 }
