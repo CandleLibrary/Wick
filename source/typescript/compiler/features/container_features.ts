@@ -556,7 +556,10 @@ registerFeature(
         async function createContainerStaticValue(hook: IndirectHook<JSNode>, comp, context, model, parents) {
 
 
-            if (build_system.getExpressionStaticResolutionType(hook.value[0], comp, context) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
+            if (
+                build_system.getExpressionStaticResolutionType(hook.value[0], comp, context)
+                ==
+                STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
 
 
                 const ast = await build_system.getStaticAST(hook.value[0], comp, context, model, parents, false);
@@ -584,7 +587,7 @@ registerFeature(
 
                     arrow_expression_stmt.nodes[0].nodes[1].nodes[0].nodes[1] = ast_copy;
 
-                    write(arrow_expression_stmt);
+                    _1(arrow_expression_stmt);
                 }
             };
         }
@@ -627,7 +630,7 @@ registerFeature(
 );
 
 /**
-        * Searches for N Undeclared binding references, where N is the number of entries in list arg.
+        * Searches for N undeclared binding references, where N is the number of entries in list arg.
         * Upon finding matches, converts the types of reference nodes back to their original values.
         * Found nodes are assigned to the list at an index respective of the order the node was found
         * in. If the number of found nodes is less then the number of entries in list, then false
@@ -641,7 +644,7 @@ registerFeature(
 export function getListOfUnboundArgs(
     node: JSNode,
     comp: ComponentData,
-    list: JSNode[],
+    list: JSIdentifierClass[],
     build_sys: any
 ): boolean {
 
@@ -649,8 +652,15 @@ export function getListOfUnboundArgs(
 
     let active_names = new Set();
 
+    let name_to_convert = [];
+
     for (const { node: n } of traverse(node, "nodes")
-        .filter("type", BindingIdentifierBinding, BindingIdentifierReference, JSNodeType.IdentifierBinding, JSNodeType.IdentifierReference)) {
+        .filter("type",
+            BindingIdentifierBinding,
+            BindingIdentifierReference,
+            JSNodeType.IdentifierBinding,
+            JSNodeType.IdentifierReference
+        )) {
 
         const name = (<JSIdentifierClass>n).value;
 
@@ -660,24 +670,39 @@ export function getListOfUnboundArgs(
 
             if (binding.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
 
-                n.type = getOriginalTypeOfExtendedType(n.type);
-
                 if (!active_names.has(name)) {
-                    active_names.add(name);
-                    list[index] = n;
-                    if (++index == list.length)
-                        return true;
+
+                    if (index < list.length) {
+
+                        name_to_convert.push(n);
+
+                        active_names.add(name);
+
+                        list[index] = n;
+
+                        index++;
+                    }
+                } else {
+                    name_to_convert.push(n);
                 }
             }
         } else {
             if (!active_names.has(name)) {
-                active_names.add(name);
-                list[index] = n;
-                if (++index == list.length)
-                    return true;
+                if (index < list.length) {
+                    active_names.add(name);
+                    //@ts-ignore
+                    list[index] = n;
+                    index++;
+                }
             }
         }
     }
 
-    return false;
+    if (index == list.length)
+        for (const n of name_to_convert)
+            n.type = getOriginalTypeOfExtendedType(n.type);
+    //Sort names alphabetically
+    list.sort(({ value: a }, { value: b }) => a < b ? -1 : a > b ? 1 : 0);
+
+    return index == list.length;
 }
