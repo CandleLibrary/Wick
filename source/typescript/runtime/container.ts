@@ -265,12 +265,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this.filter_new_items();
 
-        for (const fltr of this.filters)
-            fltr.destroy();
-
         if (this.container && this.container.OBSERVABLE)
             this.container.unsubscribe(this);
-
     }
 
 
@@ -298,7 +294,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.setLoadedFlag();
     }
 
-    onModelUpdate(container) { this.filter_new_items(container.data); }
+    onModelUpdate(container) {
+        this.filter_new_items(container.data);
+    }
 
     setLoadedFlag() {
         if (!this.LOADED)
@@ -699,9 +697,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
     }
 
     private removeFromDOM() {
-        for (const component of this.components_pending_removal) {
+        for (const component of this.components_pending_removal)
             component.removeFromDOM();
-        }
 
         this.components_pending_removal.length = 0;
     }
@@ -713,8 +710,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         if (!transition) transition = createTransition(), OWN_TRANSITION = true;
 
-        this.components_pending_removal.length = 0;
-
         this.arrange(w_data, output, transition);
 
         this.appendToDOM(w_data, output);
@@ -724,12 +719,11 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.primeTransitions(transition);
 
         if (OWN_TRANSITION) {
-            if (NO_TRANSITION) {
+            if (!rt.glow || NO_TRANSITION) {
                 this.removeFromDOM();
-                return transition;
-            }
-            else
+            } else {
                 transition.asyncPlay().then(this.removeFromDOM.bind(this));
+            }
         }
 
         return transition;
@@ -775,23 +769,16 @@ export class WickContainer implements Sparky, ObservableWatcher {
         };
     }
 
-    limitExpressionUpdate(transition: Transition = createTransition()) {
+    limitExpressionUpdate(transition) {
 
         //Preset the positions of initial components. 
 
         this.mutateDOM(this.getWindowData(), transition);
 
-        // If scrubbing is currently occurring, if the transition were to auto play then the results 
-        // would interfere with the expected behavior of scrubbing. So the transition
-        // is instead set to it's end state, and scrub is called to set intermittent 
-        // position. 
-        if (!this.SCRUBBING)
-            transition.play();
-
         this.offset_diff = 0;
     }
 
-    filterExpressionUpdate(transition: Transition = createTransition()) {
+    filterExpressionUpdate(transition?) {
         // Filter the current components. 
         this.updateFilter();
         this.limitExpressionUpdate(transition);
@@ -804,20 +791,32 @@ export class WickContainer implements Sparky, ObservableWatcher {
      */
     updateFilter() {
 
-        let output = this.comps.slice();
 
-        if (this.filter)
-            output = this.comps.filter(comp => this.filter(comp.container_model));
+        this.activeComps.length = 0;
 
-        if (this.sort) {
-            output.sort(this.sort);
+        if (this.filter) {
+
+            for (const comp of this.comps) {
+                if (!this.filter(comp.container_model)) {
+                    if (comp.CONNECTED) {
+                        this.components_pending_removal.push(comp);
+                    }
+                } else {
+                    this.activeComps.push(comp);
+                }
+            }
+
+        } else {
+            this.activeComps.push(...this.comps);
         }
 
-        this.activeComps = output;
+        if (this.sort)
+            this.activeComps.sort(this.sort);
+
 
         this.UPDATE_FILTER = false;
 
-        return output;
+        return this.activeComps;
     }
 
     setFilter(value: (arg: WickRTComponent) => boolean) {
@@ -974,7 +973,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
             }
 
             this.scheduledUpdate();
-            //spark.queueUpdate(this);
         }
     }
     addEvaluator(evaluator: (a: any) => boolean, index) { this.evaluators[index] = evaluator; }
@@ -988,8 +986,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         let OWN_TRANSITION = false, cstr_l = this.comp_constructors.length;
 
-        if (!transition)
-            transition = createTransition(), OWN_TRANSITION = true;
+        if (!transition) OWN_TRANSITION = true;
 
         for (const item of items) {
 
