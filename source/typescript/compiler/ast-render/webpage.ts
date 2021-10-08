@@ -68,6 +68,65 @@ export const default_wick_hooks = {
 };
 
 
+interface RenderPageOptions {
+    /**
+     * If true, a component's CSS data will 
+     * be integrated into the component class.
+     * 
+     * default: `false`
+     */
+    INTEGRATED_CSS?: boolean,
+    /**
+     * If true, a component's HTML data will 
+     * be integrated into the component class.
+     * 
+     * default: `false`
+     */
+    INTEGRATED_HTML?: boolean;
+    /**
+     * If true, a component's CSS data will 
+     * be statically rendered in the head element
+     * of the output document.
+     * 
+     * default: `true`
+     */
+    STATIC_RENDERED_CSS?: boolean,
+    /**
+     * If true, a component's HTML data will 
+     * be statically rendered in the body element
+     * of the output document.
+     * 
+     * default: `true`
+     */
+    STATIC_RENDERED_HTML?: boolean;
+
+    /**
+     * If true, a script element will be generated
+     * within the output document that will be used
+     * to initialize component classes on page load.
+     * 
+     * default: `true`
+     */
+    INTEGRATE_COMPONENTS?: boolean;
+    /**
+     * If true, all Wick annotation attributes will
+     * be rendered, including those on elements that 
+     * otherwise receive no benefit from such attributes.
+     * 
+     * default: `false`
+     */
+    VERBOSE_ANNOTATION_ATTRIBUTES?: boolean;
+}
+
+const default_options: RenderPageOptions = {
+    INTEGRATED_CSS: false,
+    INTEGRATED_HTML: false,
+    STATIC_RENDERED_CSS: true,
+    STATIC_RENDERED_HTML: true,
+    INTEGRATE_COMPONENTS: true,
+    VERBOSE_ANNOTATION_ATTRIBUTES: false
+};
+
 /**[API]
  * Builds a single page from a wick component, with the
  * designated component serving as the root element of the
@@ -81,10 +140,17 @@ export const default_wick_hooks = {
 export async function RenderPage(
     comp: ComponentData,
     context: Context = rt.context,
+    {
+        INTEGRATED_CSS = default_options.INTEGRATED_CSS,
+        INTEGRATED_HTML = default_options.INTEGRATED_HTML,
+        STATIC_RENDERED_CSS = default_options.STATIC_RENDERED_CSS,
+        STATIC_RENDERED_HTML = default_options.STATIC_RENDERED_HTML,
+        INTEGRATE_COMPONENTS = default_options.INTEGRATE_COMPONENTS,
+        VERBOSE_ANNOTATION_ATTRIBUTES = default_options.VERBOSE_ANNOTATION_ATTRIBUTES,
+    }: RenderPageOptions = default_options,
     hooks: PageRenderHooks = comp.RADIATE
         ? default_radiate_hooks
-        : default_wick_hooks,
-    template_data = null
+        : default_wick_hooks
 ): Promise<{
     /**
      * A string of template elements that comprise components that are rendered
@@ -147,19 +213,26 @@ export async function RenderPage(
      * Transforming a component's html structure can lead to 
      * incompatible component code. Handle this with care
      */
+    let html = "", templates = "";
 
-    const
-        { html, template_map } = await componentDataToHTML(comp, context, 1),
+    if (STATIC_RENDERED_HTML) {
+
+        let template_map = null;
+
+        ({ html, template_map } = await componentDataToHTML(comp, context, 1));
 
         templates = [...template_map.values()].map(t => htmlTemplateToString(t, 1)).join("\n");
+    }
 
     let script = "", style = "", head = "";
 
     for (const comp of components_to_process) {
 
-        const class_info = await createCompiledComponentClass(comp, context, false, false);
-
-        const { class_string } = createClassStringObject(comp, class_info, context, "w.rt.C");
+        const class_info =
+            await createCompiledComponentClass(
+                comp, context, INTEGRATED_HTML, INTEGRATED_CSS
+            ),
+            { class_string } = createClassStringObject(comp, class_info, context, "w.rt.C");
 
         if (comp.HTML_HEAD.length > 0) {
             for (const node of comp.HTML_HEAD) {
@@ -167,9 +240,11 @@ export async function RenderPage(
             }
         }
 
-        script += "\n" + `w.rt.rC(${class_string});`;
+        if (INTEGRATE_COMPONENTS)
+            script += "\n" + `w.rt.rC(${class_string});`;
 
-        style += "\n" + componentDataToCSS(comp);
+        if (STATIC_RENDERED_CSS)
+            style += "\n" + componentDataToCSS(comp);
     }
 
     const page = comp.RADIATE
