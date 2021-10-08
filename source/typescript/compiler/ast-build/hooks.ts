@@ -97,9 +97,9 @@ export async function processHookForHTML(
     model: any,
     parent_components: ComponentData
 
-): Promise<HookTemplatePackage | any> {
+): Promise<HookTemplatePackage> {
 
-    var pkg: HookTemplatePackage | any = null;
+    var pkg: HookTemplatePackage = { value: null, html: null, templates: null };
     //@ts-ignore
 
     for (const handler of getHookHandlers()) {

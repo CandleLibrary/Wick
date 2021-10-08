@@ -2,7 +2,7 @@ import html from "@candlelib/html";
 import spark from "@candlelib/spark";
 
 import { htmlTemplateToString } from "../../build/library/compiler/ast-render/html.js";
-import { componentDataToTempAST } from "../../build/library/compiler/ast-build/html.js";
+import { componentDataToCompiledHTML } from "../../build/library/compiler/ast-build/html.js";
 import { hydrateComponentElements } from "../../build/library/runtime/html.js";
 import { Context } from "../../build/library/compiler/common/context.js";
 import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
@@ -10,11 +10,11 @@ import { createCompiledComponentClass } from "../../build/library/compiler/ast-b
 import { createClassStringObject, componentDataToJS } from "../../build/library/compiler/ast-render/js.js";
 
 export async function getInstanceHTML(comp, context) {
-    return (await componentDataToTempAST(comp, context)).html[0];
+    return (await componentDataToCompiledHTML(comp, context)).html[0];
 }
 
 export async function getRenderedHTML(comp, context) {
-    const html = (await componentDataToTempAST(comp, context)).html[0];
+    const html = (await componentDataToCompiledHTML(comp, context)).html[0];
     return htmlTemplateToString(html);
 }
 
@@ -25,7 +25,7 @@ function ensureContext(context = new Context) {
 export async function getHTMLString(source_string, context) {
     context = ensureContext(context);
     const component = await parseSource(source_string, context);
-    const html = (await componentDataToTempAST(component, context)).html[0];
+    const html = (await componentDataToCompiledHTML(component, context)).html[0];
     return htmlTemplateToString(html);
 }
 
@@ -116,8 +116,8 @@ export function assertTree(tree, ele, prev_name = "") {
             harness.pushTestResult();
             harness.pushName(`Expect [${prev_name}=="${ele.data.trim()}"] == "${tree.d.trim()}"`);
             harness.pushAndAssertValue(harness.shouldEqual(ele.data.trim(), tree.d.trim()));
-            harness.popTestResult();
             harness.popName();
+            harness.popTestResult();
         }
 
         if (tree.c) {
@@ -132,8 +132,8 @@ export function assertTree(tree, ele, prev_name = "") {
         harness.pushTestResult();
         harness.pushName(`Error encountered when comparing ${JSON.stringify(tree)}`);
         harness.addException(e);
-        harness.popTestResult();
         harness.popName();
+        harness.popTestResult();
     }
 
 }

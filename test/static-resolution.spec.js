@@ -1,5 +1,6 @@
 import HTML from "@candlelib/html";
-import { componentDataToTempAST } from "../build/library/compiler/ast-build/html.js";
+import { assert } from "console";
+import { componentDataToCompiledHTML } from "../build/library/compiler/ast-build/html.js";
 import { htmlTemplateToString } from "../build/library/compiler/ast-render/html.js";
 import { enableBuildFeatures } from "../build/library/compiler/build_system.js";
 import { Context } from "../build/library/compiler/common/context.js";
@@ -11,10 +12,12 @@ assert_group("Basic Container Static Resolution", sequence, () => {
     const source_string = `
 const test = 55;
 
-var data = [
+const data = [
     {header:"test1", entries:[{value:"test1", href:""}]},
-    {header:"test2", entries:[{value:"test2", href:""},{value:"test3", href:"test4"}]}
+    {header:"test2", entries:[{value:"test2", href:""},
+    {value:"test3", href:"test4"}]},
 ]
+
 export default <div>
 
     {test}
@@ -39,14 +42,12 @@ export default <div>
 
     enableBuildFeatures();
 
-    const { html } = await componentDataToTempAST(component, context);
+    const { html } = await componentDataToCompiledHTML(component, context);
+
 
     assertTree({
         t: "div",
-        c: [{
-            t: "w-b",
-            c: [{ d: "55" }]
-        }, {
+        c: [{ d: "55" }, {
             t: "ol",
             c: [
                 {
@@ -92,7 +93,7 @@ export default <div>
 
     const component = await wick_server(source_string, context);
 
-    const { html } = await componentDataToTempAST(component, context);
+    const { html } = await componentDataToCompiledHTML(component, context);
 
     const html_string = htmlTemplateToString(html[0]);
 
@@ -136,7 +137,7 @@ export default <div>
 
     const component = await wick_server(source_string, context);
 
-    const { html } = await componentDataToTempAST(component, context);
+    const { html } = await componentDataToCompiledHTML(component, context);
 
     const html_string = htmlTemplateToString(html[0]);
 
@@ -152,6 +153,4 @@ export default <div>
             }
         ]
     }, html[0]);
-
-
 });

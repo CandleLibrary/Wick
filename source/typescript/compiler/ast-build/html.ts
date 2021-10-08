@@ -398,7 +398,12 @@ async function addContainer(
         }
     }
 
-    node.tagName = html.tag.toLowerCase();
+    const name = html.tag.toLowerCase();
+
+    if (name == "container")
+        node.tagName = "div";
+    else
+        node.tagName = name;
 
     node.attributes.set("w:ctr", w_ctr);
 
@@ -466,42 +471,43 @@ async function processContainerHooks(
 
     if (data_hook) {
 
-        let data = await processHookForHTML(data_hook, component, context, model, parent_components);
+        let { value: data } = await processHookForHTML(data_hook, component, context, model, parent_components);
 
         if (Array.isArray(data) && data.length > 0) {
+
 
             let limit = data.length, offset = 0, shift = 1;
 
             if (filter_hook) {
-                const arrow_filter = await processHookForHTML(filter_hook, component, context, model, parent_components);
+                const { value: arrow_filter } = await processHookForHTML(filter_hook, component, context, model, parent_components);
 
                 if (arrow_filter)
                     data = data.filter(arrow_filter);
             }
 
             if (sort_hook) {
-                const sort_filter = await processHookForHTML(sort_hook, component, context, model, parent_components);
+                const { value: sort_filter } = await processHookForHTML(sort_hook, component, context, model, parent_components);
 
                 if (sort_filter)
                     data = data.sort(sort_filter);
             }
 
             if (limit_hook) {
-                const pending_limit = await processHookForHTML(limit_hook, component, context, model, parent_components);
+                const { value: pending_limit } = await processHookForHTML(limit_hook, component, context, model, parent_components);
 
                 if (typeof pending_limit == "number")
                     limit = Math.max(0, Math.min(pending_limit, data.length));
             }
 
             if (shift_hook) {
-                const pending_shift = await processHookForHTML(shift_hook, component, context, model, parent_components);
+                const { value: pending_shift } = await processHookForHTML(shift_hook, component, context, model, parent_components);
 
                 if (typeof pending_shift == "number")
                     shift = Math.max(1, pending_shift);
             }
 
             if (offset_hook) {
-                const pending_offset = await processHookForHTML(offset_hook, component, context, model, parent_components);
+                const { value: pending_offset } = await processHookForHTML(offset_hook, component, context, model, parent_components);
 
                 if (typeof pending_offset == "number")
                     offset = Math.max(0, Math.min(pending_offset, data.length));
