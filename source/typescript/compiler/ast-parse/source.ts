@@ -56,7 +56,7 @@ export async function parseSource(
     const run_tag = metrics.startRun("Parse Source Input");
 
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
-    if (typeof (window) == "undefined") await URL.polyfill();
+    if (typeof (window) == "undefined") await URL.server();
 
     let
         source_url: URL = null,
