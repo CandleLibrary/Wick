@@ -291,13 +291,13 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     removeCSS() {
 
-        const cache = this.context.css_cache[this.name];
+        const cache = this.context.css_cache.get(this.name);
 
         if (cache) {
             cache.count--;
             if (cache.count <= 0) {
                 cache.css_ele.parentElement.removeChild(cache.css_ele);
-                this.context.css_cache[this.name] = null;
+                this.context.css_cache.delete(this.name);
             }
         }
     }
@@ -306,7 +306,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (style_string) {
 
-            if (!this.context.css_cache[this.name]) {
+            if (!this.context.css_cache.has(this.name)) {
 
                 const { window: { document }, css_cache } = this.context,
                     css_ele = document.createElement("style");
@@ -315,7 +315,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                 document.head.appendChild(css_ele);
 
-                css_cache[this.name] = { css_ele, count: 1 };
+                css_cache.set(this.name, { css_ele, count: 1 });
             } else
                 this.context.css_cache[this.name].count++;
 

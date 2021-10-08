@@ -149,7 +149,7 @@ export class Context {
      */
     components?: Map<string, ComponentData>;
 
-    css_cache?: any;
+    css_cache?: Map<string, { css_ele: HTMLStyleElement, count: number; }>;
 
     document?: Document;
 
@@ -201,8 +201,6 @@ export class Context {
 
         this.api = {};
 
-        this.css_cache = {};
-
         this.models = {};
 
         this.component_class = new Map;
@@ -216,6 +214,8 @@ export class Context {
         this.repo = new Map;
 
         this.styles = new Map;
+
+        this.css_cache = new Map;
 
         this.plugins = new PluginStore;
 
