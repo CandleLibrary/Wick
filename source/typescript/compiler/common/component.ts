@@ -217,8 +217,6 @@ export class ComponentData {
 
     element_counter: number;
 
-    element_index_remap: Map<number, number>;
-
     context: Context;
 
     constructor(source_string: string, location: URL) {
@@ -269,7 +267,7 @@ export class ComponentData {
 
         this.element_counter = -1;
 
-        this.element_index_remap = new Map;
+
     }
 
     get class(): typeof WickRTComponent {

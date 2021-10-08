@@ -62,7 +62,6 @@ export async function componentDataToCompiledHTML(
             children = c.map(i => ({ USED: false, child: i, id: comp_data.length - 1 }));
 
         if (html.id != undefined) {
-            comp.element_index_remap.set(html.id, comp.element_counter);
             node.attributes.set("w:u", html.id + "");
         }
 

@@ -147,8 +147,6 @@ export async function processHookForClass(
         pending_init_asts = [],
         pending_destroy_asts = [];
 
-    // element_index = component.element_index_remap.get(element_index) ?? element_index;
-
     /**
      * Code that should execute when one or more 
      * binding variable values are modified
