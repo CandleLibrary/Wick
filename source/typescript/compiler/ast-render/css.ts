@@ -1,7 +1,7 @@
 import { traverse } from "@candlelib/conflagrate";
 import { CSSNode, CSSNodeType } from "@candlelib/css";
 import { CSSSelectorNode } from "@candlelib/css/build/types/types/node";
-import { ComponentStyle } from "../../types/all.js";
+import { ComponentStyle, HTMLElementNode } from "../../types/all.js";
 import { ComponentData } from '../common/component.js';
 import { getElementAtIndex } from "../common/html.js";
 import { parse_css_selector } from "../source-code-parse/parse.js";
@@ -49,16 +49,16 @@ export function componentToMutatedCSS(css: ComponentStyle, component?: Component
 
     const r = { ast: null };
 
-    const host_ele = getElementAtIndex(component, css.container_element_index);
+    const host_ele = getElementAtIndex<HTMLElementNode>(component, css.container_element_index);
 
     let class_selector = null;
 
     const name = component.name;
 
     if (host_ele?.component_name && host_ele != component.HTML) {
-        const expat_node = host_ele.attributes.find(([name]) => name == "expat");
+        const expat_node = host_ele.attributes.find(({ name }) => name == "expat");
 
-        class_selector = parse_css_selector(`${host_ele.tag_name}[expat="${expat_node[1]}"]`);
+        class_selector = parse_css_selector(`${host_ele.tag}[expat="${expat_node[1]}"]`);
     } else
         class_selector = parse_css_selector(`.${name}`);
 

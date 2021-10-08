@@ -83,9 +83,11 @@ export function getBindingRefCount(frame: FunctionFrame): Map<string, number> {
     return name_map;
 }
 export function removeBindingReferences(name: string, frame: FunctionFrame) {
+
     for (const node of frame.binding_ref_identifiers)
+
         if (node.value == name)
-            node.type = getOriginalTypeOfExtendedType(node);
+            node.type = getOriginalTypeOfExtendedType<typeof node["type"]>(node.type);
 }
 
 /**
@@ -164,6 +166,7 @@ export function addBindingVariable(
         internal_name,
         pos,
         type,
+        static_resolution_type: STATIC_RESOLUTION_TYPE.UNDEFINED,
         STATIC_STATE: STATIC_BINDING_STATE.UNCHECKED,
         default_val: null,
         ref_count: 0

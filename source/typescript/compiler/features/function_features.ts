@@ -160,13 +160,9 @@ registerFeature(
                     const function_frame = await build_system.
                         processFunctionDeclaration(<JSNode>node, component, context);
 
-                    /* const { ast } = await build_system.processJSNode(
-                        <JSNode>node, component, context, null, frame, true
-                    ); */
-
                     skip();
 
-                    return null;
+                    return node;
                 }
 
             }, JSNodeType.ArrowFunction
@@ -185,7 +181,7 @@ registerFeature(
                         for (const { node: binding, meta } of traverse(node, "nodes", 4)
                             .filter("type", JSNodeType.IdentifierBinding, JSNodeType.IdentifierReference)
                         ) {
-                            build_system.addNameToDeclaredVariables(<string>binding.value, frame);
+                            build_system.addNameToDeclaredVariables((<any>binding).value, frame);
                         }
                     }
                 }

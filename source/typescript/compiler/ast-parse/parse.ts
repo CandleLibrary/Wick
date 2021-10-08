@@ -3,18 +3,16 @@ import { CSSNode } from "@candlelib/css";
 import { JSFunctionDeclaration, JSNode, JSNodeType, JSNodeTypeLU } from "@candlelib/js";
 import URI from '@candlelib/uri';
 import {
-    ComponentStyle, FunctionFrame, HTMLNode,
+    ComponentStyle, FunctionFrame, HTMLElementNode, HTMLNode,
     HTMLNodeClass,
     HTMLNodeType,
     HTMLTextNode,
     WICK_AST_NODE_TYPE_BASE
-
 } from "../../types/all.js";
 import { getBindingRefCount, getRootFrame } from "../common/binding.js";
 import { ComponentData } from '../common/component.js';
-import { createParseFrame } from "../common/frame.js";
-import { buildExportableDOMNode } from "../common/html.js";
 import { Context } from '../common/context.js';
+import { createParseFrame } from "../common/frame.js";
 import { html_handlers } from "./html.js";
 import { JS_handlers } from "./js.js";
 
@@ -280,7 +278,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
 
         if (html_node.type & HTMLNodeClass.HTML_ELEMENT) {
             component.ele_hash += <any>html_node.tag;
-            for (const attrib of html_node.attributes)
+            for (const attrib of (<HTMLElementNode>html_node).attributes)
                 if (!attrib.IS_BINDING)
                     component.ele_hash += attrib.name + attrib.value;
                 else
@@ -326,7 +324,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
 
             last_element = html_node;
 
-            for (const { node: attrib, meta: meta2 } of traverse(html_node, "attributes").skipRoot().makeMutable()) {
+            for (const { node: attrib, meta: meta2 } of traverse(<HTMLElementNode>html_node, "attributes").skipRoot().makeMutable()) {
 
 
                 for (const handler of attribute_handlers) {
@@ -362,7 +360,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
     if (receiver.ast) {
 
         if (USE_AS_PRIMARY_HTML)
-            component.HTML = buildExportableDOMNode(receiver.ast);
+            component.HTML = receiver.ast;
         else
             component.INLINE_HTML.push(<any>receiver.ast);
 
@@ -388,18 +386,18 @@ export function processWickCSS_AST(
     context: Context,
     url: URI = component.location,
     host_node_index: number = 1,
-): Promise<void> {
+) {
     //Extract style sheet and add to the components stylesheets
 
-    const INLINE = url != component.location;
+    const INLINE = (url + "") == (component.location + "");
 
     component.css_hash += ast.pos.slice();
 
-    if (!INLINE)
+    /* if (!INLINE)
         if (context.styles.has(url + "")) {
             component.CSS.push(context.styles.get(url + ""));
             return;
-        }
+        } */
 
     const [stylesheet] = <CSSNode[]><unknown>ast.nodes,
         style: ComponentStyle = {

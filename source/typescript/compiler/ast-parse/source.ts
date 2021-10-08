@@ -150,10 +150,9 @@ export async function parseComponentAST(
 
 ): Promise<{ IS_NEW: boolean, comp: ComponentData; }> {
 
-    const run_tag = metrics.startRun("Parse Source AST");
-
-
     const
+        run_tag = metrics.startRun("Parse Source AST"),
+
         component: ComponentData = createComponentData(source_string, url);
 
     if (context.components.has(component.name)) {
@@ -164,6 +163,8 @@ export async function parseComponentAST(
     context.components.set(component.name, component);
 
     component.root_frame = createParseFrame(null, component);
+
+    component.source_hash = component.name;
 
     component.comments = [];
 

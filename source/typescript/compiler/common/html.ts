@@ -1,4 +1,4 @@
-import { ContainerDomLiteral, DOMLiteral, HTMLContainerNode, HTMLNode } from "../../types/all.js";
+import { HTMLNode } from "../../types/all.js";
 import { ComponentData } from './component.js';
 
 export const html_void_tags = new Set([
@@ -77,86 +77,16 @@ export const html_command_types = new Set([
     "checkbox",
 ]);
 
-export function buildExportableDOMNode(
-    ast: HTMLNode & {
-        component_name?: string;
-        slot_name?: string;
-        data?: any;
-        id?: number;
-        ele_id?: number;
-        name_space?: number;
-    }): DOMLiteral {
-
-    const node: DOMLiteral = <DOMLiteral>{ pos: ast.pos };
-
-    node.id = ast.id;
-
-    node.tag_name = ast.tag || "";
-
-    if (ast.slot_name)
-        node.slot_name = ast.slot_name;
-
-    if (ast.IS_BINDING)
-        node.IS_BINDING = true;
-
-    if (ast.component_name)
-        node.component_name = ast.component_name;
-
-    if (ast.IS_CONTAINER) {
-
-        const
-            ctr = <ContainerDomLiteral>node,
-            ctr_ast = <HTMLContainerNode>ast;
-
-        ctr.IS_CONTAINER = true;
-        ctr.component_names = ctr_ast.component_names;
-        ctr.container_id = ctr_ast.container_id;
-        ctr.component_attributes = ctr_ast.component_attributes;
-
-        if (ctr.tag_name == "CONTAINER")
-            ctr.tag_name = "DIV";
-    }
-
-    if (ast.attributes && ast.attributes.length > 0) {
-
-        node.attributes = [];
-
-        for (const attrib of ast.attributes)
-            node.attributes.push([attrib.name, attrib.value.toString()]);
-
-    }
-
-    /***
-     * DOM
-     */
-
-    if (ast.nodes && ast.nodes.length > 0) {
-        node.nodes = [];
-        for (const child of ast.nodes)
-            node.nodes.push(buildExportableDOMNode(child));
-    }
-
-    node.element_index = ast.id;
-
-    if (ast.data) {
-        node.data = ast.data;
-
-    } else if (ast.name_space > 0) {
-        node.name_space = ast.name_space || 0;
-    }
-
-    return node;
-}
 
 export function Is_Tag_From_HTML_Spec(tag_name: string): boolean { return html_tags.has(tag_name.toLowerCase()); }
 
 export function Is_Tag_Void_Element(tag_name: string): boolean { return html_void_tags.has(tag_name.toLowerCase()); }
 
 
-export function getElementAtIndex(comp: ComponentData, index: number, node: DOMLiteral = comp.HTML, counter = { i: 0 }): DOMLiteral {
+export function getElementAtIndex<T = HTMLNode>(comp: ComponentData, index: number, node: HTMLNode = comp.HTML, counter = { i: 0 }): T {
 
-    if (index == node.element_index)
-        return node;
+    if (index == node.id)
+        return <T><any>node;
 
     if (node.nodes)
         for (const child of node.nodes) {

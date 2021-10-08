@@ -1,13 +1,13 @@
 import { CSSNode } from "@candlelib/css";
 import URI from "@candlelib/uri";
+import { ComponentData } from '../compiler/common/component';
 import { WickRTComponent } from "../runtime/component.js";
-import { IntermediateHook, IndirectHook } from "./hook";
 import { Comment } from "./comment.js";
 import { WickComponentErrorStore } from "./errors.js";
 import { FunctionFrame } from "./function_frame";
-import { DOMLiteral, TemplateHTMLNode } from "./html.js";
+import { IndirectHook, IntermediateHook } from "./hook";
+import { TemplateHTMLNode } from "./html.js";
 import { HTMLNode } from "./wick_ast.js";
-import { ComponentData } from '../compiler/common/component';
 
 
 export type ComponentClassStrings = { class_string: string; source_map: string; };
@@ -91,7 +91,7 @@ export interface ComponentDataS {
     /**
      * The virtual DOM as described within a component with a .html extension or with a
      */
-    HTML: DOMLiteral;
+    HTML: HTMLNode;
 
     /**
      * HTML elements that should be placed in the head of the document

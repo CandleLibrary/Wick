@@ -1,9 +1,17 @@
-import { JSNode } from "source/typescript/entry-point/wick-full.js";
 import { rt } from "../../runtime/global.js";
-import { ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, STATIC_RESOLUTION_TYPE, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
+import {
+    HTMLContainerNode,
+    HTMLElementNode,
+    HTMLNode,
+    htmlState,
+    IndirectHook,
+    STATIC_RESOLUTION_TYPE,
+    TemplateHTMLNode,
+    TemplatePackage,
+    WickBindingNode
+} from "../../types/all.js";
 import * as b_sys from "../build_system.js";
 import { ComponentData } from '../common/component.js';
-import { buildExportableDOMNode } from '../common/html.js';
 import { Context } from '../common/context.js';
 import { getExpressionStaticResolutionType, getStaticValue } from "../data/static_resolution.js";
 import {
@@ -17,6 +25,37 @@ import {
     ContainerUseIfHook
 } from "../features/container_features.js";
 import { processHookForHTML } from "./hooks.js";
+
+enum HTMLAnnotationMode {
+    /** 
+     * Remove All Wick Attribute Annotations 
+     *
+     * Useful when the output is not expected
+     * to be used with hydrated runtime components.
+     */
+    PURE,
+
+    /**
+     * Annotate Binding Elements Only
+     * 
+     * Only provide annotations for elements
+     * that will be modified in some way by
+     * a Wick runtime component.
+     */
+
+    MINIMAL,
+
+    /**
+     * Annotate Anything And Everything
+     * 
+     * Do not remove any annotation attribute.
+     * Needed by Flame edit system to correctly
+     * synchronize changes between browser and 
+     * backend edit server.
+     */
+    VERBOSE,
+}
+
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -33,10 +72,10 @@ export async function componentDataToCompiledHTML(
     context: Context = rt.context,
     model = null,
     template_map: TemplatePackage["templates"] = new Map,
-    html: DOMLiteral = comp.HTML,
+    html: HTMLNode = comp.HTML,
     state: htmlState = htmlState.IS_ROOT | htmlState.IS_COMPONENT,
-    extern_children: { USED: boolean; child: DOMLiteral; id: number; }[] = [],
-    parent_component: ComponentData[] = null,
+    extern_children: { USED: boolean; child: HTMLNode; id: number; }[] = [],
+    parent_component: ComponentData = null,
     comp_data = [comp.name]
 ): Promise<TemplatePackage> {
 
@@ -51,26 +90,23 @@ export async function componentDataToCompiledHTML(
     if (html) {
         //Convert html to string 
         const {
-            tag_name: tag_name = "",
+            tag: tag_name = "",
             nodes: c = [],
-            data: data,
-            IS_BINDING: IS_BINDING,
             component_name: component_name,
             slot_name: slot_name,
             name_space: namespace_id
-        }: DOMLiteral = html,
+        }: HTMLNode = html,
             children = c.map(i => ({ USED: false, child: i, id: comp_data.length - 1 }));
 
-        if (html.id != undefined) {
+        if (html.id !== undefined)
             node.attributes.set("w:u", html.id + "");
-        }
 
         if (namespace_id)
             node.namespace = namespace_id;
 
-        if (html.IS_CONTAINER == true)
+        if ("IS_CONTAINER" in html && html.IS_CONTAINER)
             await addContainer(
-                <ContainerDomLiteral>html,
+                html,
                 comp,
                 context,
                 state,
@@ -111,20 +147,14 @@ export async function componentDataToCompiledHTML(
 
             await processElement(html, comp, context, model, node, parent_component, tag_name, state, comp_data, template_map);
 
-        } else if (IS_BINDING)
+        } else if ("IS_BINDING" in html)
             node = await resolveHTMLBinding(html, state, node, comp_data, comp, context, model, parent_component);
-        else
-            processTextNode(node, data);
+        else if ("data" in html)
+            processTextNode(node, html.data);
 
         const child_state = (((state) & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
             == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
             ? htmlState.IS_INTERLEAVED : 0;
-
-        if (html.id != undefined) {
-            comp.element_counter += 1;
-        }
-
-
 
         for (const { child } of children.filter(n => !n.USED)) {
 
@@ -155,12 +185,13 @@ function processTextNode(node: TemplateHTMLNode, data: string) {
     node.data = data;
 }
 
-async function processElement(html: DOMLiteral,
+async function processElement(
+    html: HTMLElementNode,
     comp: ComponentData,
     context: Context,
     model: any,
     node: TemplateHTMLNode,
-    parent_component: ComponentData[],
+    parent_component: ComponentData,
     tag_name: string,
     state: htmlState,
     comp_data: string[],
@@ -193,20 +224,20 @@ async function processElement(html: DOMLiteral,
     }
 }
 
-function setScopeAssignment(state: htmlState, node: TemplateHTMLNode, html: DOMLiteral) {
+function setScopeAssignment(state: htmlState, node: TemplateHTMLNode, html: HTMLElementNode) {
     if (state & htmlState.IS_SLOT_REPLACEMENT)
-        node.attributes.set("w:r", (html.host_component_index * 50 + html.element_index) + "");
+        node.attributes.set("w:r", (html.host_component_index * 50 + html.id) + "");
 }
 
 async function processSlot(
     template_map: TemplatePackage["templates"],
     slot_name: string,
-    extern_children: { USED: boolean; child: DOMLiteral; id: number; }[],
-    parent_component: ComponentData[],
+    extern_children: { USED: boolean; child: HTMLNode; id: number; }[],
+    parent_component: ComponentData,
     context: Context,
     model: any
-) {
-    let r_ = { html: [], template_map };
+): Promise<TemplatePackage> {
+    let r_: TemplatePackage = { html: [], templates: template_map };
 
     if (slot_name != "") {
 
@@ -252,7 +283,7 @@ async function processSlot(
 }
 
 function processAttributes(
-    attributes: DOMLiteral["attributes"],
+    attributes: HTMLElementNode["attributes"],
     comp: ComponentData,
     state: htmlState,
     comp_data: string[],
@@ -265,7 +296,8 @@ function processAttributes(
 
     let HAVE_CLASS: boolean = false;
 
-    for (const [key, val] of attributes?.values() ?? [])
+    for (const { name: key, value: val } of attributes ?? [])
+
         if (key.toLocaleLowerCase() == "class") {
 
             HAVE_CLASS = COMPONENT_IS_ROOT_ELEMENT || HAVE_CLASS;
@@ -282,21 +314,21 @@ function processAttributes(
                 node.attributes.set("class", class_names + ` ${val}`);
         }
         else
-            node.attributes.set(key, val);
+            node.attributes.set(key, val.toString());
 
     return HAVE_CLASS;
 }
 
 
 async function addComponent(
-    html: DOMLiteral,
+    html: HTMLElementNode,
     context: Context,
     component_name: string,
     state: htmlState,
     node: TemplateHTMLNode,
     template_map: TemplatePackage["templates"],
-    extern_children: { USED: boolean; child: DOMLiteral; id: number; }[],
-    children: { USED: boolean; child: DOMLiteral; id: number; }[],
+    extern_children: { USED: boolean; child: HTMLNode; id: number; }[],
+    children: { USED: boolean; child: HTMLNode; id: number; }[],
     comp: ComponentData,
     comp_data: string[],
     model: any = null
@@ -333,7 +365,7 @@ async function addComponent(
 }
 
 async function addContainer(
-    html: ContainerDomLiteral,
+    html: HTMLContainerNode,
     component: ComponentData,
     context: Context,
     state: htmlState,
@@ -341,12 +373,12 @@ async function addContainer(
     template_map: TemplatePackage["templates"],
     node: TemplateHTMLNode,
     model: any = null,
-    parent_components: ComponentData[] = null
+    parent_components: ComponentData = null
 ) {
     const {
         component_attributes: component_attribs,
         component_names
-    } = <ContainerDomLiteral>html,
+    } = html,
         w_ctr = component_names.join(" "),
         w_ctr_atr = component_attribs.map(s => s.map(a => a.join(("=").replace(/\"/g, ""))).join(";")).join(":");
 
@@ -366,7 +398,7 @@ async function addContainer(
         }
     }
 
-    node.tagName = html.tag_name.toLowerCase();
+    node.tagName = html.tag.toLowerCase();
 
     node.attributes.set("w:ctr", w_ctr);
 
@@ -414,12 +446,12 @@ export async function ensureComponentHasTemplates(
 }
 
 async function processContainerHooks(
-    html: ContainerDomLiteral,
+    html: HTMLContainerNode,
     component: ComponentData,
     context: Context,
     model: any,
     node: TemplateHTMLNode,
-    parent_components: ComponentData[],
+    parent_components: ComponentData,
     template_map: TemplatePackage["templates"],
 ) {
     const
@@ -499,12 +531,12 @@ async function processContainerHooks(
 }
 
 async function processHooks(
-    html: DOMLiteral,
+    html: HTMLNode,
     component: ComponentData,
     context: Context,
     model: any,
     node: TemplateHTMLNode,
-    parent_components: ComponentData[],
+    parent_components: ComponentData,
     template_map: TemplatePackage["templates"],
 ) {
     for (const hook of getHookFromElement(html, component)
@@ -551,21 +583,21 @@ async function processHooks(
 
 
 async function resolveHTMLBinding(
-    html: DOMLiteral,
+    html: WickBindingNode,
     state: htmlState,
     node: TemplateHTMLNode,
     comp_data: string[],
     comp: ComponentData,
     context: Context,
     model: any = null,
-    parent_component: ComponentData[]
+    parent_component: ComponentData
 ): Promise<TemplateHTMLNode> {
     //*
     const
         hook = getHookFromElement(html, comp)[0],
         type = getExpressionStaticResolutionType(hook.value[0], comp, context),
         { value, html: child_html } = hook
-            ? await getStaticValue(<JSNode>hook.value[0], comp, context, model, parent_component)
+            ? await getStaticValue(<any>hook.value[0], comp, context, model, parent_component)
             : null;
 
     node.tagName = "w-b";
@@ -573,15 +605,12 @@ async function resolveHTMLBinding(
     if (child_html) {
         node.tagName = "w-e";
 
-
-        const converted_node = buildExportableDOMNode(child_html);
-
         const { html } = await componentDataToCompiledHTML(
             comp,
             context,
             model,
             undefined,
-            converted_node
+            child_html
         );
         node.children.push(html[0]);
 
@@ -613,11 +642,11 @@ async function resolveHTMLBinding(
     return node;
 }
 
-function getHookFromElement(ele: DOMLiteral, comp: ComponentData): IndirectHook[] {
+function getHookFromElement(ele: HTMLNode, comp: ComponentData): IndirectHook<any>[] {
     let hooks = [];
 
     for (const hook of comp.indirect_hooks) {
-        if (hook.ele_index == ele.element_index)
+        if (hook.ele_index == ele.id)
             hooks.push(hook);
     }
 

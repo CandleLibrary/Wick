@@ -1,6 +1,6 @@
 import { SelectionHelpers } from "@candlelib/css";
-import { DOMLiteral } from "../../types/html";
-export const css_selector_helpers: SelectionHelpers<DOMLiteral> = {
+import { HTMLNode } from '../../types/wick_ast';
+export const css_selector_helpers: SelectionHelpers<HTMLNode> = {
 
     getIndexFigures: (ele, tag) => ({ ele_index: 0, tag_index: 0 }),
 
@@ -9,25 +9,26 @@ export const css_selector_helpers: SelectionHelpers<DOMLiteral> = {
 
     getParent: (ele) => ele.parent,
 
-    hasAttribute: (ele, namespace, name, value, sym, modifier) => ele.attributes && ele.attributes
-        .filter(([key]) => key == name)
-        .filter(([, v]) => !value || v == value)
+    hasAttribute: (ele, namespace, name, value, sym, modifier) => "attributes" in ele && ele.attributes
+        .filter(({ name: key }) => key == name)
+        .filter(({ value: v }) => !value || v == value)
+
         .length > 0,
 
-    hasClass: (ele, class_) => ele.attributes && ele.attributes
-        .filter(([key]) => key == "class")
-        .filter(([, v]) => v == class_)
+    hasClass: (ele, class_) => "attributes" in ele && ele.attributes
+        .filter(({ name: key }) => key == "class")
+        .filter(({ value: v }) => v == class_)
         .length > 0,
 
-    hasID: (ele, id) => ele.attributes && ele.attributes
-        .filter(([key]) => key == "id")
-        .filter(([, v]) => v == id)
+    hasID: (ele, id) => "attributes" in ele && ele.attributes
+        .filter(({ name: key }) => key == "id")
+        .filter(({ value: v }) => v == id)
         .length > 0,
 
     hasPseudoClass: (ele, id, val) => false,
 
     hasPseudoElement: (ele, id, val) => false,
 
-    hasType: (ele, namespace, type) => ele.tag_name &&
-        ele.tag_name.toUpperCase() == type.toUpperCase()
+    hasType: (ele, namespace, type) => ele.tag &&
+        ele.tag.toUpperCase() == type.toUpperCase()
 };

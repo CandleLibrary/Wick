@@ -27,13 +27,12 @@ import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from '../types/wick_ast.js';
 import { BindingVariable, BINDING_VARIABLE_TYPE } from '../types/binding.js';
 
 import { Context } from '../compiler/common/context.js';
-import { DOMLiteral } from '../types/html.js';
 
 // Load features. Only need side effects as the proper 
 // systems will automatically register themselves through the
 // build system
 import { log } from './logger.js';
-import wick_runtime from './wick-runtime';
+import wick_runtime from './wick-runtime.js';
 
 export * from "../compiler/source-code-render/render.js";
 export * from "../compiler/source-code-render/rules.js";
@@ -145,7 +144,6 @@ export interface WickCompiler {
     };
 
     types: {
-        DOMLiteral: DOMLiteral,
         BindingVariable: BindingVariable,
         JSNode: JSNode,
         HTMLNode: HTMLNode,
@@ -220,8 +218,9 @@ export type WickLibrary = typeof componentCreate & WickCompiler & typeof wick_ru
  * comp.appendToDOM(document.body)
  * ```
  */
-const wick: WickLibrary = Object.assign(componentCreate,
-    <WickRuntime>rt,
+const wick: WickLibrary = Object.assign(
+    componentCreate,
+    wick_runtime,
     <WickCompiler>{
 
         css_selector_helpers,

@@ -15,10 +15,10 @@
 
 <> GOAL_TAG > ! TAG
 
-<> TAG > \< (RST g:sp g:nl ) TAGNAME ATTRIBUTES? \> TAG_BODY?  \</ (RST g:sp g:nl ) TAGNAME (RST g:sp g:nl ) \>                                     
-                                        f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:$5 || [], VOID:false, pos } }
-    | \< (RST g:sp g:nl ) TAGNAME ATTRIBUTES? \/>                                                             
-                                        f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:false, pos } }
+<> TAG > tk:TAG_HEAD ATTRIBUTES? \> TAG_BODY?  \</ (RST g:sp g:nl ) TAGNAME (RST g:sp g:nl ) \>                                     
+                                        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:$3 || [], VOID:false, pos } }
+    | tk:TAG_HEAD TAGNAME ATTRIBUTES? \/>                                                             
+                                        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:[], VOID:false, pos } }
     | VOID_TAG_HEAD ATTRIBUTES? /? >                                                          
                                         f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:[], VOID:true, pos } }
     
@@ -29,6 +29,9 @@
 ###########################################################################################
 # https://www.w3.org/TR/2011/WD-html-markup-20110113/syntax.html#syntax-elements
 ###########################################################################################
+
+<> TAG_HEAD > \< identifier
+
 
 <> VOID_TAG_HEAD > \<input
     | \<area
@@ -56,9 +59,9 @@
 <> ATTRIBUTES > ATTRIBUTE(+)                                    
 
 <> ATTRIBUTE > ATTRIBUTE_HEAD \= ATTRIBUTE_BODY                                                  
-                                                                f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3, IS_BINDING:false, pos } }
+                                                                f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3, pos } }
     | ATTRIBUTE_HEAD                                                                            
-                                                                f:r { {type:env.typ.HTMLAttribute, name:$1, value:"", IS_BINDING:false, pos } }
+                                                                f:r { {type:env.typ.HTMLAttribute, name:$1, value:"", pos } }
 
 <> ATTRIBUTE_HEAD > \' (RST g:sp g:nl ) tk:identifier \'                                                             
                                                                 f:r { $2 }
@@ -84,7 +87,7 @@
     | identifier (RST g:sp) g:num 
 
 <> TEXT_NODE > TEXT_NODE_DATA                                                                   
-                                                                f:r { {type:env.typ.HTMLText, data:$1, IS_BINDING:false, pos } }
+                                                                f:r { {type:env.typ.HTMLText, data:$1, pos } }
 
 <> TEXT_NODE_DATA > ( g:id | g:sym | g:sp | g:nl | g:num  )(*\" )
 

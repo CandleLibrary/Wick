@@ -1,6 +1,6 @@
 import { JSNode, JSNodeType } from '@candlelib/js';
 import {
-    BINDING_VARIABLE_TYPE, ContainerDomLiteral, HTMLAttribute, HTMLNodeType, IndirectHook,
+    BINDING_VARIABLE_TYPE, HTMLAttribute, HTMLElementNode, HTMLNodeType, IndirectHook,
     STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import { registerFeature } from './../build_system.js';
@@ -18,7 +18,7 @@ registerFeature(
         /** ###########################################################
          *  Input Text Value Attribute
          */
-        build_system.registerHTMLParserHandler<HTMLAttribute>(
+        build_system.registerHTMLParserHandler<HTMLAttribute, HTMLElementNode>(
             {
                 priority: -10,
 
@@ -91,12 +91,11 @@ registerFeature(
                 const { expr, stmt } = build_system.js;
 
                 const
-                    ele_name = "$$ele" + element_index,
                     expression = node.value[0],
                     root_type = expression.type,
-                    READONLY = build_system.getElementAtIndex(comp, element_index)
-                        ?.attributes
-                        ?.some(([v]) => v.toLowerCase() == "readonly");
+                    READONLY = getElementAtIndex<HTMLElementNode>(comp, element_index)
+                        .attributes
+                        .some(({ value: v }) => v.toString().toLowerCase() == "readonly");
                 // Determine whether the expression is trivial, simple, or complex.
                 // Trivial expressions are built in types. Number, Boolean, and String (and templates without bindings).
                 // Simple expression are single identifiers
@@ -158,8 +157,6 @@ registerFeature(
 
             buildHTML: async (hook, comp, context, model, parents) => {
 
-                const ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
-
                 if (
                     build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, context)
                     !==
@@ -190,9 +187,9 @@ registerFeature(
                     ele_name = "$$ele" + element_index,
                     expression = node.value[0],
                     root_type = expression.type,
-                    READONLY = getElementAtIndex(comp, element_index)
+                    READONLY = getElementAtIndex<HTMLElementNode>(comp, element_index)
                         .attributes
-                        .some(([v]) => v.toLowerCase() == "readonly");
+                        .some(({ value: v }) => v.toString().toLowerCase() == "readonly");
                 // Determine whether the expression is trivial, simple, or complex.
                 // Trivial expressions are built in types. Number, Boolean, and String (and templates without bindings).
                 // Simple expression are single identifiers
@@ -251,9 +248,6 @@ registerFeature(
             },
 
             buildHTML: async (hook, comp, context, model, parents) => {
-
-
-                const ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
 
                 if (
                     build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, context)

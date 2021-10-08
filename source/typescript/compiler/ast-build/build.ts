@@ -154,6 +154,7 @@ export async function createCompiledComponentClass(
         return class_info;
 
     } catch (e) {
+        console.error(e);
         throw e;
     } finally {
         metrics.endRun(run_tag);

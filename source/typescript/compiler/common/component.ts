@@ -1,14 +1,12 @@
+import { Token } from '@candlelib/hydrocarbon';
 import { default as URI, default as URL } from "@candlelib/uri";
-import { Lexer } from "@candlelib/wind";
 import { WickRTComponent } from "../../runtime/component.js";
-import { FunctionFrame, HTMLNode, IndirectHook, IntermediateHook } from "../../types/all.js";
+import { FunctionFrame, HTMLElementNode, HTMLNode, HTMLNodeType, IndirectHook, IntermediateHook } from "../../types/all.js";
 import { ComponentStyle } from "../../types/component";
-import { DOMLiteral, TemplateHTMLNode } from "../../types/html";
-import { createCompiledComponentClass } from '../ast-build/build.js';
-import { createClassStringObject } from '../ast-render/js.js';
+import { TemplateHTMLNode } from "../../types/html";
 import { addBindingVariable } from './binding.js';
-import { ComponentHash } from "./hash_name.js";
 import { Context } from './context.js';
+import { ComponentHash } from "./hash_name.js";
 
 export function createErrorComponent(
     errors: Error[],
@@ -24,11 +22,13 @@ export function createErrorComponent(
         )
         //.map(s => s.replace(/\ /g, "\u00A0"))
     ]
-        .map(e => <DOMLiteral>{
-            tag_name: "p",
+        .map(e => <HTMLElementNode>{
+            type: HTMLNodeType.HTML_P,
+            pos: new Token("", "", 0, 0),
+            tag: "p",
             nodes: [
                 {
-                    tag_name: "",
+                    type: HTMLNodeType.HTMLText,
                     data: e.replace(/>/g, "&gt;")
                         .replace(/</g, "&lt;")
                         .replace(/>/g, "&gt;")
@@ -38,19 +38,20 @@ export function createErrorComponent(
             ]
         });
 
-    const pos = new Lexer(component.source);
+    const pos = new Token(component.source, "", 0, 0);
 
     component.errors.push(...errors);
 
-    component.HTML = {
-        tag_name: "ERROR",
-        element_index: 0,
+    component.HTML = <HTMLElementNode>{
+        type: HTMLNodeType.HTML_Element,
+        tag: "ERROR",
+        id: 0,
         attributes: [
-            ["style", "font-family:monospace"]
+            { type: HTMLNodeType.HTMLAttribute, name: "style", value: "font-family:monospace" }
         ],
         nodes: [
             {
-                tag_name: "div",
+                tag: "div",
                 nodes: [{
                     tag_name: "p",
                     nodes: [
@@ -153,7 +154,7 @@ export class ComponentData {
     /**
      * The virtual DOM as described within a component with a .html extension or with a
      */
-    HTML: DOMLiteral;
+    HTML: HTMLNode;
 
     /**
      * HTML elements that should be placed in the head of the document
@@ -219,6 +220,14 @@ export class ComponentData {
 
     context: Context;
 
+    text_hash: string;
+    code_hash: string;
+    ele_hash: string;
+    css_hash: string;
+    import_hash: string;
+    source_hash: string;
+
+
     constructor(source_string: string, location: URL) {
 
         this.name = ComponentHash(source_string);
@@ -267,7 +276,43 @@ export class ComponentData {
 
         this.element_counter = -1;
 
+        this.ele_hash = "";
 
+        this.text_hash = "";
+
+        this.css_hash = "";
+
+        this.code_hash = "";
+
+        this.source_hash = "";
+    }
+    /**
+     * Return a copy of this component with references
+     * to unique objects. 
+     */
+    copy() {
+        const new_comp = new ComponentData(this.source, new URI(this.location));
+
+        new_comp.errors = this.errors.slice();
+        new_comp.CSS = this.CSS.slice();
+        new_comp.INLINE_HTML = this.INLINE_HTML.slice();
+        new_comp.children = this.children.slice();
+        new_comp.root_ele_claims = this.root_ele_claims.slice();
+        new_comp.indirect_hooks = this.indirect_hooks.slice();
+        new_comp.HTML = this.HTML;
+        new_comp.HAS_ERRORS = this.HAS_ERRORS;
+        new_comp.TEMPLATE = this.TEMPLATE;
+        new_comp.RADIATE = this.RADIATE;
+
+
+
+        new_comp.ele_hash = this.ele_hash;
+        new_comp.text_hash = this.text_hash;
+        new_comp.css_hash = this.css_hash;
+        new_comp.code_hash = this.code_hash;
+        new_comp.source_hash = this.source_hash;
+
+        return new_comp;
     }
 
     get class(): typeof WickRTComponent {

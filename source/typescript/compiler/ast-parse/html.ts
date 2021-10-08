@@ -1,4 +1,5 @@
 import { exp } from "@candlelib/js";
+import { Context } from '../common/context.js';
 import { HTMLHandler } from "../../types/all.js";
 import {
     HTMLNode, HTMLNodeType,
@@ -43,7 +44,7 @@ export function loadHTMLHandler(handler: HTMLHandler, ...types: HTMLNodeType[]) 
  * @param context 
  * @returns 
  */
-export async function processBindingASTAsync(node: string | WickBindingNode, component: ComponentData, context: Presets) {
+export async function processBindingASTAsync(node: string | WickBindingNode, component: ComponentData, context: Context) {
     let ast = null;
 
     if (typeof node !== "object") {

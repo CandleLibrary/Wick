@@ -104,7 +104,7 @@
 
           html::ATTRIBUTE_HEAD = ( " WICK_BINDING? " f:r {$$2} | WICK_BINDING )         
                                             
-          f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3 || "", IS_BINDING:!!$3, pos } }
+          f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3 || "", IS_BINDING:true, pos } }
 
      |    IMPORT_ATTRIBUTE                 
                                              

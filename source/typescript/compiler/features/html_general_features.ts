@@ -2,7 +2,7 @@
 import { JSNode, stmt } from '@candlelib/js';
 import {
     BINDING_VARIABLE_TYPE,
-    HTMLAttribute, HTMLNode, HTMLNodeType
+    HTMLAttribute, HTMLElementNode, HTMLNode, HTMLNodeType
 } from "../../types/all.js";
 import { registerFeature } from './../build_system.js';
 import { ComponentHash } from './../common/hash_name.js';
@@ -61,7 +61,7 @@ registerFeature(
 
                 prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
-                    if (host_node.IS_CONTAINER) {
+                    if ("IS_CONTAINER" in host_node) {
 
 
                         if (node.name == "component") {
@@ -87,7 +87,7 @@ registerFeature(
             }, HTMLNodeType.HTMLAttribute
         );
 
-        function getAttributeValue(name, node: HTMLNode) {
+        function getAttributeValue(name, node: HTMLElementNode) {
             for (const att of node.attributes) {
                 if (att.name == name)
                     return att.value;
@@ -286,7 +286,7 @@ registerFeature(
         /** ##########################################################
          *  Radiate Element
          */
-        build_system.registerHTMLParserHandler(
+        build_system.registerHTMLParserHandler<HTMLElementNode, HTMLElementNode>(
             {
                 priority: -998,
 
@@ -314,7 +314,6 @@ registerFeature(
                             node.component = comp;
 
                             node.attributes.push({
-                                IS_BINDING: false,
                                 name: "radiate",
                                 value: component.name,
                                 type: HTMLNodeType.HTMLAttribute

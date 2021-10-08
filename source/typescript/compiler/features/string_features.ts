@@ -1,4 +1,5 @@
 import { JSNode, JSNodeType, JSStringLiteral } from '@candlelib/js';
+import { HTMLNode } from '../../types/wick_ast.js';
 import { ComponentData } from '../common/component.js';
 import { registerFeature } from './../build_system.js';
 
@@ -21,7 +22,6 @@ registerFeature(
                 prepareJSNode(node, parent_node, skip, component, context, frame) {
 
                     if ((<JSStringLiteral>node).value[0] == "@") {
-
                         return Object.assign({}, node, {
                             type: CSSSelectorHook
                         });
@@ -37,42 +37,42 @@ registerFeature(
 
             const css_selector = string_node.value.slice(1); //remove "@"
 
-            let html_nodes = null, expression = null;
+            let html_node: HTMLNode = null, expression = null;
 
             switch (css_selector.toLowerCase()) {
                 case "ctxwebgpu":
-                    html_nodes = build_system.css.matchAll("canvas", component.HTML)[0];
+                    html_node = build_system.css.matchAll("canvas", component.HTML)[0];
 
-                    if (html_nodes)
-                        expression = build_system.js.expr(`$$ele${html_nodes.element_index}.getContext("gpupresent")`);
+                    if (html_node)
+                        expression = build_system.js.expr(`$$ele${html_node.id}.getContext("gpupresent")`);
 
                     break;
                 case "ctx3d":
-                    html_nodes = build_system.css.matchAll("canvas", component.HTML)[0];
+                    html_node = build_system.css.matchAll("canvas", component.HTML)[0];
 
-                    if (html_nodes)
+                    if (html_node)
 
-                        expression = build_system.js.expr(`$$ele${html_nodes.element_index}.getContext("webgl2")`);
+                        expression = build_system.js.expr(`$$ele${html_node.id}.getContext("webgl2")`);
 
                     break;
 
                 case "ctx2d":
-                    html_nodes = build_system.css.matchAll("canvas", component.HTML)[0];
+                    html_node = build_system.css.matchAll("canvas", component.HTML)[0];
 
-                    if (html_nodes)
-                        expression = build_system.js.expr(`$$ele${html_nodes.element_index}.getContext("2d")`);
+                    if (html_node)
+                        expression = build_system.js.expr(`$$ele${html_node.id - 1}.getContext("2d")`);
 
                     break;
 
-                default:
-                    html_nodes = build_system.css.matchAll(css_selector, component.HTML);
+                default: {
+                    const html_nodes = build_system.css.matchAll(css_selector, component.HTML);
 
                     if (html_nodes.length > 0)
 
                         expression = (html_nodes.length == 1)
-                            ? build_system.js.expr(`$$ele${html_nodes[0].element_index}`)
-                            : build_system.js.expr(`[${html_nodes.map(e => `$$ele${e.element_index}`).join(",")}]`);
-
+                            ? build_system.js.expr(`$$ele${html_nodes[0].id}`)
+                            : build_system.js.expr(`[${html_nodes.map(e => `$$ele${e.id}`).join(",")}]`);
+                }
             }
 
             return expression;
@@ -87,6 +87,7 @@ registerFeature(
             verify: () => true,
 
             buildJS: (node, comp, context, element_index, addOnBindingUpdate) => {
+
                 //Replace the value with a 
                 const exp = convertAtLookupToElementRef(node, comp);
 

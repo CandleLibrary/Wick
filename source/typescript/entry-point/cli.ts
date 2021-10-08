@@ -85,7 +85,7 @@ optionally hydrated with the associated support scripts.
 			//Compile a list of entry components
 			const context = new Context();
 
-			const { endpoints: components, page_components } = await loadComponentsFromDirectory(
+			const { page_components, components } = await loadComponentsFromDirectory(
 				root_directory, context);
 
 			//Remap dependencies
@@ -94,40 +94,45 @@ optionally hydrated with the associated support scripts.
 			let USE_RADIATE_RUNTIME = false;
 			let USE_GLOW = false;
 
-			for (const [key, val] of page_components) {
+			for (const [component_name, { endpoints }] of page_components) {
 
-				const { comp: component, output_name } = components.get(key);
+				for (const endpoint of endpoints) {
 
-				if (component.TEMPLATE) {
+					const { comp: component } = components.get(component_name);
 
-					let data = context.template_data.get(component);
+					if (component.TEMPLATE) {
 
-					for (const template_data of data) {
+						let data = context.template_data.get(component);
 
-						if (!template_data.page_name)
-							component.root_frame.ast.pos.throw(
-								"Expected [page_name] for template",
-								component.location.toString()
-							);
+						for (const template_data of data) {
 
-						context.active_template_data = template_data;
+							if (!template_data.page_name)
+								component.root_frame.ast.pos.throw(
+									"Expected [page_name] for template",
+									component.location.toString()
+								);
+
+							context.active_template_data = template_data;
+
+							const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
+								= await buildComponentPage(component, context, template_data.page_name, output_directory);
+
+							context.active_template_data = null;
+
+							USE_RADIATE_RUNTIME ||= A;
+							USE_WICK_RUNTIME ||= B;
+						}
+					} else {
 
 						const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
-							= await buildComponentPage(component, context, template_data.page_name, output_directory);
-
-						context.active_template_data = null;
+							= await buildComponentPage(component, context, endpoint, output_directory);
 
 						USE_RADIATE_RUNTIME ||= A;
 						USE_WICK_RUNTIME ||= B;
 					}
-				} else {
-
-					const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
-						= await buildComponentPage(component, context, output_name, output_directory);
-
-					USE_RADIATE_RUNTIME ||= A;
-					USE_WICK_RUNTIME ||= B;
 				}
+
+
 			}
 
 			if (USE_RADIATE_RUNTIME) {
@@ -171,20 +176,19 @@ processCLIConfig();
 async function buildComponentPage(
 	component: ComponentData,
 	context: Context,
-	output_name: string,
-	output_directory: URI,
-	template_data?: any
+	endpoint: string,
+	output_directory: URI
 ) {
-	const fsp = (await import("fs")).default.promises;
+	const fsp = (await import("fs")).promises;
 
 	let
 		USE_RADIATE_RUNTIME: boolean = component.RADIATE,
 		USE_WICK_RUNTIME: boolean = !component.RADIATE;
 
-	const resolved_filepath = output_name == "root"
+	const resolved_filepath = endpoint == "root"
 		? output_directory
 		: URI.resolveRelative(
-			"./" + output_name,
+			"./" + endpoint,
 			output_directory + ""
 		);
 
@@ -206,7 +210,12 @@ async function buildComponentPage(
 			w.hydrate();`;
 		};
 
-	const { page } = await RenderPage(component, context, hooks, template_data);
+	const { page } = await RenderPage(
+		component,
+		context,
+		undefined,
+		hooks
+	);
 
 	await fsp.writeFile(resolved_filepath + "/index.html", page, { encoding: 'utf8' });
 

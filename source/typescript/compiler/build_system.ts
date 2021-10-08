@@ -2,7 +2,6 @@ import { CSSNodeType, matchAll } from '@candlelib/css';
 import { exp, ext, JSNode, JSNodeType, JSNodeTypeLU, stmt } from '@candlelib/js';
 import { dir, log, trace } from '../entry-point/logger.js';
 import {
-    DOMLiteral,
     HookHandlerPackage, HTMLHandler,
     HTMLNode, HTMLNodeType,
     HTMLNodeTypeLU,
@@ -159,7 +158,7 @@ const unregistered_system = {
  */
 const build_system = {
     css: {
-        matchAll: (string: string, html: DOMLiteral) => matchAll(string, html, css_selector_helpers)
+        matchAll: (string: string, html: HTMLNode) => matchAll(string, html, css_selector_helpers)
     },
     /**
      * Allows the build system to import a resource and 

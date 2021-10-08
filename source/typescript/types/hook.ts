@@ -9,10 +9,10 @@ import { Context } from '../compiler/common/context.js';
 export type ExtendedType = CSSNodeType | JSNodeType | HTMLNodeType | number;
 
 interface filterFunction {
-    (node: JSNode | CSSNode | HTMLNode | IndirectHook): boolean;
+    (node: JSNode | CSSNode | HTMLNode | IndirectHook<any>): boolean;
 }
 
-type DefaultJSHandlerNodeType = (JSNode | CSSNode | HTMLNode | IndirectHook | undefined | null);
+type DefaultJSHandlerNodeType = (JSNode | CSSNode | HTMLNode | IndirectHook<any> | undefined | null);
 
 interface buildJSFunction<T, U = T> {
     description?: string;
@@ -78,7 +78,7 @@ interface buildHTMLFunction<T = IndirectHook<JSNode>> {
          * A FIFO stack of the current component's parent 
          * and ancestor components
          */
-        parent_components: ComponentData[]
+        parent_component: ComponentData
     ): (HookTemplatePackage | Promise<HookTemplatePackage>);
 }
 
@@ -244,7 +244,7 @@ export interface HookProcessor {
  * component frame, and are subsequently incorporated into
  * the compiled component class during the build process.
  */
-export interface IndirectHook<T = Node> {
+export interface IndirectHook<T> {
 
     type: ExtendedType,
 

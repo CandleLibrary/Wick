@@ -197,7 +197,7 @@ export class Context {
 
         this.wrapper = null;
 
-        this.options = user_presets;
+        this.options = user_presets.options;
 
         this.api = {};
 
@@ -264,9 +264,9 @@ export class Context {
     private loadSchemeData(user_presets: UserPresets) {
         const d = user_presets.schemes;
 
-        if (d)
-            for (const cn in d)
-                this.schemes[cn] = d[cn];
+        //  /  if (d)
+        //  /      for (const cn in d)
+        //  /          this.schemes[cn] = d[cn];
     }
 
     private loadModelData(user_presets: UserPresets) {

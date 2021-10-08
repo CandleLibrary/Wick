@@ -40,8 +40,7 @@ export function convertMarkdownToHTMLNodes(markdown_content) {
                     attributes: header.data ? [{
                         type: HTMLNodeType.HTMLAttribute,
                         name: "code-type",
-                        value: header.data.pos.slice(),
-                        IS_BINDING: false
+                        value: header.data.pos.slice()
                     }] : [],
                     nodes: content.map(({ data, pos }) => ({
                         type: HTMLNodeType.HTML_CODE,
@@ -249,7 +248,6 @@ export function convertOuterContent(raw_content: any[], offset = 0, length = raw
         } else if (!last_content) {
             last_content = {
                 type: HTMLNodeType.HTMLText,
-                IS_BINDING: false,
                 data: obj.pos.slice(),
                 pos: obj.pos
             };
@@ -349,7 +347,7 @@ function tryCodeBlock(obj, raw_content, content, offset, length) {
                 tag: "CODE",
                 nodes: [{
                     type: HTMLNodeType.HTMLText,
-                    IS_BINDING: false,
+
                     data: escape_html_string(tok.slice().slice(1, -1)).trim(),
                     pos: tok
                 }]

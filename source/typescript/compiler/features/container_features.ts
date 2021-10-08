@@ -10,21 +10,22 @@ import {
 } from '@candlelib/js';
 import URI from '@candlelib/uri';
 import {
-    BINDING_VARIABLE_TYPE,
-    ContainerDomLiteral, HTMLAttribute,
+    BINDING_VARIABLE_TYPE, HookTemplatePackage, HTMLAttribute,
     HTMLContainerNode,
+    HTMLElementNode,
+    HTMLNode,
     HTMLNodeClass,
     HTMLNodeType,
     IndirectHook,
     STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import { registerFeature } from '../build_system.js';
-import { getExpressionStaticResolutionType, getStaticValue } from "../data/static_resolution.js";
+import { ComponentData } from '../common/component.js';
 import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "../common/extended_types.js";
 import { getElementAtIndex } from "../common/html.js";
-import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 import { convertObjectToJSNode } from '../common/js.js';
-import { ComponentData } from '../common/component.js';
+import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
+import { getExpressionStaticResolutionType, getStaticValue } from "../data/static_resolution.js";
 
 
 export const ContainerDataHook = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);
@@ -45,7 +46,7 @@ registerFeature(
         /** ##########################################################
          *  Container Elements
          */
-        build_system.registerHTMLParserHandler(
+        build_system.registerHTMLParserHandler<HTMLElementNode, HTMLElementNode>(
             {
                 priority: 99999999999,
 
@@ -74,7 +75,7 @@ registerFeature(
 
                         for (const ch of ctr.nodes) {
 
-                            if (!(ch.type & HTMLNodeClass.HTML_ELEMENT)) { continue; }
+                            if (!(HTMLNodeIsElement(ch))) { continue; }
 
                             let comp, comp_index = ctr.components.length;
 
@@ -202,13 +203,13 @@ registerFeature(
         /** ###########################################################
          *  Container Data Attribute
          */
-        build_system.registerHTMLParserHandler<HTMLAttribute>(
+        build_system.registerHTMLParserHandler<HTMLAttribute, HTMLElementNode>(
             {
                 priority: 99999999999,
 
                 async prepareHTMLNode(attr, host_node, host_element, index, skip, component, context) {
 
-                    if (attr.name == "data" && host_node.IS_CONTAINER) {
+                    if (attr.name == "data" && "IS_CONTAINER" in host_node) {
 
 
                         // Process the primary expression for Binding Refs and static
@@ -238,7 +239,7 @@ registerFeature(
 
 
                 const
-                    ele = getElementAtIndex(comp, element_index),
+                    ele = getElementAtIndex<HTMLContainerNode>(comp, element_index),
 
                     st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`);
 
@@ -272,7 +273,7 @@ registerFeature(
 
             buildHTML: async (hook, comp, context, model, parents) => {
                 const ast = hook.value[0];
-                const container_ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
+                const container_ele: HTMLContainerNode = <any>getElementAtIndex(comp, hook.ele_index);
 
                 if (
                     getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, context)
@@ -284,20 +285,20 @@ registerFeature(
                     return await getStaticValue(hook.value[0], comp, context, model, parents);
                 }
 
-                return [];
+                return <HookTemplatePackage>null;
             }
         });
 
         /** ###########################################################
          *  Container Filter Attribute
          */
-        build_system.registerHTMLParserHandler<HTMLAttribute>(
+        build_system.registerHTMLParserHandler<HTMLAttribute, HTMLElementNode>(
             {
                 priority: 99999999999,
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
-                    if (node.name == "filter" && host_node.IS_CONTAINER) {
+                    if (node.name == "filter" && "IS_CONTAINER" in host_node) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
@@ -333,13 +334,13 @@ registerFeature(
         /** ###########################################################
          *  Container Scrub Attribute
          */
-        build_system.registerHTMLParserHandler<HTMLAttribute>(
+        build_system.registerHTMLParserHandler<HTMLAttribute, HTMLElementNode>(
             {
                 priority: 99999999999,
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
-                    if (node.name == "scrub" && host_node.IS_CONTAINER) {
+                    if (node.name == "scrub" && "IS_CONTAINER" in host_node) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
@@ -376,13 +377,13 @@ registerFeature(
         /** ###########################################################
          *  Container Sort Attribute
          */
-        build_system.registerHTMLParserHandler<HTMLAttribute>(
+        build_system.registerHTMLParserHandler<HTMLAttribute, HTMLElementNode>(
             {
                 priority: 99999999999,
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
-                    if (node.name == "sort" && host_node.IS_CONTAINER) {
+                    if (node.name == "sort" && "IS_CONTAINER" in host_node) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
@@ -417,13 +418,13 @@ registerFeature(
         /** ###########################################################
          *  Container Limit Attribute
          */
-        build_system.registerHTMLParserHandler<HTMLAttribute>(
+        build_system.registerHTMLParserHandler<HTMLAttribute, HTMLElementNode>(
             {
                 priority: 99999999999,
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
-                    if (node.name == "limit" && host_node.IS_CONTAINER) {
+                    if (node.name == "limit" && "IS_CONTAINER" in host_node) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
@@ -458,13 +459,13 @@ registerFeature(
         /** ###########################################################
          *  Container Offset Attribute
          */
-        build_system.registerHTMLParserHandler<HTMLAttribute>(
+        build_system.registerHTMLParserHandler<HTMLAttribute, HTMLElementNode>(
             {
                 priority: 99999999999,
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
-                    if (node.name == "offset" && host_node.IS_CONTAINER) {
+                    if (node.name == "offset" && "IS_CONTAINER" in host_node) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
@@ -500,13 +501,13 @@ registerFeature(
         /** ###########################################################
          *  Container Shift Attribute
          */
-        build_system.registerHTMLParserHandler<HTMLAttribute>(
+        build_system.registerHTMLParserHandler<HTMLAttribute, HTMLElementNode>(
             {
                 priority: 99999999999,
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
 
-                    if (node.name == "shift" && host_node.IS_CONTAINER) {
+                    if (node.name == "shift" && "IS_CONTAINER" in host_node) {
 
                         // Process the primary expression for Binding Refs and static
                         // data
@@ -543,7 +544,7 @@ registerFeature(
 
             return function (node, comp, context, index, write, _1, _2) {
 
-                const container_id = build_system.getElementAtIndex(comp, index).container_id;
+                const container_id = build_system.getElementAtIndex<HTMLContainerNode>(comp, index).container_id;
 
                 const arrow_expression_stmt = stmt(`$$ctr${container_id}.${container_method_name}()`);
 
@@ -575,7 +576,7 @@ registerFeature(
 
                 const ast = node.value[0];
 
-                const container_id = build_system.getElementAtIndex(comp, index).container_id;
+                const container_id = build_system.getElementAtIndex<HTMLContainerNode>(comp, index).container_id;
 
                 let arrow_argument_match = new Array(argument_size).fill(null);
 
@@ -612,7 +613,7 @@ registerFeature(
                         const arrow_expression_stmt = build_system.js.expr(`(${arrow_argument_match.map(v => v.value)}) => 1`);
 
                         arrow_expression_stmt.nodes[1] =
-                            await build_system.getStaticAST(ast, comp, context, model, parents, false);
+                            <any>await build_system.getStaticAST(ast, comp, context, model, parents, false);
 
                         try {
                             return eval(renderCompressed(arrow_expression_stmt));
@@ -628,6 +629,10 @@ registerFeature(
 
     }
 );
+
+function HTMLNodeIsElement(ch: HTMLNode): ch is HTMLElementNode {
+    return !!(ch.type & HTMLNodeClass.HTML_ELEMENT);
+}
 
 /**
         * Searches for N undeclared binding references, where N is the number of entries in list arg.

@@ -205,7 +205,7 @@ registerFeature(
         );
 
 
-        build_system.registerHookHandler<IndirectHook<{ foreign: string; local: string; child_id: number; }>, void>({
+        build_system.registerHookHandler<IndirectHook<[{ foreign: string; local: string; child_id: number; }]>, void>({
             name: "Export & Import Attribute Hooks",
 
             types: [ExportToChildAttributeHook, ImportFromChildAttributeHook],
@@ -261,7 +261,7 @@ registerFeature(
             buildHTML: (node, comp, context, model) => null
         });
 
-        build_system.registerHookHandler<IndirectHook<JSExportClause>, void>({
+        build_system.registerHookHandler<IndirectHook<[JSExportClause]>, void>({
             name: "Export To Parent Hook",
 
             types: [ExportToParentHook],
@@ -269,6 +269,7 @@ registerFeature(
             verify: () => true,
 
             buildJS: (node, comp, _, _2, _3, addInit) => {
+
                 const [clause] = node.value;
 
                 for (const { nodes: [internal] } of clause.nodes)

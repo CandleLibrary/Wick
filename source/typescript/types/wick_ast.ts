@@ -198,21 +198,15 @@ export enum HTMLNodeTypeLU {
     MARKDOWN = HTMLNodeType.MARKDOWN,
 }
 
-
-export interface HTMLNode {
+export interface HTMLNodeBase {
+    host_component_index?: number;
+    /**
+     * The nodes numerical type
+     */
+    type: HTMLNodeType;
+    tag?: string;
     comp?: string,
     import_list?: any[];
-    /**
-     * 
-     * True if the node originally had a CONTAINER tag.
-     * (tag value may change during parsing) 
-     */
-    IS_CONTAINER?: boolean;
-    /**
-     * If node is a <container> node, gives the numerical
-     * index order of the container.
-     */
-    container_id?: number;
     slot_name?: string;
     id?: number;
     child_id?: number;
@@ -222,29 +216,19 @@ export interface HTMLNode {
      * child nodes 
      */
     nodes?: HTMLNode[];
-    /**
-     * The nodes numerical type
-     */
-    type: HTMLNodeType;
-    /**
-     * 
-     */
-    IS_BINDING?: boolean;
 
     name_space?: number;
 
     pos: Token;
-
-    tag?: string;
 
     /**
      * Name of the key of an attribute node.
      */
     name?: string;
 
-    attributes?: HTMLAttribute[];
-
     value?: string;
+
+    parent?: HTMLNode;
 }
 
 export interface HTMLBareAttribute {
@@ -261,10 +245,11 @@ export interface HTMLBareAttribute {
      * the \= character. May 
      */
     value: string,
+
     /**
      * Always `false` for bare attributes
      */
-    IS_BINDING: false;
+    IS_BINDING?: false;
 }
 
 export interface HTMLBindingAttribute {
@@ -291,7 +276,7 @@ export interface HTMLBindingAttribute {
 
 export type HTMLAttribute = HTMLBareAttribute | HTMLBindingAttribute;
 
-export interface WickBindingNode extends HTMLNode {
+export interface WickBindingNode extends HTMLNodeBase {
     //@ts-ignore
     type: HTMLNodeType.WickBinding,
     /**
@@ -300,7 +285,7 @@ export interface WickBindingNode extends HTMLNode {
     local?: string;
 
     /**
-     * External Identifer name, ie: name exported to parent. 
+     * External identifier name, ie: name exported to parent. 
      */
     extern?: string;
 
@@ -315,36 +300,60 @@ export interface WickBindingNode extends HTMLNode {
     secondary_ast?: JSNode;
 
     pos: Token;
-}
 
-
-export interface HTMLTextNode {
-    /**
-     * The nodes numerical type
-     */
-    type: HTMLNodeType;
-
-    /**
-     * A text string or Binding 
-     */
-    data: string;
     /**
      *  true if data is a Binding
      */
-    IS_BINDING; boolean;
+    IS_BINDING: true;
 
+
+    /**
+     * Present if the node is a TextNode
+     */
+    data: string;
+}
+
+
+export interface HTMLTextNode extends HTMLNodeBase {
+    /**
+     * The nodes numerical type
+     */
+    type: HTMLNodeType.HTMLText;
+
+    /**
+     * A text string
+     */
+    data: string;
     pos: Token;
 }
-
-export interface HTMLContainerNode extends HTMLNode {
-
-    IS_CONTAINER: true,
-    components: ComponentData[],
-
-    component_names: string[],
-
-    component_attributes: [string, string][][];
-
+export interface HTMLElementNode extends HTMLNodeBase {
+    attributes?: HTMLAttribute[];
 }
 
+export interface HTMLContainerNode extends HTMLElementNode {
+
+    /**
+     * 
+     * True if the node originally had a CONTAINER tag.
+     * (tag value may change during parsing) 
+     */
+    IS_CONTAINER: true,
+    components: ComponentData[],
+    component_names: string[],
+    component_attributes: [string, string][][];
+
+    /**
+     * If node is a <container> node, gives the numerical
+     * index order of the container.
+     */
+    container_id?: number;
+}
+
+export interface HTMLVoidElementNode extends HTMLElementNode {
+    type: HTMLNodeType.HTML_BR | HTMLNodeType.HTML_INPUT;
+}
+
+
+
+export type HTMLNode = HTMLVoidElementNode | HTMLTextNode | HTMLContainerNode | WickBindingNode | HTMLElementNode;
 export type Node = HTMLNode | CSSNode | JSNode;

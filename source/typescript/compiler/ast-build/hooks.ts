@@ -77,7 +77,7 @@ export function collectBindingReferences(ast: JSNode, component: ComponentData):
 export async function processIndirectHook(
     comp: ComponentData,
     context: Context,
-    indirect_hook: IndirectHook,
+    indirect_hook: IndirectHook<any>,
     class_info: CompiledComponentClass
 ) {
     await processHookForClass(
@@ -91,11 +91,11 @@ export async function processIndirectHook(
 }
 
 export async function processHookForHTML(
-    indirect_hook: IndirectHook,
+    indirect_hook: IndirectHook<any>,
     comp: ComponentData,
     context: Context,
     model: any,
-    parent_components: ComponentData[]
+    parent_components: ComponentData
 
 ): Promise<HookTemplatePackage | any> {
 
@@ -126,7 +126,7 @@ export async function processHookForHTML(
 }
 
 export async function processHookForClass(
-    ast: Node | IndirectHook,
+    ast: Node | IndirectHook<any>,
 
     component: ComponentData,
 

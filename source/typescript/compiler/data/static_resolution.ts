@@ -35,7 +35,7 @@ export async function getStaticAST(
     component: ComponentData,
     context: Context,
     model: any = null,
-    parent_comp: ComponentData[] = null,
+    parent_comp: ComponentData = null,
     ASSUME_RUNTIME: boolean = false,
     ref: any = null
 ) {
@@ -56,7 +56,7 @@ export async function getStaticValue(
     component: ComponentData,
     context: Context,
     model: any = null,
-    parent_comp: ComponentData[] = null,
+    parent_comp: ComponentData = null,
     ASSUME_RUNTIME: boolean = false,
     ref: any = null
 ): Promise<{ html: any, value: null; }> {
@@ -195,7 +195,7 @@ export async function getDefaultBindingValueAST(
     comp: ComponentData,
     context: Context,
     model: Object,
-    parent_comp: ComponentData[] = null,
+    parent_comp: ComponentData = null,
     ASSUME_RUNTIME: boolean = false,
     node_lookups: Map<string, Node>
 ): Promise<JSExpressionClass> {
@@ -287,7 +287,7 @@ export async function getStaticValueAstFromSourceAST(
     comp: ComponentData,
     context: Context,
     model: Object,
-    parent_comp: ComponentData[] = null,
+    parent_comp: ComponentData = null,
     ASSUME_RUNTIME: boolean = false,
     node_lookups: Map<string, Node>
 ): Promise<Node> {
@@ -363,7 +363,7 @@ export async function getStaticValueAstFromSourceAST(
         } else if (node.type == BindingIdentifierBinding
             || node.type == BindingIdentifierReference) {
 
-            const name = tools.getIdentifierName(node);
+            const name = tools.getIdentifierName(<any>node);
 
             /**
              * Only accept references whose value can be resolved through binding variable

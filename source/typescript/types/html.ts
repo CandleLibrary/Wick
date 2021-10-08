@@ -1,9 +1,6 @@
-import { Lexer } from "@candlelib/wind";
 import { ComponentData } from '../compiler/common/component.js';
 import { Context } from '../compiler/common/context.js';
 import { HTMLNode } from "./wick_ast.js";
-
-
 
 export const enum htmlState {
     IS_ROOT = 1,
@@ -78,68 +75,3 @@ export type HookTemplatePackage = {
     html?: TemplateHTMLNode;
     templates?: Map<string, TemplateHTMLNode>;
 };
-
-export interface DOMLiteral {
-    host_component_index: number;
-
-    /**  Names space index id into the namespaces table. */
-    name_space?: number;
-
-    /**Tag name of the element.  */
-    tag_name: string;
-
-    /** Array of attribute {name, value} tuples. */
-    attributes?: Array<[string, string]>;
-
-    /** Array of DOM children. */
-    nodes?: DOMLiteral[];
-
-    /**  String data for TextNodes. If it is an empty string then this data will be
-        assigned to the TextNode that will ultimately be created.*/
-    data?: string;
-
-    /** Index into the component's lookup table for this element. */
-    element_index?: number;
-
-    /**
-     * True if the element belongs to a wick container
-     */
-    IS_CONTAINER?: boolean;
-
-    /**
-     * Slot Name
-     */
-    slot_name?: string;
-
-    /**
-     * True if is a binding.
-     */
-    IS_BINDING?: boolean;
-
-    /**
-     * Lexer positioned at original source location.
-     */
-    pos: Lexer;
-
-    /**
-     * Name of the component if this is the
-     * component's root element
-     */
-    component_name?: string;
-
-    container_id?: number;
-
-    parent?: DOMLiteral;
-}
-
-export interface ContainerDomLiteral extends DOMLiteral {
-    /**
-     * Ordered list of component names that 
-     * Container element needs to load 
-     */
-    component_names?: string[];
-
-    component_attributes: [string, string][][];
-
-    IS_CONTAINER: true;
-}
