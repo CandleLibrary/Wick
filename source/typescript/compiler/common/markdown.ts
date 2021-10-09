@@ -1,7 +1,9 @@
 import { Token } from '@candlelib/hydrocarbon';
-import { HTMLNode, HTMLNodeType, HTMLNodeClass } from "../../types/all.js";
+import { HTMLNode, HTMLNodeType, HTMLNodeClass, HTMLElementNode } from "../../types/all.js";
 import { escape_html_string } from './html.js';
-export function convertMarkdownToHTMLNodes(markdown_content) {
+
+const MD_Attribute = { type: HTMLNodeType.HTMLAttribute, name: "m:d", value: "" };
+export function convertMarkdownToHTMLNodes(markdown_content): HTMLNode {
 
     const output: HTMLNode[] = [];
 
@@ -45,7 +47,7 @@ export function convertMarkdownToHTMLNodes(markdown_content) {
                     nodes: content.map(({ data, pos }) => ({
                         type: HTMLNodeType.HTML_CODE,
                         tag: "CODE",
-                        attributes: [],
+                        attributes: [MD_Attribute],
                         pos: pos,
                         nodes: [{
                             type: HTMLNodeType.HTMLText,
@@ -64,14 +66,14 @@ export function convertMarkdownToHTMLNodes(markdown_content) {
                 let line = {
                     type: HTMLNodeType.HTML_LI,
                     tag: "LI",
-                    attributes: [],
+                    attributes: [MD_Attribute],
                     nodes: [...convertLineContent(content)],
                     pos
                 };
                 let node = {
                     type: HTMLNodeType.HTML_UL,
                     tag: "UL",
-                    attributes: [],
+                    attributes: [MD_Attribute],
                     nodes: [line],
                     pos
                 };
@@ -141,7 +143,7 @@ export function convertMarkdownToHTMLNodes(markdown_content) {
                     type: HTMLNodeType.HTML_P,
                     tag: "P",
                     nodes: [...convertLineContent(modified_content)],
-                    attributes: [],
+                    attributes: [MD_Attribute],
                     pos
                 };
 
@@ -171,7 +173,7 @@ export function convertMarkdownToHTMLNodes(markdown_content) {
                             type: HTMLNodeType.HTML_BR,
                             tag: "BR",
                             nodes: [],
-                            attributes: [],
+                            attributes: [MD_Attribute],
                             pos
                         }, ...node.nodes);
                         continue;
@@ -190,7 +192,7 @@ export function convertMarkdownToHTMLNodes(markdown_content) {
         type: HTMLNodeType.HTML_DIV,
         tag: "DIV",
         nodes: output,
-        attributes: [],
+        attributes: [MD_Attribute],
         pos: markdown_content.pos
     };
 }
@@ -342,12 +344,12 @@ function tryCodeBlock(obj, raw_content, content, offset, length) {
         if (raw_content[i].type == "inline_code") {
             const tok = Token.fromRange(obj.pos, raw_content[i].pos);
 
-            content.push({
+            content.push(<HTMLElementNode>{
                 type: HTMLNodeType.HTML_CODE,
                 tag: "CODE",
+                attributes: [MD_Attribute],
                 nodes: [{
                     type: HTMLNodeType.HTMLText,
-
                     data: escape_html_string(tok.slice().slice(1, -1)).trim(),
                     pos: tok
                 }]
