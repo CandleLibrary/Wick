@@ -153,7 +153,7 @@ export class ObservableArray<T> extends ObservableContainerBase<T> {
 
         term = term.map(t => (t instanceof ObservableBase) ? this._gI_(t) : t);
 
-        for (var i = 0, l = this.data.length; i < l; i++) {
+        for (let i = 0, l = this.data.length; i < l; i++) {
             var obj = this.data[i];
 
             if (this._gI_(obj, term)) {

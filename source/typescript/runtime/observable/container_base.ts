@@ -1,47 +1,7 @@
-import { ObservableBase } from "./base.js";
-import { _SealedProperty_ } from "./base.js";
-import { ObservableData } from "./observable.js";
-
-/**
-    Schema type. Handles the parsing, validation, and filtering of Model data properties. 
-*/
-class SchemeConstructor {
-
-    start_value: any;
+import { ObservableBase, _SealedProperty_ } from "./base.js";
+import { SchemeConstructor } from './scheme_constructor.js';
 
 
-    constructor() {
-
-        this.start_value = undefined;
-    }
-
-    /**
-        Parses value returns an appropriate transformed value
-    */
-    parse(value) {
-
-        return value;
-    }
-
-    /**
-
-    */
-    verify(value, result) {
-
-        result.valid = true;
-    }
-
-    filter(id, filters) {
-        for (let i = 0, l = filters.length; i < l; i++)
-            if (id === filters[i]) return true;
-        return false;
-    }
-
-    string(value) {
-
-        return value + "";
-    }
-}
 export class MCArray<T> extends Array {
 
     constructor() { super(); }
@@ -80,7 +40,7 @@ export class ObservableContainerBase<T> extends ObservableBase {
 
     validator: SchemeConstructor;
 
-    model: ObservableData;
+    model: any;
 
     _filters_: any[];
 
@@ -228,7 +188,7 @@ export class ObservableContainerBase<T> extends ObservableBase {
         let out_data = false;
 
         if (Array.isArray(item)) {
-            for (var i = 0; i < item.length; i++)
+            for (let i = 0; i < item.length; i++)
                 if (this.__insertSub__(item[i], out_data, add_list))
                     out_data = true;
         } else if (item)
