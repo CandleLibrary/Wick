@@ -32,6 +32,7 @@ import {
 	processCLIConfig
 } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
+import { Logger } from '@candlelib/log';
 import { default_radiate_hooks, default_wick_hooks, RenderPage } from '../compiler/ast-render/webpage.js';
 import { ComponentData } from '../compiler/common/component.js';
 import { Context } from "../compiler/common/context.js";
@@ -40,6 +41,8 @@ import { loadComponentsFromDirectory } from '../server/load_directory.js';
 
 
 URI.server();
+
+const compile_logger = Logger.get("wick").activate().get("compile");
 
 const
 	{ package: pkg, package_dir } = await getPackageJsonObject(new URI(import.meta.url).path),
@@ -85,16 +88,43 @@ optionally hydrated with the associated support scripts.
 			//Compile a list of entry components
 			const context = new Context();
 
-			const { page_components, components } = await loadComponentsFromDirectory(
-				root_directory, context);
+			compile_logger.log(`Loading resources from [ ${root_directory + ""} ]`);
 
-			//Remap dependencies
+			let i = 0;
+
+			const { page_components, components } = await loadComponentsFromDirectory(
+				root_directory, context,
+				function (uri: URI) {
+
+					compile_logger.rewrite_log(`Loading ${["|", "/", "-", "\\"][i++ % 4]}`);
+
+					// If this an index.wick component
+					// then it will serve as an endpoint
+					if (uri.filename == "index") {
+
+						const name = (uri + "").replace(root_directory + "", "").replace("index.wick", "");
+
+						return {
+							IS_ENTRY_COMPONENT: true,
+							output_name: name
+						};
+					}
+
+					return {
+						IS_ENTRY_COMPONENT: false
+					};
+				});
+
+			compile_logger.rewrite_log(`Loaded ${context.components.size} components from [ ${root_directory + ""} ]`);
+
+
 
 			let USE_WICK_RUNTIME = false;
 			let USE_RADIATE_RUNTIME = false;
 			let USE_GLOW = false;
 
 			for (const [component_name, { endpoints }] of page_components) {
+
 
 				for (const endpoint of endpoints) {
 
@@ -114,8 +144,11 @@ optionally hydrated with the associated support scripts.
 
 							context.active_template_data = template_data;
 
+
 							const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
 								= await buildComponentPage(component, context, template_data.page_name, output_directory);
+
+							compile_logger.log(`Built endpoint [ ${"/" + endpoint} ] from component [ ${component.location + ""} ]`);
 
 							context.active_template_data = null;
 
@@ -126,6 +159,8 @@ optionally hydrated with the associated support scripts.
 
 						const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
 							= await buildComponentPage(component, context, endpoint, output_directory);
+
+						compile_logger.log(`Built endpoint [ ${"/" + endpoint} ] from component [ ${component.location + ""} ]`);
 
 						USE_RADIATE_RUNTIME ||= A;
 						USE_WICK_RUNTIME ||= B;
@@ -145,9 +180,10 @@ optionally hydrated with the associated support scripts.
 					output_directory + "radiate.js",
 					package_dir
 				);
+				compile_logger.log(`Built wick.radiate module at [ /radiate.js ]`);
 			}
 
-			if (USE_WICK_RUNTIME)
+			if (USE_WICK_RUNTIME) {
 				compile_module(
 					URI.resolveRelative(
 						"./build/library/entry-point/wick-runtime.js",
@@ -156,6 +192,8 @@ optionally hydrated with the associated support scripts.
 					output_directory + "wick.js",
 					package_dir
 				);
+				compile_logger.log(`Built wick.runtime module at [ /wick.js ]`);
+			}
 			/* 
 			if(USE_GLOW)
 				compile_module(
@@ -167,6 +205,26 @@ optionally hydrated with the associated support scripts.
 				);
 			//*/
 
+			compile_logger.log(`🎆 Site successfully built!  🎆`);
+			let LAUNCH_LANTERN = true;
+
+			if (LAUNCH_LANTERN) {
+				const port = 8092;
+
+				compile_logger.parent.get("lantern").log(`Launching Lantern at port [ ${port} ]`);
+
+				const cp = await import("child_process");
+
+				cp.spawn(`lantern`, [`--port`, `${port}`], {
+
+					cwd: "" + output_directory,
+
+					stdio: ['inherit', 'inherit', 'inherit'],
+
+					env: process.env
+
+				});
+			}
 			return;
 		}
 	);

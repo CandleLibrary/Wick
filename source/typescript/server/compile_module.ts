@@ -1,4 +1,4 @@
-import { bidirectionalTraverse, traverse, TraverseState } from '@candlelib/conflagrate';
+import { bidirectionalTraverse, make_skippable, traverse, TraverseState } from '@candlelib/conflagrate';
 import { JSExportDeclaration, JSIdentifierBinding, JSImportClause, JSNodeType, JSStatementClass, renderCompressed } from '@candlelib/js';
 import { getPackageJsonObject } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
@@ -71,8 +71,6 @@ export async function compile_module(
 			export_refs,
 		};
 
-
-
 		modules.set(module_path, module_data);
 
 		if (error) {
@@ -86,6 +84,7 @@ export async function compile_module(
 
 			for (const { node, meta: { mutate } } of traverse(<Node>module, "nodes")
 				.filter("type", JSNodeType.ImportDeclaration, JSNodeType.ExportDeclaration)
+
 				.makeMutable()) {
 
 				if (node.type == JSNodeType.ImportDeclaration) {
@@ -224,7 +223,8 @@ export async function compile_module(
 
 								mutate(target);
 								break;
-							case JSNodeType.ExportClause:
+
+							case JSNodeType.Specifiers:
 
 								for (const specifier of target.nodes) {
 									const name = specifier.nodes[0].value;
@@ -290,14 +290,17 @@ export async function compile_module(
 	for (const module_path of sorted_module) {
 		const { module, imported_refs } = modules.get(module_path);
 		const stack = { refs: new Set, prev: null };
-		for (const { node, meta: { traverse_state } } of bidirectionalTraverse(<Node>module, "nodes").filter("type",
-			JSNodeType.FunctionDeclaration,
-			JSNodeType.FunctionExpression,
-			JSNodeType.ArrowFunction,
-			JSNodeType.IdentifierReference,
-			JSNodeType.IdentifierBinding,
-			JSNodeType.ExportDeclaration
-		)) {
+		for (const { node, meta: { skip, traverse_state } } of bidirectionalTraverse(<Node>module, "nodes")
+			.makeSkippable()
+			.filter("type",
+				JSNodeType.FunctionDeclaration,
+				JSNodeType.FunctionExpression,
+				JSNodeType.ArrowFunction,
+				JSNodeType.IdentifierReference,
+				JSNodeType.IdentifierBinding,
+				JSNodeType.ExportDeclaration
+			)) {
+
 			if (traverse_state == TraverseState.ENTER) {
 				if (node.type == JSNodeType.ExportDeclaration) {
 					if (!node.DEFAULT) {
