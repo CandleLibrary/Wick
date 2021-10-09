@@ -3,7 +3,7 @@
     "version": "0.15.16",
     "description": "Web Component Compiler",
     "main": "./build/library/entry-point/wick-server.js",
-    "types": "./build/types/entry-point/wick-server.d.ts",
+    "types": "./build/types/entry-point/wick-server",
     "type": "module",
     "bin": {
         "candle.wick": "./index.js"
@@ -14,7 +14,7 @@
         "test": "candle.cure --reporter ci --headless ./test/*",
         "test.watch": "candle.cure -w ./test/*",
         "server": "lantern",
-        "buildsite": "npm install && candle.wick compile --output ./www  ./site"
+        "buildsite": "npm install && candle.wick compile --output ./www ./site"
     },
     "repository": {
         "type": "git",
@@ -71,56 +71,5 @@
         "@candlelib/spark": "0.3.4",
         "@candlelib/uri": "0.3.0",
         "@candlelib/wind": "0.5.4"
-    },
-    "esm": {
-        "cjs": {
-            "cache": true
-        }
-    },
-    "eslintConfig": {
-        "parserOptions": {
-            "sourceType": "module",
-            "ecmaVersion": 2018
-        },
-        "env": {
-            "es6": true,
-            "browser": true,
-            "node": true
-        },
-        "extends": "eslint:recommended",
-        "rules": {
-            "no-fallthrough": [
-                "error",
-                {
-                    "commentPattern": "[iI]ntentional( - [\\w\\W]*){0,1}"
-                }
-            ],
-            "semi-style": [
-                "error",
-                "last"
-            ],
-            "semi": [
-                "warn",
-                "always",
-                {
-                    "omitLastInOneLineBlock": true
-                }
-            ],
-            "prefer-const": "warn",
-            "new-cap": [
-                "error"
-            ],
-            "padding-line-between-statements": [
-                "error",
-                {
-                    "blankLine": "always",
-                    "prev": "function",
-                    "next": "*"
-                }
-            ]
-        }
-    },
-    "engine": {
-        "node": ">=13.6.0"
     }
 }
