@@ -292,7 +292,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
         for (const handler of html_handlers[Math.max((node.type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)]) {
 
             const
-                pending = handler.prepareHTMLNode(node, parent, last_element, ele_index, skip, component, context),
+                pending = handler.prepareHTMLNode(node, parent, last_element, component.element_counter, skip, component, context),
                 result = (pending instanceof Promise) ? await pending : pending;
 
 
@@ -306,15 +306,15 @@ export async function processWickHTML_AST(ast: HTMLNode,
 
                     if (result === null)
                         continue main_loop;
+
                 } else
                     continue;
             }
 
             break;
         }
-
         if (html_node.type & HTMLNodeClass.HTML_ELEMENT || html_node.type == HTMLNodeType.WickBinding)
-            html_node.id = ++ele_index;
+            html_node.id = ++component.element_counter;
 
         if (!html_node.comp)
             html_node.comp = component.name;
@@ -333,7 +333,7 @@ export async function processWickHTML_AST(ast: HTMLNode,
                         attrib,
                         meta2.parent,
                         meta2.parent,
-                        ele_index,
+                        component.element_counter,
                         () => { },
                         component,
                         context
@@ -354,8 +354,6 @@ export async function processWickHTML_AST(ast: HTMLNode,
             }
         }
     }
-
-    component.element_counter = ele_index;
 
     if (receiver.ast) {
 
