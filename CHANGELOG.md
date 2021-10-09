@@ -1,3 +1,13 @@
+## [v0.15.17] - 2021-10-09 
+
+- [2021-10-08] **breaking change** 
+
+    Added RenderPageOptions type interface and options argument to RenderPage and to improve control over the output of generated HTML pages.
+
+- [2021-10-05] **breaking change** 
+
+    Renamed Presets to Context. This name better reflects this object's purpose.
+
 ## [v0.15.9] - 2021-06-28 
 
 - [2021-06-21]
