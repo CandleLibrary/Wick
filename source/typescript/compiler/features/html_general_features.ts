@@ -109,7 +109,7 @@ registerFeature(
         /** ##########################################################
          *  Import Elements
          */
-        build_system.registerHTMLParserHandler(
+        build_system.registerHTMLParserHandler<HTMLNode>(
             {
                 priority: -99999,
 
@@ -117,6 +117,7 @@ registerFeature(
 
                     const url = String(getAttributeValue("url", node) || ""),
                         name = String(getAttributeValue("name", node) || "");
+
 
                     await build_system.importResource(
                         url + "",

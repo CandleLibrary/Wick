@@ -15,6 +15,7 @@ import { addPendingModuleToPresets } from '../common/common.js';
 import { ComponentData, mergeComponentData } from '../common/component.js';
 import { Context } from '../common/context.js';
 import { parse_css } from '../source-code-parse/parse.js';
+
 function getModuleName(context: Context, module_name: string) {
     if (!context.repo.has(module_name))
         return addPendingModuleToPresets(context, module_name);
@@ -87,6 +88,7 @@ export async function importResource(
         uri = URI.resolveRelative(url, component.location);
 
     switch (url + "") {
+
         default:
             //Import css file and integrate into current component. 
             if (uri.ext == "css") {
@@ -185,13 +187,12 @@ export async function importResource(
             break;
 
         case "@context":
-            /* all ids within this node are imported form the context object */
+            /* all ids within this node are imported from the context object */
             break;
     }
 
 
     for (const { local, external } of names) {
-
 
         if (external == "namespace")
             continue;

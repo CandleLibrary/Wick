@@ -1,4 +1,4 @@
-import { HTMLNode } from "../../types/all.js";
+import { HTMLNode, HTMLElementNode } from "../../types/all.js";
 import { ComponentData } from './component.js';
 
 export const html_void_tags = new Set([

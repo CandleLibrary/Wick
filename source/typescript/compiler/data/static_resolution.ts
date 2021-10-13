@@ -364,6 +364,8 @@ export async function getStaticValueAstFromSourceAST(
         } else if (node.type == BindingIdentifierBinding
             || node.type == BindingIdentifierReference) {
 
+
+
             const name = tools.getIdentifierName(<any>node);
 
             /**
@@ -371,7 +373,6 @@ export async function getStaticValueAstFromSourceAST(
              * resolution.
              */
             if (comp.root_frame.binding_variables.has(name)) {
-
 
                 const val = <any>await getDefaultBindingValueAST(
                     name,

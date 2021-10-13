@@ -37,15 +37,22 @@ import { default_radiate_hooks, default_wick_hooks, RenderPage } from '../compil
 import { ComponentData } from '../compiler/common/component.js';
 import { Context } from "../compiler/common/context.js";
 import { compile_module } from '../server/compile_module.js';
-import { loadComponentsFromDirectory } from '../server/load_directory.js';
-
+import { loadComponentsFromDirectory, mapEndpoints } from '../server/load_directory.js';
+import { WickCompileConfig } from "../types/config";
 
 URI.server();
+
+const default_config: WickCompileConfig = {
+	RESOLVE_HREF_ENDPOINTS: true,
+	endpoint_mapper: mapEndpoints
+}
 
 const compile_logger = Logger.get("wick").activate().get("compile");
 
 const
-	{ package: pkg, package_dir } = await getPackageJsonObject(new URI(import.meta.url).path),
+	{ package: pkg, package_dir }
+		//@ts-ignore
+		= await getPackageJsonObject(new URI(import.meta.url).path),
 	HELP_MESSAGE = `
 CANDLELIB::Wick v${pkg.version}
 
@@ -56,118 +63,136 @@ candle.wick <input-component> <output-directory>
 [Options]
 
 	-h | --help 		Show This Help Message
-
-
 `;
 
-const IS_FLAT = addCLIConfig("compile", { key: "flat", help_brief: `Output files to a flat directory structure` });
+const output_arg = addCLIConfig<URI>("compile", {
+	key: "output",
+	REQUIRES_VALUE: true,
+	default: URI.resolveRelative("./www"),
+	transform: (arg) => URI.resolveRelative(arg),
+	help_brief: `
+A path to the root directory in which rendered files will be 
+placed. Defaults to $CWD/www.
+`});
 
-const output_directory = addCLIConfig("compile", { key: "output", help_brief: `Directory in which to output files`, REQUIRES_VALUE: true });
+const config_arg = addCLIConfig("compile", {
+	key: "config",
+	REQUIRES_VALUE: true,
+	default: default_config,
+	transform: async (arg) => {
 
-addCLIConfig("compile",
+		let path: URI = URI.resolveRelative("./wick-config.js");;
+
+		if (typeof arg == "string")
+			path = URI.resolveRelative(arg);
+
+		let config = default_config;
+
+		if (await path.DOES_THIS_EXIST()) {
+			try {
+
+				const user_config = (await import(path + "")).default || null;
+
+				if (!user_config)
+					compile_logger.warn(`Unable to load config object from [ ${path + ""} ]:`)
+				else
+					config = Object.assign(config, user_config);
+
+			} catch (e) {
+				compile_logger.error(`Unable to load config script [ ${path + ""} ]:`)
+				throw e;
+			}
+		}
+
+		return config;
+		//Look for a wickconfig.js file in the current directory 	
+	},
+	help_brief: `
+A path to a wick-config.js file. If this argument is not present then Wick will 
+search the CWD for a wick-config.js file. If this file is not present the wick
+will use command line arguments and default values.
+`});
+
+
+
+
+
+addCLIConfig<string>("compile",
 	{
 		key: "compile",
 		help_brief:
 			`
+compile <source directory>
+
 Statically compile a web application from a source directory.
 
 Wick will automatically handle the compilation & packaging of 
 components and will render out a static site that can be 
-optionally hydrated with the associated support scripts.
-
-`
+optionally hydrated with the associated support scripts.`
 	}
 ).callback = (
 		async (args) => {
+			const input_path = URI.resolveRelative(args.trailing_arguments.pop() ?? "./");
+			const root_directory = URI.resolveRelative(input_path);
+			const output_directory = output_arg.value;
+			const config = config_arg.value;
+
+			if (output_directory.path.slice(-1)[0] != "/")
+				output_directory.path += "/";
+
+			compile_logger
+				.debug({ input_path: input_path + "", output_path: output_directory + "" })
 
 			//Find all components
 			//Build wick and radiate files 
-			const input_path = args.trailing_arguments.pop();
-			const root_directory = URI.resolveRelative(input_path);
-			const output_directory = URI.resolveRelative("./www/");
+
 			//Compile a list of entry components
 			const context = new Context();
 
-			compile_logger.log(`Loading resources from [ ${root_directory + ""} ]`);
+			compile_logger
+				.log(`Loading resources from [ ${root_directory + ""} ]`);
 
-			let i = 0;
+			const { page_components, components, endpoints }
+				= await loadComponentsFromDirectory(
+					root_directory, context, config.endpoint_mapper
+				);
 
-			const { page_components, components } = await loadComponentsFromDirectory(
-				root_directory, context,
-				function (uri: URI) {
-
-					compile_logger.rewrite_log(`Loading ${["|", "/", "-", "\\"][i++ % 4]}`);
-
-					// If this an index.wick component
-					// then it will serve as an endpoint
-					if (uri.filename == "index") {
-
-						const name = (uri + "").replace(root_directory + "", "").replace("index.wick", "");
-
-						return {
-							IS_ENTRY_COMPONENT: true,
-							output_name: name
-						};
-					}
-
-					return {
-						IS_ENTRY_COMPONENT: false
-					};
-				});
-
-			compile_logger.rewrite_log(`Loaded ${context.components.size} components from [ ${root_directory + ""} ]`);
-
-
+			compile_logger
+				.rewrite_log(`Loaded ${pluralize(context.components.size, "component")} from [ ${root_directory + ""} ]`);
 
 			let USE_WICK_RUNTIME = false;
 			let USE_RADIATE_RUNTIME = false;
 			let USE_GLOW = false;
 
-			for (const [component_name, { endpoints }] of page_components) {
+			for (const [component_name, { endpoints: ep }] of page_components) {
 
-
-				for (const endpoint of endpoints) {
+				for (const endpoint of ep) {
 
 					const { comp: component } = components.get(component_name);
 
 					if (component.TEMPLATE) {
 
-						let data = context.template_data.get(component);
+						const { comp, template_data } = endpoints.get(endpoint);
 
-						for (const template_data of data) {
+						context.active_template_data = template_data;
 
-							if (!template_data.page_name)
-								component.root_frame.ast.pos.throw(
-									"Expected [page_name] for template",
-									component.location.toString()
-								);
+						const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
+							= await writeEndpoint(component, context, endpoint, output_directory);
 
-							context.active_template_data = template_data;
+						context.active_template_data = null;
 
+						USE_RADIATE_RUNTIME ||= A;
+						USE_WICK_RUNTIME ||= B;
 
-							const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
-								= await buildComponentPage(component, context, template_data.page_name, output_directory);
-
-							compile_logger.log(`Built endpoint [ ${"/" + endpoint} ] from component [ ${component.location + ""} ]`);
-
-							context.active_template_data = null;
-
-							USE_RADIATE_RUNTIME ||= A;
-							USE_WICK_RUNTIME ||= B;
-						}
 					} else {
 
 						const { USE_RADIATE_RUNTIME: A, USE_WICK_RUNTIME: B }
-							= await buildComponentPage(component, context, endpoint, output_directory);
-
-						compile_logger.log(`Built endpoint [ ${"/" + endpoint} ] from component [ ${component.location + ""} ]`);
+							= await writeEndpoint(component, context, endpoint, output_directory);
 
 						USE_RADIATE_RUNTIME ||= A;
 						USE_WICK_RUNTIME ||= B;
 					}
 				}
-
-
 			}
 
 			if (USE_RADIATE_RUNTIME) {
@@ -205,7 +230,9 @@ optionally hydrated with the associated support scripts.
 				);
 			//*/
 
-			compile_logger.log(`🎆 Site successfully built!  🎆`);
+			compile_logger.log(`🎆 Site successfully built! 🎆`);
+
+
 			let LAUNCH_LANTERN = true;
 
 			if (LAUNCH_LANTERN) {
@@ -231,28 +258,76 @@ optionally hydrated with the associated support scripts.
 
 processCLIConfig();
 
-async function buildComponentPage(
+function pluralize(val: number, singular: string, plural = singular + "s") {
+	return `${val} ${val == 1 ? singular : plural}`;
+}
+
+async function writeEndpoint(
+	component: ComponentData,
+	context: Context,
+	endpoint_path: string,
+	output_directory: URI
+): Promise<{
+	USE_RADIATE_RUNTIME: boolean,
+	USE_WICK_RUNTIME: boolean
+}> {
+
+
+	const fsp = (await import("fs")).promises;
+
+	const {
+		USE_RADIATE_RUNTIME,
+		USE_WICK_RUNTIME,
+		output_path,
+		page_source
+	}
+		= await renderEndpointPage(component, context, endpoint_path, output_directory);
+
+	try {
+		await fsp.mkdir(new URI(output_path).dir, { recursive: true });
+	} catch (e) {
+		console.log(e)
+		compile_logger
+			.error(`Unable create output path [ ${new URI(output_path).dir} ]`)
+			.error(e)
+	}
+
+	try {
+		await fsp.writeFile(output_path, page_source, { encoding: 'utf8' });
+	} catch (e) {
+		compile_logger
+			.error(`Unable create output path [ ${output_path} ]`)
+			.error(e)
+	}
+
+	compile_logger.log(`Built endpoint [ ${endpoint_path} ]`)
+		.log(`   at [ ${output_path} ]`)
+		.log(`   from component [ ${component.location + ""} ]\n`);
+
+	return {
+		USE_RADIATE_RUNTIME,
+		USE_WICK_RUNTIME
+	}
+}
+
+async function renderEndpointPage(
 	component: ComponentData,
 	context: Context,
 	endpoint: string,
 	output_directory: URI
-) {
-	const fsp = (await import("fs")).promises;
+): Promise<{
+	USE_RADIATE_RUNTIME: boolean,
+	USE_WICK_RUNTIME: boolean,
+	page_source: string,
+	output_path: string,
+}> {
 
 	let
 		USE_RADIATE_RUNTIME: boolean = component.RADIATE,
 		USE_WICK_RUNTIME: boolean = !component.RADIATE;
 
-	const resolved_filepath = endpoint == "root"
-		? output_directory
-		: URI.resolveRelative(
-			"./" + endpoint,
-			output_directory + ""
-		);
-
-	await fsp.mkdir(resolved_filepath + "", { recursive: true });
-
-	const hooks = Object.assign({}, USE_RADIATE_RUNTIME ? default_radiate_hooks : default_wick_hooks);
+	const
+		hooks = Object.assign({}, USE_RADIATE_RUNTIME ? default_radiate_hooks : default_wick_hooks);
 
 	if (USE_RADIATE_RUNTIME)
 		hooks.init_script_render = function () {
@@ -268,14 +343,22 @@ async function buildComponentPage(
 			w.hydrate();`;
 		};
 
-	const { page } = await RenderPage(
+	const { page: page_source } = await RenderPage(
 		component,
 		context,
 		undefined,
 		hooks
-	);
+	),
+		ep = URI.resolveRelative("./" + endpoint.replace(/$(\/|\.\/)/, ""), output_directory);
+	if (ep.path.slice(-1)[0] == "/")
+		ep.path += "index.html"
+	else if (!ep.ext)
+		ep.path += ".html"
 
-	await fsp.writeFile(resolved_filepath + "/index.html", page, { encoding: 'utf8' });
-
-	return { USE_RADIATE_RUNTIME, USE_WICK_RUNTIME };
+	return {
+		USE_RADIATE_RUNTIME,
+		USE_WICK_RUNTIME,
+		output_path: ep.path,
+		page_source
+	};
 }
