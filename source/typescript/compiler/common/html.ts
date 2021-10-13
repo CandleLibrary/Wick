@@ -105,3 +105,19 @@ export function escape_html_string(string: string): string {
         .replace(/\n/g, "<br/>");
     //.replace(/\s/g, "&#8199;");
 }
+
+export function getAttributeValue(name, node: HTMLElementNode) {
+    for (const att of node.attributes) {
+        if (att.name == name)
+            return att.value;
+    }
+}
+
+export function hasAttribute(name, node: HTMLElementNode) {
+    for (const att of node.attributes) {
+        if (att.name == name)
+            return true;
+    }
+
+    return false;
+}

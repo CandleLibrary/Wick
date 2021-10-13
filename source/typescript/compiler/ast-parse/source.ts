@@ -1,12 +1,15 @@
 import { JSNode, JSNodeType } from "@candlelib/js";
-import URL from "@candlelib/uri";
+import { default as URI, default as URL } from "@candlelib/uri";
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE, HTMLNode, HTMLNodeClass } from "../../types/all.js";
 import { addBindingVariable, processUndefinedBindingVariables } from "../common/binding.js";
 import { ComponentData, createComponentData } from "../common/component.js";
-import { createParseFrame } from "../common/frame.js";
 import { Context } from '../common/context.js';
+import { createParseFrame } from "../common/frame.js";
+import { getAttributeValue, hasAttribute } from "../common/html.js";
+import { convertMarkdownToHTMLNodes } from "../common/markdown.js";
 import { metrics } from '../metrics.js';
-import { parse_component } from "../source-code-parse/parse.js";
+import { NodeTypes } from "../source-code-parse/env.js";
+import { parse_component, parse_markdown } from "../source-code-parse/parse.js";
 import { processWickHTML_AST, processWickJS_AST } from "./parse.js";
 
 export const component_cache = {};
@@ -99,7 +102,6 @@ export async function parseSource(
 
 
         if (typeof input == "string") {
-
 
             //Illegal URL, try parsing string
             try {
@@ -266,13 +268,12 @@ export async function fetchASTFromRemote(url: URL) {
 
     let ast = null,
         comments = null,
+        error = null,
         string = "";
 
     if (!url)
         throw new Error("Could not load URL: " + url + "");
 
-
-    //TODO: Can throw
     try {
         string = <string>await url.fetchText();
 
@@ -281,10 +282,44 @@ export async function fetchASTFromRemote(url: URL) {
         if (url.ext == "css")
             string = `<style>${string}</style>`;
 
-        const { ast: a, comments: c, error } = await parse_component(string, url.toString());
+        if (url.ext == "md") {
 
-        ast = a;
-        comments = c;
+            //Preprocess the markdown into HTML
+            ast = await parse_markdown(string);
+
+            ast = convertMarkdownToHTMLNodes(ast);
+
+            if (ast?.nodes?.[0]?.nodes?.[0]?.type == NodeTypes.HTML_IMPORT) {
+                const import_node = ast?.nodes?.[0]?.nodes?.[0];
+                //Import the template node and 
+
+                const
+                    template_url = String(getAttributeValue("url", import_node) || ""),
+                    template = hasAttribute("template", import_node);
+
+                if (template) {
+                    const uri = URI.resolveRelative(template_url, url);
+
+                    if (await uri.DOES_THIS_EXIST()) {
+                        const wrapper_string = `
+import tmpcomp from "${template_url + ""}";
+
+export default <tmpcomp>
+    <slot></slot>
+</tmpcomp>;`;
+                        const { ast: temp } = parse_component(wrapper_string);
+
+                        temp.nodes[1].nodes[0].nodes[0] = ast;
+
+                        ast.nodes[0].nodes.length = 0;
+
+                        ast = temp;
+                    }
+                }
+            }
+        } else {
+            ({ ast, comments, error } = parse_component(string));
+        }
 
         if (error)
             errors.push(error);

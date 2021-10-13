@@ -6,6 +6,7 @@ import {
 } from "../../types/all.js";
 import { registerFeature } from './../build_system.js';
 import { ComponentHash } from './../common/hash_name.js';
+import { getAttributeValue } from '../common/html.js';
 
 registerFeature(
 
@@ -87,12 +88,7 @@ registerFeature(
             }, HTMLNodeType.HTMLAttribute
         );
 
-        function getAttributeValue(name, node: HTMLElementNode) {
-            for (const att of node.attributes) {
-                if (att.name == name)
-                    return att.value;
-            }
-        }
+
 
         /** ##########################################################
          *  Style Elements

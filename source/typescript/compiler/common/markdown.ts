@@ -233,7 +233,7 @@ export function convertOuterContent(raw_content: any[], offset = 0, length = raw
 
     const content = [];
 
-    let last_content = null;
+    let last_node = null;
 
     for (let i = offset; i < length; i++) {
 
@@ -241,22 +241,36 @@ export function convertOuterContent(raw_content: any[], offset = 0, length = raw
 
         if (obj.type == "fmA" || obj.type == "fmB") {
             var d = tryFormat(obj.type, raw_content, content, i, length);
-            if (d != i) { i = d; last_content = null; continue; };
+            if (d != i) { i = d; last_node = null; continue; };
         }
+
 
         if ((+obj.type) & HTMLNodeClass.HTML_ELEMENT) {
             content.push(obj);
-            last_content = null;
-        } else if (!last_content) {
-            last_content = {
+            last_node = null;
+        } else if (obj.type == 'link') {
+            last_node = <HTMLNode>{
+                type: HTMLNodeType.HTML_A,
+                tag: "A",
+                attributes: [
+                    {
+                        name: "href",
+                        value: obj.href.slice(1, -1)
+                    }
+                ],
+                nodes: convertLineContent(obj.nodes)
+            }
+            content.push(last_node);
+        } else if (!last_node) {
+            last_node = {
                 type: HTMLNodeType.HTMLText,
                 data: obj.pos.slice(),
                 pos: obj.pos
             };
-            content.push(last_content);
+            content.push(last_node);
         } else {
-            last_content.pos = Token.fromRange(last_content.pos, obj.pos);
-            last_content.data += obj.pos.slice();
+            last_node.pos = Token.fromRange(last_node.pos, obj.pos);
+            last_node.data += obj.pos.slice();
         }
 
     }
