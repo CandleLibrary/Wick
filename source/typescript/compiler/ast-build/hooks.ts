@@ -360,8 +360,9 @@ export function processHookASTs(comp: ComponentData, comp_info: CompiledComponen
 
             comp_info.method_frames.push(frame);
 
-            for (const { nodes } of representative.component_variables.map(n => comp_info.binding_records.get(n)))
-                nodes.push(stmt(`this.call(${binding_join_index}, c)`));
+            for (const rep of representative.component_variables.map(n => comp_info.binding_records.get(n)))
+                if (rep)
+                    rep.nodes.push(stmt(`this.call(${binding_join_index}, c)`));
 
             //Add function name to lookup function table
 
