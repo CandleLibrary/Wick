@@ -52,14 +52,15 @@ registerFeature(
 
                                 utils.set_working_directory(comp.location);
 
-                                const ids = await initializer(utils);
+                                const template_data = await initializer(utils);
+
 
                                 utils.reset_working_directory();
 
-                                if (!Array.isArray(ids))
+                                if (!Array.isArray(template_data))
                                     arg.pos.throw("Expecting return value to be an array ", comp.location.toString());
 
-                                context.template_data.set(comp, ids);
+                                context.template_data.set(comp, template_data);
 
                                 return null;
                             }

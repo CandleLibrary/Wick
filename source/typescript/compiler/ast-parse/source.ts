@@ -218,8 +218,6 @@ function integrateParentComponentScope(
 
         switch (binding.type) {
             case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
-            case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
-            case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE:
                 {
                     addBindingVariable(
                         component.root_frame,
@@ -231,6 +229,19 @@ function integrateParentComponentScope(
                     );
                 } break;
 
+            case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
+            case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE:
+            case BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT:
+                {
+                    addBindingVariable(
+                        component.root_frame,
+                        binding.internal_name,
+                        {},
+                        binding.type,
+                        binding.external_name,
+                        BINDING_FLAG.FROM_PRESETS | BINDING_FLAG.FROM_OUTSIDE
+                    );
+                } break;
 
             case BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE: {
                 addBindingVariable(

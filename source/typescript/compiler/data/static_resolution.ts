@@ -208,9 +208,10 @@ export async function getDefaultBindingValueAST(
         if (binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT) {
 
             if (context.active_template_data)
-                return await <any>convertObjectToJSNode(context.active_template_data[binding.internal_name]);
+                return await <any>convertObjectToJSNode(context.active_template_data[binding.external_name]);
 
         } else if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp) {
+
             for (const hook of (<ComponentData><any>parent_comp).indirect_hooks.filter(h => h.type == ExportToChildAttributeHook)) {
 
                 if (hook.value[0].foreign == binding.external_name) {

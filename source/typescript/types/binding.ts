@@ -102,13 +102,21 @@ export const enum STATIC_RESOLUTION_TYPE {
  * that is undeclared and not a global variable name.
  */
 export interface BindingVariable {
-    /* Name used for references within the component*/
+    /**  
+     * Name used for references within the component
+     */
     internal_name: string;
 
-    /* Name used to access the imported object */
+    /**
+     * Actual name of the imported resource, typically the name
+     * of a model property, a named export variable from a module, or
+     * a template property name 
+     */
     external_name: string;
 
-    /* Type of reference */
+    /** 
+     * Type of reference 
+     */
     type: BINDING_VARIABLE_TYPE;
 
     /* */
