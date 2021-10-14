@@ -25,7 +25,18 @@ export interface WickCompileConfig {
 	 * 
 	 * see [link analysis]("./todo")
 	 */
-	RESOLVE_HREF_ENDPOINTS: boolean,
+	RESOLVE_HREF_ENDPOINTS?: boolean,
 
-	endpoint_mapper: EndpointMapper;
+	/**
+	 * An object of properties that are made
+	 * available to components through the `@global`
+	 * synthetic module and resolved statically. 
+	 */
+	globals?: object;
+
+	/**
+	 * A function to map potential page component 
+	 * entrypoints to resolved output endpoints.
+	 */
+	endpoint_mapper?: EndpointMapper;
 }

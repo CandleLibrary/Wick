@@ -333,9 +333,12 @@ export function processHookASTs(comp: ComponentData, comp_info: CompiledComponen
         if (representative.component_variables.length <= 1) {
             //Add statements directly to binding variable
 
-            for (const { nodes } of representative.component_variables.map(n => comp_info.binding_records.get(n)))
-                for (const member of group)
-                    nodes.push(member.ast);
+            for (const record of representative.component_variables.map(n => comp_info.binding_records.get(n)))
+                if (record) {
+                    const { nodes } = record;
+                    for (const member of group)
+                        nodes.push(member.ast);
+                }
 
         } else {
             // Create a group function that will auto update when every 

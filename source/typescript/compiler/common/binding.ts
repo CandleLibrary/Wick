@@ -334,7 +334,9 @@ export function getCompiledBindingVariableName(
 
             case BINDING_VARIABLE_TYPE.TEMPLATE_INITIALIZER:
             case BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT:
-                return "---INVALID US OF TEMPLATE BINDINGS---";
+            case BINDING_VARIABLE_TYPE.CONFIG_GLOBAL:
+            case BINDING_VARIABLE_TYPE.CURE_TEST:
+                return "---INVALID US OF STATIC BINDING---";
 
             default:
                 return `this[${comp_info.binding_records.get(binding.internal_name)?.index ?? -1}]`;
@@ -423,6 +425,7 @@ export function getBindingStaticResolutionType(
 
             case BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE:
             case BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT:
+            case BINDING_VARIABLE_TYPE.CONFIG_GLOBAL:
                 type = STATIC_RESOLUTION_TYPE.CONSTANT_STATIC;
                 break;
 

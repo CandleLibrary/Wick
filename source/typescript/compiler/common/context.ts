@@ -92,8 +92,12 @@ export class Context {
         };
 
 
+    /**
+     * An object of properties that are defined within the 
+     * WickCompileConfig["globals"] object. 
+     */
+    globals: WickCompileConfig["globals"];
 
-    };
     /**
      * An object of globally registered data models that
      * components can reference directly when initialized
@@ -203,6 +207,7 @@ export class Context {
 
         this.models = {};
 
+        this.globals = {};
         this.component_class = new Map;
 
         this.component_class_string = new Map;
@@ -322,6 +327,12 @@ export class Context {
         context.processLink = this.processLink.bind(this);
 
         return context;
+    }
+
+    assignGlobals(globals: WickCompileConfig["globals"]) {
+        if (typeof globals == "object") {
+            this.globals = Object.assign({}, globals);
+        }
     }
 }
 

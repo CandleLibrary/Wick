@@ -16,6 +16,9 @@ export enum BINDING_VARIABLE_TYPE {
     TEMPLATE_CONSTANT = 1024,
     TEMPLATE_INITIALIZER = 2048,
 
+    CONFIG_GLOBAL = 8192,
+
+
     /**
      * A Global variable that should be wrapped into a an
      * observerable 

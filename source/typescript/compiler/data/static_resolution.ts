@@ -205,7 +205,12 @@ export async function getDefaultBindingValueAST(
 
     if (binding) {
 
-        if (binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT) {
+        if (binding.type == BINDING_VARIABLE_TYPE.CONFIG_GLOBAL) {
+
+            if (context.globals)
+                return await <any>convertObjectToJSNode(context.globals[binding.external_name]);
+
+        } else if (binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT) {
 
             if (context.active_template_data)
                 return await <any>convertObjectToJSNode(context.active_template_data[binding.external_name]);
