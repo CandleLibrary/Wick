@@ -66,11 +66,9 @@ import "../compiler/features/string_features.js";
 import "../compiler/features/text_node_features.js";
 import "../compiler/features/template_features.js";
 import "../compiler/features/markdown_features.js";
-
-
+import "../compiler/features/test_features.js";
 
 await b_sys.loadFeatures();
-
 
 log("Completed loading of build features");
 

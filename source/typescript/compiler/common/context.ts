@@ -3,6 +3,7 @@ import { WickRTComponent } from '../../runtime/component.js';
 import { ComponentClassStrings, ComponentStyle } from 'source/typescript/types/component.js';
 import { PluginStore } from "../../plugin/plugin.js";
 import { ComponentData } from './component.js';
+import { WickCompileConfig } from "source/typescript/types/config.js";
 
 let CachedPresets = null;
 
@@ -90,7 +91,14 @@ export class Context {
             wickrt?: string,
             glow?: string;
         };
+    };
 
+    /**
+     * Test scripts strings defined within labeled test blocks when
+     * using the `@test` synthetic imports. Used in conjuction
+     * with `@candlelib/cure` to run tests on individual components.
+     */
+    test_rig_sources: WeakMap<ComponentData, string[]>
 
     /**
      * An object of properties that are defined within the 
@@ -208,6 +216,9 @@ export class Context {
         this.models = {};
 
         this.globals = {};
+
+        this.test_rig_sources = new Map;
+
         this.component_class = new Map;
 
         this.component_class_string = new Map;

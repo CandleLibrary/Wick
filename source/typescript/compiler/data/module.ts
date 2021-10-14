@@ -159,6 +159,15 @@ export async function importResource(
             if (default_name && context.named_components.has(comp_name))
                 component.local_component_names.set(comp_name, context.named_components.get(comp_name).name);
             return;
+        case "@test":
+            if (default_name)
+                addBindingVariable(frame, default_name, node.pos, BINDING_VARIABLE_TYPE.CURE_TEST, default_name,
+                    BINDING_FLAG.FROM_OUTSIDE);
+
+            if (names.length > 0)
+                node.pos.throw("Cure synthetic module only exports a default value");
+
+            break;
 
         case "@parent":
             /* all ids within this node are imported binding_variables from parent */
