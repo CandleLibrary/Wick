@@ -58,12 +58,13 @@ export async function componentDataToJS(
     component: ComponentData,
     context: Context,
     INCLUDE_HTML: boolean = true,
-    INCLUDE_CSS: boolean = true
+    INCLUDE_CSS: boolean = true,
+    class_name: string = "WickRTComponent"
 ): Promise<typeof WickRTComponent> {
 
     const comp_class = await createCompiledComponentClass(component, context, INCLUDE_HTML, INCLUDE_CSS);
 
-    const class_strings = createClassStringObject(component, comp_class, context);
+    const class_strings = createClassStringObject(component, comp_class, context, class_name);
 
     return componentStringToJS(class_strings, component, context);
 }
@@ -72,7 +73,8 @@ export async function componentDataToJSStringCached(
     component: ComponentData,
     context: Context,
     INCLUDE_HTML: boolean = true,
-    INCLUDE_CSS: boolean = true
+    INCLUDE_CSS: boolean = true,
+    class_name: string = "WickRTComponent"
 ): Promise<ComponentClassStrings> {
 
     const name = component.name;
@@ -83,7 +85,7 @@ export async function componentDataToJSStringCached(
 
         const comp_class = await createCompiledComponentClass(component, context, INCLUDE_HTML, INCLUDE_CSS);
 
-        class_strings = createClassStringObject(component, comp_class, context);
+        class_strings = createClassStringObject(component, comp_class, context, class_name);
 
         context.component_class_string.set(name, class_strings);
     }

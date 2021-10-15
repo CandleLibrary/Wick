@@ -348,6 +348,6 @@ export const wick_mappings: NodeMappings<Node, "type"> = <NodeMappings<Node, "ty
 };
 
 const lu_table = new Map(wick_mappings.mappings.map((i, j) => [i.type, j]));
-wick_mappings.type_lookup = (node, name) => lu_table.get(node.type) || -1;
+wick_mappings.type_lookup = (node, name) => lu_table.get(node.type) ?? undefined;
 export const wick_renderers = experimentalConstructRenderers(<NodeMappings<Node, "type">>wick_mappings);
 

@@ -243,13 +243,13 @@ export class WickContainer implements Sparky, ObservableWatcher {
             if (this.ele.tagName == "TABLE") {
                 // Some browsers automatically insert tbody in table elements
                 // which will break hydration. This will map containers element
-                // reference to that tbody, which will contain the real containers
+                // reference to that tbody, which swill contain the real containers
                 // children
                 if (this.ele.firstElementChild && this.ele.firstElementChild.tagName == "TBODY")
                     this.ele = <HTMLElement>this.ele.firstElementChild;
             }
 
-            if (this.ele.childElementCount > 0)
+            if (this.ele.childElementCount > 0) {
                 for (const comp of hydrateComponentElements(Array.from(<HTMLElement[]><any>this.ele.children))) {
                     comp.par = parent_comp;
                     comp.connect();
@@ -257,7 +257,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
                     this.comps.push(<ContainerComponent>comp);
                     this.dom_comp.push(<ContainerComponent>comp);
                 }
-
+            }
         }
     }
 
@@ -1028,9 +1028,12 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 }
             }
 
-            component.par = <ContainerComponent>this.parent;
+            if (component) {
 
-            this.comps.push(component);
+                component.par = <ContainerComponent>this.parent;
+
+                this.comps.push(component);
+            }
         }
 
         if (OWN_TRANSITION) this.filterExpressionUpdate(transition);

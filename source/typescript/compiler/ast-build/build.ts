@@ -23,7 +23,8 @@ import * as b_sys from "../build_system.js";
 import {
     Binding_Var_Is_Internal_Variable,
     getCompiledBindingVariableNameFromString,
-    getComponentBinding
+    getComponentBinding,
+    getBindingFromExternalName
 } from "../common/binding.js";
 import { setPos } from "../common/common.js";
 import {
@@ -47,6 +48,9 @@ import {
 } from "./hooks.js";
 import { componentDataToCompiledHTML, ensureComponentHasTemplates } from "./html.js";
 import { Context } from '../common/context.js';
+import { renderNewFormatted } from "../source-code-render/render.js";
+import { getStaticAST, getStaticValue, ExpressionIsConstantStatic } from "../data/static_resolution.js";
+import { convertObjectToJSNode } from "../common/js.js";
 
 export async function createComponentTemplates(
     context: Context,
@@ -317,8 +321,6 @@ async function makeComponentMethod(
 
         const cpy: JSFunctionDeclaration | JSMethod = <any>copy(frame.ast);
 
-
-
         const { NEED_ASYNC } = await finalizeBindingExpression(cpy, component, ci, context);
 
         cpy.ASYNC = NEED_ASYNC || frame.IS_ASYNC || cpy.ASYNC;
@@ -393,15 +395,28 @@ export async function finalizeBindingExpression(
             //case JSNodeType.ComponentBindingIdentifier
             case BindingIdentifierBinding: case BindingIdentifierReference:
                 //@ts-ignore
-
+                let new_node = null;
                 const
                     name = <string>node.value,
-                    id = parse_js_exp(<string>getCompiledBindingVariableNameFromString(name, component, comp_info)),
+                    binding = getComponentBinding(name, component);
+                if ((
+                    binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT
+                    ||
+                    binding.type == BINDING_VARIABLE_TYPE.CONFIG_GLOBAL)
+                ) {
+                    const { value } = await getStaticValue(node, component, context);
+
+                    new_node = convertObjectToJSNode(value);
+                } else {
+
+                    const id = parse_js_exp(<string>getCompiledBindingVariableNameFromString(name, component, comp_info));
+
                     new_node = setPos(id, node.pos);
 
-                if (!component.root_frame.binding_variables.has(<string>name))
+                    if (!component.root_frame.binding_variables.has(<string>name))
 
-                    node.pos.throw(`Undefined reference to ${name}`);
+                        node.pos.throw(`Undefined reference to ${name}`);
+                }
 
                 mutate(<any>new_node);
 
@@ -420,7 +435,7 @@ export async function finalizeBindingExpression(
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
 
 
-                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
+                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.PROPERTY_VARIABLE
                             ? "fua" : "ua";
                         const
 
@@ -464,11 +479,15 @@ export async function finalizeBindingExpression(
                         name = <string>ref.value,
                         comp_var: BindingVariable = getComponentBinding(name, component);
 
+                    if (ExpressionIsConstantStatic(ref, component, context)) {
+                        mutate(null);
+                        continue
+                    }
 
                     //Directly assign new value to model variables
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
 
-                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
+                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.PROPERTY_VARIABLE
                             ? "fua" : "ua";
 
                         const index = comp_info.binding_records.get(name).index,

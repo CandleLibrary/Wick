@@ -4,7 +4,7 @@ import { WickCompileConfig } from "../../types/config";
 import { mapEndpoints } from '../../server/load_directory.js';
 import { Logger } from "@candlelib/log";
 
-export const compile_logger = Logger.get("wick").activate().get("compile");
+export const compile_logger = Logger.get("wick").activate().get("config");
 
 export const default_config: WickCompileConfig = {
     globals: [],
@@ -28,12 +28,13 @@ export const config_arg_properties: Argument<any> = {
         if (await path.DOES_THIS_EXIST()) {
             try {
 
-                const user_config = (await import(path + "")).default || null;
+                const user_config = (await import(path + "")).default || {};
+
 
                 if (!user_config)
                     compile_logger.warn(`Unable to load config object from [ ${path + ""} ]:`);
                 else
-                    config = Object.assign(config, user_config);
+                    config = Object.assign({}, config, user_config);
 
             }
             catch (e) {
@@ -42,14 +43,14 @@ export const config_arg_properties: Argument<any> = {
             }
 
             compile_logger.debug(`Loaded user wickonfig at:       [ ${path + ""} ]`);
+
         }
 
         return config;
         //Look for a wickconfig.js file in the current directory 	
     },
     help_brief: `
-A path to a wick-config.js file. If this argument is not present then Wick will 
-search the CWD for a wick-config.js file. If this file is not present the wick
-will use command line arguments and default values.
-`
+A path to a wickonfig.js file. If this argument is not present then Wick will 
+search the CWD for a wickonfig.js file. If again not present, Wick
+will use default values.`
 };

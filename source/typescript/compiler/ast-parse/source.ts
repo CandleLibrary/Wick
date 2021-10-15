@@ -152,6 +152,8 @@ export async function parseComponentAST(
 
 ): Promise<{ IS_NEW: boolean, comp: ComponentData; }> {
 
+
+
     const
         run_tag = metrics.startRun("Parse Source AST"),
 
@@ -296,7 +298,6 @@ export async function fetchASTFromRemote(url: URL) {
                 const
                     template_url = String(getAttributeValue("url", import_node) || ""),
                     template = hasAttribute("template", import_node);
-
                 if (template) {
                     const uri = URI.resolveRelative(template_url, url);
 

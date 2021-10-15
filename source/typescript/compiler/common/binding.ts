@@ -154,7 +154,7 @@ export function addBindingVariable(
     internal_name: string,
     pos: any | Lexer,
     type: BINDING_VARIABLE_TYPE = BINDING_VARIABLE_TYPE.UNDECLARED,
-    external_name: string = "",
+    external_name: string = internal_name,
     flags: BINDING_FLAG = 0,
 ): boolean {
 
@@ -195,7 +195,7 @@ export function addBindingVariable(
 
             UPGRADED = true;
         } else if (
-            existing_binding.external_name == ""
+            existing_binding.external_name == internal_name
             &&
             existing_binding.external_name != external_name
         ) {
@@ -336,7 +336,7 @@ export function getCompiledBindingVariableName(
             case BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT:
             case BINDING_VARIABLE_TYPE.CONFIG_GLOBAL:
             case BINDING_VARIABLE_TYPE.CURE_TEST:
-                return "---INVALID US OF STATIC BINDING---";
+                return "'---INVALID US OF STATIC BINDING---'";
 
             default:
                 return `this[${comp_info.binding_records.get(binding.internal_name)?.index ?? -1}]`;

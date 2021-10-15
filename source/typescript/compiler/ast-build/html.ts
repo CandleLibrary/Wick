@@ -469,6 +469,9 @@ async function processContainerHooks(
         shift_hook = hooks.find(t => t.type == ContainerShiftHook),
         use_if_hooks = hooks.filter(t => t.type == ContainerUseIfHook);
 
+
+
+
     if (data_hook) {
 
         let { value: data } = await processHookForHTML(data_hook, component, context, model, parent_components);

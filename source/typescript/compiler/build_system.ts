@@ -126,17 +126,17 @@ const registration_system = {
 
 const unregistered_system = {
     registerHookType<T>(extension_name: string, original_type: T) {
-        console.log("registerHookType system not enabled");
+        warn("registerHookType system not enabled");
     },
 
     registerJSParserHandler<T>(js_handler: JSHandler<T>, ...types: T[]) {
-        console.log("registerJSParserHandler system not enabled");
+        warn("registerJSParserHandler system not enabled");
     },
 
     registerHTMLParserHandler<T = HTMLNode, P = HTMLNode>(
         html_parse_handler: HTMLHandler<T, P>
     ) {
-        console.log("registerHTMLParserHandler system not enabled");
+        warn("registerHTMLParserHandler system not enabled");
     },
 
     registerCSSParserHandler() {

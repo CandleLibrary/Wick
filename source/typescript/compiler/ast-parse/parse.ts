@@ -389,6 +389,7 @@ export function processWickCSS_AST(
 
     const INLINE = (url + "") == (component.location + "");
 
+
     component.css_hash += ast.pos.slice();
 
     /* if (!INLINE)

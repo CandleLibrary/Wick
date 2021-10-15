@@ -237,13 +237,13 @@ export async function processHookForClass(
         // statically resolvable with constant values only
 
         if (
+            false &&
             ALLOW_STATIC_REPLACE &&
             getExpressionStaticResolutionType(ast, component, context)
             ==
             STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
         )
             continue;
-
 
         // Do not leak template bindings to runtime components
 
@@ -259,6 +259,7 @@ export async function processHookForClass(
             const binding = component.root_frame.binding_variables.get(name);
 
             if (
+                false &&
                 ((binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE)
                     &&
                     (
@@ -414,7 +415,7 @@ function processBindingRecords(comp_info: CompiledComponentClass, comp: Componen
             if (IS_DIRECT_ACCESS)
                 // Direct access variables ( API & GLOBALS ) are assigned 
                 // at at component initialization start. This allows these 
-                // variables to accessed within the component initialization
+                // variables to to be accessed within the component initialization
                 // function  
                 appendStmtToFrame(init_frame, ...getStatementsFromFrame(frame));
             else
@@ -433,7 +434,7 @@ function processBindingVariables(
 ): void {
     if (
         true ||
-        binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
+        binding.type == BINDING_VARIABLE_TYPE.PROPERTY_VARIABLE
         ||
         binding.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
         ||

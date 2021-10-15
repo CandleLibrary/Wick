@@ -5,7 +5,7 @@ import { ComponentStyle, HTMLElementNode } from "../../types/all.js";
 import { ComponentData } from '../common/component.js';
 import { getElementAtIndex } from "../common/html.js";
 import { parse_css_selector } from "../source-code-parse/parse.js";
-import { renderWithFormatting } from "../source-code-render/render.js";
+import { renderWithFormatting, renderNewFormatted } from "../source-code-render/render.js";
 
 export function UpdateSelector(node: CSSNode, name, class_selector: CSSSelectorNode) {
 
@@ -79,7 +79,7 @@ export function componentToMutatedCSS(css: ComponentStyle, component?: Component
 }
 
 export function getCSSStringFromComponentStyle(css: ComponentStyle, component?: ComponentData) {
-    return css.data ? renderWithFormatting(componentToMutatedCSS(css, component)) : "";
+    return css.data ? renderNewFormatted(componentToMutatedCSS(css, component)) : "";
 }
 
 export function componentDataToCSS(component: ComponentData): string {

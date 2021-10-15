@@ -81,6 +81,8 @@ registerFeature(
                                 local = name.value;
                                 //@ts-ignore
                                 external = "namespace";
+                            } else {
+                                external = local
                             }
 
                             names.push({ local, external });

@@ -26,11 +26,15 @@ export const FormatFunction: CustomFormatFunction<Node> = (val, prop_name, node)
 };
 
 export function renderNew(node: Node): string {
-    return experimentalRender(node, wick_mappings, wick_renderers);
+    return experimentalRender(node, wick_mappings, wick_renderers).string;
 }
 
 export function renderNewFormatted(node: Node): string {
-    return experimentalRender(node, wick_mappings, wick_renderers, true);
+    return experimentalRender(node, wick_mappings, wick_renderers, true).string;
+}
+
+export function renderNewFormattedWithSourceMap(node: Node) {
+    return experimentalRender(node, wick_mappings, wick_renderers, true, true);
 }
 
 export function renderCompressed(

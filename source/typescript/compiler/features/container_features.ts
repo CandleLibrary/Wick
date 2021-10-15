@@ -25,7 +25,8 @@ import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "../common/exten
 import { getElementAtIndex } from "../common/html.js";
 import { convertObjectToJSNode } from '../common/js.js';
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-import { getExpressionStaticResolutionType, getStaticValue } from "../data/static_resolution.js";
+import { getExpressionStaticResolutionType, getStaticValue, ExpressionIsConstantStatic } from "../data/static_resolution.js";
+import { Context } from '../common/context.js';
 
 
 export const ContainerDataHook = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);
@@ -235,34 +236,19 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: async (node, comp, context, element_index, on_write, init) => {
-
+            buildJS: async (node, comp, context, element_index, on_write, init, read) => {
 
                 const
                     ele = getElementAtIndex<HTMLContainerNode>(comp, element_index),
 
-                    st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`);
+                    st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`),
 
-                const resolution_type = getExpressionStaticResolutionType(<JSNode>node.value[0], comp, context);
+                    id = <JSNode>node.value[0];
 
-                // If the value can be resolved to pure data (no functions) then replace the
-                // current AST with the resolved data AST
-
-                const PURE_STATIC = (resolution_type ^ STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) == 0;
-
-                // Static bindings will never change, thus they can be set once in the init
-                // function of the component
-                if (PURE_STATIC) {
-                    const val = await getStaticValue(<any>node.value[0], comp, context);
-                    const st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`);
-                    if (val) {
-
-                        const ast = convertObjectToJSNode(val);
-
-                        st.nodes[0].nodes[1].nodes = <any>[ast];
-                    }
-
-                    init(st);
+                if (ExpressionIsConstantStatic(id, comp, context)) {
+                    // Constant Static bindings are resolved during build time and do not need to be represented in
+                    // any way within the runtime code
+                    return null;
                 } else {
                     st.nodes[0].nodes[1].nodes = <any>node.value;
                     on_write(st);
@@ -629,6 +615,8 @@ registerFeature(
 
     }
 );
+
+
 
 function HTMLNodeIsElement(ch: HTMLNode): ch is HTMLElementNode {
     return !!(ch.type & HTMLNodeClass.HTML_ELEMENT);

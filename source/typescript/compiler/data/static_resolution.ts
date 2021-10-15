@@ -96,7 +96,10 @@ export async function getStaticValue(
                         value = Function(...input_args.keys(), `return (${data_string})`)(...input_args.values());
                     }
 
-                if (value.type && (value.type & HTMLNodeClass.HTML_ELEMENT)) {
+                if (typeof value == "object"
+                    && "type" in value
+                    && (value.type & HTMLNodeClass.HTML_ELEMENT)
+                ) {
                     html = value; value = null;
                 }
 
@@ -236,7 +239,7 @@ export async function getDefaultBindingValueAST(
         } /*else*//*else*/ if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
 
             if (model)
-                return await <any>convertObjectToJSNode(model[binding.internal_name]);
+                return await <any>convertObjectToJSNode(model[binding.external_name]);
 
         } else if (binding.type == BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE) {
 
@@ -249,7 +252,7 @@ export async function getDefaultBindingValueAST(
                 ||
                 binding.type == BINDING_VARIABLE_TYPE.MODULE_VARIABLE
             )) {
-            return <JSExpressionClass>exp(getCompiledBindingVariableNameFromString(binding.internal_name, comp));
+            return <JSExpressionClass>exp(getCompiledBindingVariableNameFromString(binding.external_name, comp));
 
         } else if (ASSUME_RUNTIME) {
             if (getBindingStaticResolutionType(binding, comp, context) != STATIC_RESOLUTION_TYPE.INVALID)
@@ -402,8 +405,9 @@ export async function getStaticValueAstFromSourceAST(
                 else
                     meta.replace(val);
             }
-            else
+            else {
                 return undefined;
+            }
         }
     }
 
@@ -411,3 +415,9 @@ export async function getStaticValueAstFromSourceAST(
 }
 
 
+export function ExpressionIsConstantStatic(node: JSNode, comp: ComponentData, context: Context) {
+
+    const resolution_type = getExpressionStaticResolutionType(node, comp, context);
+
+    return (resolution_type ^ STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) == 0;
+}

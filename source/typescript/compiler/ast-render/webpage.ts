@@ -181,31 +181,12 @@ export async function RenderPage(
 
     if (!comp) return null;
 
-    const applicable_components = new Set([comp.name]);
+
 
     // Identify all components that are directly or 
     // indirectly related to this component
-    const candidate_components = [comp], components_to_process: ComponentData[] = [];
-
-    while (candidate_components.length > 0) {
-
-        const comp = candidate_components.shift();
-
-        if (comp) {
-
-            components_to_process.push(comp);
-
-            for (const comp_name of comp.local_component_names.values()) {
-
-                if (!applicable_components.has(comp_name)) {
-
-                    applicable_components.add(comp_name);
-
-                    candidate_components.push(context.components.get(comp_name));
-                }
-            }
-        }
-    }
+    const components_to_process: ComponentData[]
+        = getDependentComponents(comp, context);
 
     //Optionally transform HTML before rendering to string 
 
@@ -244,7 +225,7 @@ export async function RenderPage(
             script += "\n" + `w.rt.rC(${class_string});`;
 
         if (STATIC_RENDERED_CSS)
-            style += "\n" + componentDataToCSS(comp);
+            style += componentDataToCSS(comp);
     }
 
     const page = comp.RADIATE
@@ -256,6 +237,38 @@ export async function RenderPage(
     return { templates, html, head, script, style, page };
 }
 
+
+export function getDependentComponents(comp: ComponentData, context: Context) {
+    const
+        candidate_components = [comp],
+
+        components_to_process: ComponentData[] = [],
+
+        applicable_components = new Set([comp.name]);
+
+    while (candidate_components.length > 0) {
+
+        const comp = candidate_components.shift();
+
+        if (comp) {
+
+            components_to_process.push(comp);
+
+            for (const comp_name of comp.local_component_names.values()) {
+
+                if (!applicable_components.has(comp_name)) {
+
+                    applicable_components.add(comp_name);
+
+                    candidate_components.push(context.components.get(comp_name));
+                }
+            }
+        }
+    }
+    return components_to_process;
+}
+
+
 function renderWickPageString(
     context: Context,
     templates: string,
@@ -265,6 +278,8 @@ function renderWickPageString(
     style: string,
     hooks: PageRenderHooks,
 ): string {
+
+
     return `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -272,6 +287,16 @@ function renderWickPageString(
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     ${head.split("\n").join("\n    ")}
+    <style id="wick-boiler-plate">
+        body {
+            position:absolute; top:0;
+            left:0; width:100%;
+            height:100%; padding:0;
+            margin:0; border:none;
+        }
+        li { list-style:none }
+        a { text-decoration:none }
+    </style>
     <style id="wick-app-style">
     ${style.split("\n").join("\n    ")}
     </style>       
