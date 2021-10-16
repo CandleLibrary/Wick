@@ -181,7 +181,7 @@ export function* processNodeGenerator(
     SKIP_ROOT = !SKIP_ROOT;
 
     for (const { node, meta } of traverse(ast, "nodes")
-        .makeReplaceable()
+        .makeMutable()
         .makeSkippable()
         .extract(extract)
     ) {
@@ -200,8 +200,9 @@ export function* processNodeGenerator(
 
             if (result === undefined)
                 continue;
+
             else if (result != node)
-                meta.replace(<any>result);
+                meta.mutate(<any>result);
 
 
             break;
@@ -268,8 +269,8 @@ export async function processWickHTML_AST(ast: HTMLNode,
     }
 
     main_loop:
-    for (const { node, meta: { replace, parent, skip } } of traverse(ast, "nodes")
-        .makeReplaceable()
+    for (const { node, meta: { mutate: replace, parent, skip } } of traverse(ast, "nodes")
+        .makeMutable()
         .makeSkippable()
         .extract(receiver)
     ) {
