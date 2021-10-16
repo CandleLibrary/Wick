@@ -73,7 +73,32 @@ export function createErrorComponent(
 
     return component;
 }
+/**
+ * A message emited from a compile process
+ * indicating some problem that does not affect
+ * the compilation of a component but may need
+ * to be addressed by the component author.
+ */
+export interface CompileWarning {
+    id: string,
+    message: string,
+    source?: URI,
+    loc?: Token
+}
 
+/**
+ * A message emited from a compile process
+ * indicating some problem that does not affect
+ * the compilation of a component but may need
+ * to be addressed by the component author.
+ */
+export interface CompileError {
+    id: string,
+    message: string,
+    error: Error,
+    source?: URI,
+    loc?: Token
+}
 
 /**
  * Primary store of data for a compiled component, including
@@ -113,12 +138,18 @@ export class ComponentData {
     errors: Error[];
 
     /**
+     * A list of warnings that have been encountered 
+     * during the parse or compile phases.
+     */
+    warnings: CompileWarning[];
+
+    /**
      * Count of number of container tags identified in HTML
      */
     container_count: number;
 
     /**
-     * Child id counter;
+     * Child Components
      */
     children: number[];
 
@@ -146,8 +177,8 @@ export class ComponentData {
 
     /**
      * A linkage between a binding variable and any element that is
-     * modified by the binding variable, including HTML attributes,
-     * CSS attributes, and other binding variables.
+     * modified by the binding variable, including HTML attributes and
+     * CSS attributes.
      */
     hooks: IntermediateHook[];
 
@@ -214,6 +245,12 @@ export class ComponentData {
      */
     templates: Set<string>;
 
+
+    /**
+     * A list of URI's to resources and nodes that defined the URI
+     */
+    URI: { type: "src" | "href" | "other", uri: string, node: Node }[]
+
     indirect_hooks: IndirectHook<any>[];
 
     element_counter: number;
@@ -269,6 +306,8 @@ export class ComponentData {
         this.root_ele_claims = [];
 
         this.indirect_hooks = [];
+
+        this.URI = []
 
         this.template = null;
 

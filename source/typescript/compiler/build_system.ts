@@ -1,6 +1,6 @@
 import { CSSNodeType, matchAll } from '@candlelib/css';
 import { exp, ext, JSNode, JSNodeType, JSNodeTypeLU, stmt } from '@candlelib/js';
-import { dir, log, trace } from '../entry-point/logger.js';
+import { dir, log, trace, warn, debug } from '../entry-point/logger.js';
 import {
     HookHandlerPackage, HTMLHandler,
     HTMLNode, HTMLNodeType,
@@ -48,8 +48,22 @@ import {
     getStaticValue
 } from "./data/static_resolution.js";
 import { metrics } from './metrics.js';
+import { Token } from '@candlelib/hydrocarbon';
+import URI from '@candlelib/uri';
 
 const registered_hook_handlers = new Map();
+
+function generateWarning(id: string, message: string, source?: URI, loc?: Token) {
+
+}
+
+function generateError(id: string, message: string, error: Error, source: URI, loc: Token) {
+
+}
+
+function addResourceURI(id: string, message: string, error: Error, source: URI, loc: Token) {
+
+}
 
 export function registerHookHandler<InputNodeType, OutputNodeType>(hook_handler_obj:
     HookHandlerPackage<InputNodeType, OutputNodeType>) {
@@ -96,7 +110,7 @@ const registration_system = {
     },
 
     registerJSParserHandler(js_parse_handler: JSHandler<Node>, ...types: (JSNodeType | HTMLNodeType | CSSNodeType)[]) {
-        log(`    Registering JS Handler for ${types.map(g => JSNodeTypeLU[g]).join(" ")}`);
+        debug(`    Registering JS Handler for ${types.map(g => JSNodeTypeLU[g]).join(" ")}`);
         loadJSParseHandler(<any>js_parse_handler, ...(<any>types));
     },
 
@@ -104,7 +118,7 @@ const registration_system = {
         html_parse_handler: HTMLHandler<T, P>,
         ...types: HTMLNodeType[]
     ) {
-        log(`    Registering HTML Handler for ${types.map(g => HTMLNodeTypeLU[g]).join(" ")}`);
+        debug(`    Registering HTML Handler for ${types.map(g => HTMLNodeTypeLU[g]).join(" ")}`);
         loadHTMLHandler(<any>html_parse_handler, ...types);
     },
 
@@ -115,7 +129,7 @@ const registration_system = {
     registerHookHandler<InputNodeType, OutputNodeType>(
         hook_handler: HookHandlerPackage<InputNodeType, OutputNodeType>
     ) {
-        log(`    Registering Hook Handler for ${hook_handler.types.map(getExtendTypeName).join(" | ")}`);
+        debug(`    Registering Hook Handler for ${hook_handler.types.map(getExtendTypeName).join(" | ")}`);
         registerHookHandler(hook_handler);
     },
 
@@ -299,7 +313,7 @@ export function enableInternalRegistrationFeatures() {
     enableRegistrationFeatures();
     Object.assign(build_system, {
         registerJSParserHandler(js_parse_handler: JSHandler<JSNode>, ...types: JSNodeType[]) {
-            log(`    Registering JS Handler for ${types.map(g => JSNodeTypeLU[g] ?? HTMLNodeTypeLU[g]).join(" | ")}`);
+            debug(`    Registering JS Handler for ${types.map(g => JSNodeTypeLU[g] ?? HTMLNodeTypeLU[g]).join(" | ")}`);
 
             loadJSParseHandlerInternal(js_parse_handler, ...types);
         },
@@ -308,7 +322,7 @@ export function enableInternalRegistrationFeatures() {
             html_parse_handler: HTMLHandler<T, P>,
             ...types: HTMLNodeType[]
         ) {
-            log(`    Registering HTML Handler for ${types.map(g => HTMLNodeTypeLU[g]).join(" | ")}`);
+            debug(`    Registering HTML Handler for ${types.map(g => HTMLNodeTypeLU[g]).join(" | ")}`);
             loadHTMLHandlerInternal(<any>html_parse_handler, ...types);
         },
     });
@@ -417,7 +431,7 @@ export async function loadFeatures() {
     enableInternalRegistrationFeatures();
 
     for (const { name, register } of pending_features) {
-        log(`Loading feature [${name}]`);
+        debug(`Loading feature [${name}]`);
         current_name = name;
         await register(<any>build_system);
     }
