@@ -4,9 +4,11 @@ import URI from '@candlelib/uri';
 import { default_radiate_hooks, default_wick_hooks, RenderPage } from '../../compiler/ast-render/webpage.js';
 import { ComponentData } from '../../compiler/common/component.js';
 import { Context } from "../../compiler/common/context.js";
+import { getAttribute } from "../../compiler/common/html.js";
 import { compile_module } from '../../server/compile_module.js';
 import { loadComponentsFromDirectory } from '../../server/load_directory.js';
 import { config_arg_properties } from "./config_arg_properties.js";
+import { Token } from "@candlelib/hydrocarbon";
 
 const compile_logger = Logger.get("wick").get("compile").activate();
 
@@ -87,11 +89,48 @@ optionally hydrated with associated support scripts.`
             let USE_RADIATE_RUNTIME = false;
             let USE_GLOW = false;
 
+            //Update resources
+            for (const [, component] of context.components) {
+                for (const { uri, type, node } of component.URI) {
+                    let local_uri = new URI(uri);
+                    if (!local_uri.IS_RELATIVE) {
+                        local_uri = new URI(root_directory + local_uri.path)
+                    } else {
+                        local_uri = URI.resolveRelative(local_uri, component.location);
+                    }
+
+                    if (local_uri.host) continue;
+
+                    const file_name = local_uri.file;
+
+                    if (type == "src") {
+                        const attribute = getAttribute("src", node);
+                        const new_location = "/img/" + file_name;
+                        const new_output_location = new URI(output_directory + "img/" + file_name);
+                        if (await local_uri.DOES_THIS_EXIST()) {
+                            const fsp = (await import("fs")).promises;
+                            attribute.value = new_location;
+                            //Move the file to the out directory 
+                            const source = Buffer.from(await local_uri.fetchBuffer());
+                            await fsp.mkdir(new_output_location.dir, { recursive: true });
+                            await fsp.writeFile(new_output_location.path, source);
+
+
+                        } else {
+                            const error = (<Token>attribute.pos).createError(`File ${local_uri} referenced by ${component.location} does not exist`, component.location + "");
+                            compile_logger.get("Images").warn(error.message)
+                        }
+                    }
+                }
+            }
+
+
             for (const [component_name, { endpoints: ep }] of page_components) {
 
                 for (const endpoint of ep) {
 
                     const { comp: component } = components.get(component_name);
+
 
                     if (component.TEMPLATE) {
 

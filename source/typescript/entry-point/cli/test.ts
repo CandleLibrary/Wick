@@ -1,18 +1,16 @@
 import {
-    createTestFrame,
+    BasicReporter, createTestFrame,
     createTestSuite,
-    loadTests,
-    BasicReporter
+    loadTests
 } from "@candlelib/cure";
 import { Logger } from "@candlelib/log";
 import { addCLIConfig } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
+import { componentDataToJSStringCached } from "../../compiler/ast-render/js.js";
+import { getDependentComponents } from "../../compiler/ast-render/webpage.js";
 import { Context } from "../../compiler/common/context.js";
 import { loadComponentsFromDirectory } from '../../server/load_directory.js';
 import { config_arg_properties } from "./config_arg_properties.js";
-import { componentDataToJSStringCached } from "../../compiler/ast-render/js.js"
-import { getDependentComponents } from "../../compiler/ast-render/webpage.js"
-import { processBindingASTAsync } from "source/typescript/compiler/ast-parse/html.js";
 
 export const test_logger = Logger.get("wick").get("test").activate();
 
