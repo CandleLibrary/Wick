@@ -208,8 +208,17 @@ export async function getDefaultBindingValueAST(
 
     if (binding) {
 
-        if (binding.type == BINDING_VARIABLE_TYPE.CONFIG_GLOBAL) {
+        if (binding.type == BINDING_VARIABLE_TYPE.CONSTANT_DATA_SOURCE) {
 
+            if (binding.source_location.ext == "json") {
+
+                const value = await context.getDataSource(binding.source_location);
+
+                return <any>convertObjectToJSNode(value?.[binding.external_name]);
+
+            }
+
+        } else if (binding.type == BINDING_VARIABLE_TYPE.CONFIG_GLOBAL) {
             if (context.globals)
                 return await <any>convertObjectToJSNode(context.globals[binding.external_name]);
 
@@ -218,11 +227,13 @@ export async function getDefaultBindingValueAST(
             if (context.active_template_data)
                 return await <any>convertObjectToJSNode(context.active_template_data[binding.external_name]);
 
-        } else if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp) {
+        } else if (binding.type == BINDING_VARIABLE_TYPE.PROPERTY_VARIABLE && parent_comp) {
 
             for (const hook of (<ComponentData><any>parent_comp).indirect_hooks.filter(h => h.type == ExportToChildAttributeHook)) {
 
                 if (hook.value[0].foreign == binding.external_name) {
+
+
 
                     return await getDefaultBindingValueAST(
                         hook.value[0].local,
@@ -236,7 +247,9 @@ export async function getDefaultBindingValueAST(
                 }
             }
 
-        } /*else*//*else*/ if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
+        }
+
+        if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
 
             if (model)
                 return await <any>convertObjectToJSNode(model[binding.external_name]);

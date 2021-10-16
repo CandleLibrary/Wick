@@ -1,5 +1,6 @@
 import { Lexer } from "@candlelib/wind";
 import { JSNode } from "@candlelib/js";
+import URI from "@candlelib/uri";
 
 export enum BINDING_VARIABLE_TYPE {
     UNDECLARED = 0,
@@ -37,17 +38,19 @@ export enum BINDING_VARIABLE_TYPE {
     MODULE_VARIABLE = 128,
     MODULE_NAMESPACE_VARIABLE = 256,
 
+    CONSTANT_DATA_SOURCE = 16384,
+    DYNAMIC_DATA_SOURCE = 32768,
+
     /**
      * Variables that are replaced with direct
      * property access on the associated object
      * 
      * This variables are:
-     * CONST_INTERNAL_VARIABLE
      * METHOD_VARIABLE
      * MODULE_MEMBER_VARIABLE
      * MODULE_VARIABLE
      */
-    DIRECT_ACCESS = 16 | 32 | 64 | 128,
+    DIRECT_ACCESS = 16 | 64 | 128,
 }
 
 /**
@@ -134,4 +137,6 @@ export interface BindingVariable {
      * Number of references made to this variable within the component
      */
     ref_count: number;
+
+    source_location?: URI
 }

@@ -4,6 +4,7 @@ import { ComponentClassStrings, ComponentStyle } from 'source/typescript/types/c
 import { PluginStore } from "../../plugin/plugin.js";
 import { ComponentData } from './component.js';
 import { WickCompileConfig } from "source/typescript/types/config.js";
+import URI from "@candlelib/uri";
 
 let CachedPresets = null;
 
@@ -96,7 +97,7 @@ export class Context {
     /**
      * Test scripts strings defined within labeled test blocks when
      * using the `@test` synthetic imports. Used in conjuction
-     * with `@candlelib/cure` to run tests on individual components.
+     * with `@candlelib/cure` to run tests on individual component instances.
      */
     test_rig_sources: WeakMap<ComponentData, string[]>
 
@@ -300,6 +301,31 @@ export class Context {
                 url,
                 module: null
             });
+    }
+
+    async getDataSource(uri: URI) {
+
+        const uri_str = uri + "";
+
+        if (uri_str in this.api)
+            return this.api[uri_str].default;
+
+        let value = undefined;
+
+        if (await uri.DOES_THIS_EXIST()) {
+            switch (uri.ext) {
+                case "json":
+                    value = uri.fetchJSON();
+                    break;
+            }
+        }
+
+        this.api[uri_str] = {
+            hash: uri_str,
+            default: value,
+        }
+
+        return this.getDataSource(uri);
     }
 
     addAPIObject(name: string, obj: any) {

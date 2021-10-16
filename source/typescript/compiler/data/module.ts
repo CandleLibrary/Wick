@@ -1,6 +1,6 @@
 import { JSNode } from "@candlelib/js";
 import URI from '@candlelib/uri';
-import { error } from '../../entry-point/logger.js';
+import { error, warn } from '../../entry-point/logger.js';
 import {
     BINDING_FLAG,
     BINDING_VARIABLE_TYPE,
@@ -10,7 +10,7 @@ import {
 } from "../../types/all.js";
 import { processWickCSS_AST } from '../ast-parse/parse.js';
 import { parseSource } from "../ast-parse/source.js";
-import { addBindingVariable, addWriteFlagToBindingVariable } from "../common/binding.js";
+import { addBindingVariable, addWriteFlagToBindingVariable, addSourceLocationToBindingVariable } from "../common/binding.js";
 import { addPendingModuleToPresets } from '../common/common.js';
 import { ComponentData, mergeComponentData } from '../common/component.js';
 import { Context } from '../common/context.js';
@@ -105,7 +105,22 @@ export async function importResource(
 
                     error(e);
                 }
+                return;
+            } else if (uri.ext == "json") {
 
+                for (const { local, external } of names) {
+
+                    if (external == "namespace")
+                        continue;
+
+                    if (!addBindingVariable(frame, local, node.pos, BINDING_VARIABLE_TYPE.CONSTANT_DATA_SOURCE, external || local, flag)) {
+
+                        //@ts-ignore
+                        node.pos.throw(`Import variable [${local}] already declared`);
+                    }
+
+                    addSourceLocationToBindingVariable(local, uri, frame);
+                }
             }
             // Read file and determine if we have a component, a script or some other resource. 
             //Compile Component Data

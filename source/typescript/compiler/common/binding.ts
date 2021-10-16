@@ -16,6 +16,7 @@ import { getSetOfEnvironmentGlobalNames } from "./global_variables.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "./js_hook_types.js";
 import { Context } from './context.js';
 import { ComponentData } from './component.js';
+import URI from "@candlelib/uri";
 
 
 function getNonTempFrame(frame: FunctionFrame) {
@@ -118,6 +119,17 @@ export function addWriteFlagToBindingVariable(var_name: string, frame: FunctionF
 
     getNonTempFrame(frame).output_names.add(var_name);
 }
+
+export function addSourceLocationToBindingVariable(var_name: string, uri: URI, frame: FunctionFrame) {
+
+    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
+
+    const root = getRootFrame(frame);
+
+    if (root.binding_variables.has(var_name))
+        root.binding_variables.get(var_name).source_location = uri;
+}
+
 
 export function addReadFlagToBindingVariable(var_name: string, frame: FunctionFrame) {
 
@@ -336,6 +348,7 @@ export function getCompiledBindingVariableName(
             case BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT:
             case BINDING_VARIABLE_TYPE.CONFIG_GLOBAL:
             case BINDING_VARIABLE_TYPE.CURE_TEST:
+            case BINDING_VARIABLE_TYPE.CONSTANT_DATA_SOURCE:
                 return "'---INVALID US OF STATIC BINDING---'";
 
             default:
@@ -426,6 +439,7 @@ export function getBindingStaticResolutionType(
             case BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE:
             case BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT:
             case BINDING_VARIABLE_TYPE.CONFIG_GLOBAL:
+            case BINDING_VARIABLE_TYPE.CONSTANT_DATA_SOURCE:
                 type = STATIC_RESOLUTION_TYPE.CONSTANT_STATIC;
                 break;
 
