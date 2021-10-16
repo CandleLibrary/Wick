@@ -16,7 +16,7 @@
 <> GOAL_TAG > ! TAG
 
 <> TAG > tk:TAG_HEAD ATTRIBUTES? \> TAG_BODY?  \</ (RST g:sp g:nl ) TAGNAME (RST g:sp g:nl ) \>                                     
-                                        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:$3 || [], VOID:false, pos } }
+                                        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:$4 || [], VOID:false, pos } }
     | tk:TAG_HEAD TAGNAME ATTRIBUTES? \/>                                                             
                                         f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:[], VOID:false, pos } }
     | VOID_TAG_HEAD ATTRIBUTES? /? >                                                          

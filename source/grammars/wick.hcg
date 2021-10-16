@@ -92,7 +92,7 @@
 
 <> IMPORT_TAG > 
           
-     \<import html::ATTRIBUTES?  \/ ? \> ( \<import> )?                                 
+     ! \<import html::ATTRIBUTES?  ( \> | \/> | \> \<\import> )                                 
                                             
           f:r { { type:env.typ.HTML_IMPORT, tag:"IMPORT", attributes:$$2 || [], nodes:[], VOID:true, pos } } 
 
