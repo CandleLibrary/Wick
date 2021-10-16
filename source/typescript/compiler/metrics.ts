@@ -1,4 +1,4 @@
-import { log } from '../entry-point/logger.js';
+import { log } from '../entry/logger.js';
 import { performance } from "perf_hooks";
 
 type RunTag = Readonly<{

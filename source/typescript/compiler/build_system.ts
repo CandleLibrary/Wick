@@ -1,6 +1,6 @@
 import { CSSNodeType, matchAll } from '@candlelib/css';
 import { exp, ext, JSNode, JSNodeType, JSNodeTypeLU, stmt } from '@candlelib/js';
-import { dir, log, trace, warn, debug } from '../entry-point/logger.js';
+import { dir, log, trace, warn, debug } from '../entry/logger.js';
 import {
     HookHandlerPackage, HTMLHandler,
     HTMLNode, HTMLNodeType,

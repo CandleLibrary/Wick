@@ -4,7 +4,7 @@ import { componentDataToCompiledHTML } from "../build/library/compiler/ast-build
 import { htmlTemplateToString } from "../build/library/compiler/ast-render/html.js";
 import { enableBuildFeatures } from "../build/library/compiler/build_system.js";
 import { Context } from "../build/library/compiler/common/context.js";
-import wick_server from "../build/library/entry-point/wick-server.js";
+import wick_server from "../build/library/entry/wick-server.js";
 import { assertTree } from "./test-tools/tools.js";
 
 await HTML.server();

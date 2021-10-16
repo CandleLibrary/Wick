@@ -1,6 +1,6 @@
 import { JSNode } from "@candlelib/js";
 import URI from '@candlelib/uri';
-import { error, warn } from '../../entry-point/logger.js';
+import { error, warn } from '../../entry/logger.js';
 import {
     BINDING_FLAG,
     BINDING_VARIABLE_TYPE,

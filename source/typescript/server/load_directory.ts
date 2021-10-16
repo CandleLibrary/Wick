@@ -3,9 +3,9 @@ import { traverseFilesFromRoot } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
 import { ComponentData } from '../compiler/common/component.js';
 import { Context } from '../compiler/common/context.js';
-import wick from '../entry-point/wick-server.js';
+import wick from '../entry/wick-server.js';
 import { rt } from '../runtime/global.js';
-import { EndpointMapper } from "../types/config.js"
+import { EndpointMapper } from "../types/config.js";
 
 export function mapEndpoints(uri: URI, working_directory: URI) {
 
@@ -22,12 +22,12 @@ export function mapEndpoints(uri: URI, working_directory: URI) {
 			+
 			file_name.slice(0, -2).join("/")
 			+
-			"/"
+			"/";
 
 		return path;
 	}
 
-	return ""
+	return "";
 }
 
 /**

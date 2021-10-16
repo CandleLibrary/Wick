@@ -15,7 +15,7 @@ const compile_logger = Logger.get("wick").get("compile").activate();
 const
     { package: pkg, package_dir }
         //@ts-ignore
-        = await getPackageJsonObject(new URI(import.meta.url).path),
+        = await getPackageJsonObject(new URI(import.meta.url).path),;
 
 const config_arg = addCLIConfig("compile", config_arg_properties);
 
@@ -94,7 +94,7 @@ optionally hydrated with associated support scripts.`
                 for (const { uri, type, node } of component.URI) {
                     let local_uri = new URI(uri);
                     if (!local_uri.IS_RELATIVE) {
-                        local_uri = new URI(root_directory + local_uri.path)
+                        local_uri = new URI(root_directory + local_uri.path);
                     } else {
                         local_uri = URI.resolveRelative(local_uri, component.location);
                     }
@@ -118,7 +118,7 @@ optionally hydrated with associated support scripts.`
 
                         } else {
                             const error = (<Token>attribute.pos).createError(`File ${local_uri} referenced by ${component.location} does not exist`, component.location + "");
-                            compile_logger.get("Images").warn(error.message)
+                            compile_logger.get("Images").warn(error.message);
                         }
                     }
                 }
@@ -160,7 +160,7 @@ optionally hydrated with associated support scripts.`
                 USE_GLOW = true;
                 compile_module(
                     URI.resolveRelative(
-                        "./build/library/entry-point/wick-radiate.js",
+                        "./build/library/entry/wick-radiate.js",
                         package_dir
                     ) + "",
                     output_directory + "radiate.js",
@@ -172,7 +172,7 @@ optionally hydrated with associated support scripts.`
             if (USE_WICK_RUNTIME) {
                 compile_module(
                     URI.resolveRelative(
-                        "./build/library/entry-point/wick-runtime.js",
+                        "./build/library/entry/wick-runtime.js",
                         package_dir
                     ) + "",
                     output_directory + "wick.js",
@@ -183,7 +183,7 @@ optionally hydrated with associated support scripts.`
             /*
             if(USE_GLOW)
                 compile_module(
-                    URI.resolveRelative("./build/library/entry-point/wick-glow.js",
+                    URI.resolveRelative("./build/library/entry/wick-glow.js",
                         package_dir
                     ) + "",
                     output_directory + "glow.js",
