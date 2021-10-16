@@ -434,7 +434,7 @@ function processBindingVariables(
 ): void {
     if (
         true ||
-        binding.type == BINDING_VARIABLE_TYPE.PROPERTY_VARIABLE
+        binding.type == BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE
         ||
         binding.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
         ||

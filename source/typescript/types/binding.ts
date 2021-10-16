@@ -11,7 +11,11 @@ export enum BINDING_VARIABLE_TYPE {
      * of indirection.
      */
     INTERNAL_VARIABLE = 1,
-    PARENT_VARIABLE = 2,
+    /**
+     * Any Attribute value assigned to the component's 
+     * HTML element from within an outer scoped component 
+     */
+    ATTRIBUTE_VARIABLE = 2,
     MODEL_VARIABLE = 4,
     MODEL_DIRECT = 512,
     TEMPLATE_CONSTANT = 1024,

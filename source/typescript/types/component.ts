@@ -7,7 +7,7 @@ import { WickComponentErrorStore } from "./errors.js";
 import { FunctionFrame } from "./function_frame";
 import { IndirectHook, IntermediateHook } from "./hook";
 import { TemplateHTMLNode } from "./html.js";
-import { HTMLNode } from "./wick_ast.js";
+import { HTMLNode, Node } from "./wick_ast.js";
 
 
 export type ComponentClassStrings = { class_string: string; source_map: string; };
@@ -156,6 +156,7 @@ export interface ComponentDataS {
     element_counter: number;
 
     element_index_remap: Map<number, number>;
+
 }
 
 /**

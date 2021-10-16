@@ -138,7 +138,7 @@ registerFeature(
                         ||
                         binding.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
                         ||
-                        binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
+                        binding.type == BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE
                     ) {
                         const e = expr(`a=_.target.value`);
                         e.nodes[0] = expression;

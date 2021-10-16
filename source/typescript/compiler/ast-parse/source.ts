@@ -252,7 +252,7 @@ function integrateParentComponentScope(
                     component.root_frame,
                     name,
                     {},
-                    BINDING_VARIABLE_TYPE.PARENT_VARIABLE,
+                    BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE,
                     name,
                     BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
                 );
@@ -327,6 +327,7 @@ export default <tmpcomp>
             errors.push(error);
 
     } catch (e) {
+        console.log(e)
 
         errors.push(e);
     }

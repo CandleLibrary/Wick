@@ -435,7 +435,7 @@ export async function finalizeBindingExpression(
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
 
 
-                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.PROPERTY_VARIABLE
+                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE
                             ? "fua" : "ua";
                         const
 
@@ -487,7 +487,7 @@ export async function finalizeBindingExpression(
                     //Directly assign new value to model variables
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
 
-                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.PROPERTY_VARIABLE
+                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE
                             ? "fua" : "ua";
 
                         const index = comp_info.binding_records.get(name).index,

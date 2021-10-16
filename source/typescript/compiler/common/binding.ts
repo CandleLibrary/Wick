@@ -432,7 +432,7 @@ export function getBindingStaticResolutionType(
                 type = STATIC_RESOLUTION_TYPE.STATIC_WITH_MODEL;
                 break;
 
-            case BINDING_VARIABLE_TYPE.PARENT_VARIABLE:
+            case BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE:
                 type = STATIC_RESOLUTION_TYPE.STATIC_WITH_PARENT;
                 break;
 
@@ -498,7 +498,7 @@ export function Name_Is_A_Binding_Variable(var_name: string, frame: FunctionFram
 
 export function Binding_Var_Is_Internal_Variable(comp_var: BindingVariable) {
     return (
-        comp_var.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
+        comp_var.type == BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE
         ||
         comp_var.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
         ||
