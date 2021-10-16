@@ -51,8 +51,6 @@
     },
     "homepage": "https://github.com/CandleLibrary/wick#readme",
     "devDependencies": {
-        "@candlelib/cure": "*",
-        "@candlelib/wick": "*",
         "@types/node": "^13.9.1"
     },
     "jshintConfig": {
@@ -60,6 +58,7 @@
         "unused": true
     },
     "dependencies": {
+        "@candlelib/cure": "0.6.1",
         "@candlelib/conflagrate": "0.5.2",
         "@candlelib/css": "0.3.18",
         "@candlelib/glow": "0.4.17",
