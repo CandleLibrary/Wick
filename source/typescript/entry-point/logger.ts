@@ -14,7 +14,11 @@ export function dir(args) {
 }
 
 export function error(e: Error) {
-    wick_logger.log(error);
+    wick_logger.error(error);
+}
+
+export function debug(...args) {
+    wick_logger.debug(...args);
 }
 
 export function trace(...args) {

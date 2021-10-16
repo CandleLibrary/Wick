@@ -14,7 +14,7 @@ import { componentDataToJSStringCached } from "../../compiler/ast-render/js.js"
 import { getDependentComponents } from "../../compiler/ast-render/webpage.js"
 import { processBindingASTAsync } from "source/typescript/compiler/ast-parse/html.js";
 
-export const test_logger = Logger.get("wick").activate().get("test");
+export const test_logger = Logger.get("wick").get("test").activate();
 
 const config_arg = addCLIConfig("test", config_arg_properties);
 

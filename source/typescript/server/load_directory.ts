@@ -6,9 +6,6 @@ import { Context } from '../compiler/common/context.js';
 import wick from '../entry-point/wick-server.js';
 import { rt } from '../runtime/global.js';
 import { EndpointMapper } from "../types/config.js"
-const compile_logger = Logger.get("wick").activate().get("compile");
-
-
 
 export function mapEndpoints(uri: URI, working_directory: URI) {
 

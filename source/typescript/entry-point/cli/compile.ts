@@ -8,7 +8,7 @@ import { compile_module } from '../../server/compile_module.js';
 import { loadComponentsFromDirectory } from '../../server/load_directory.js';
 import { config_arg_properties } from "./config_arg_properties.js";
 
-const compile_logger = Logger.get("wick").activate().get("compile");
+const compile_logger = Logger.get("wick").get("compile").activate();
 
 const
     { package: pkg, package_dir }

@@ -4,7 +4,7 @@ import { WickCompileConfig } from "../../types/config";
 import { mapEndpoints } from '../../server/load_directory.js';
 import { Logger } from "@candlelib/log";
 
-export const compile_logger = Logger.get("wick").activate().get("config");
+export const compile_logger = Logger.get("wick").get("config").activate();
 
 export const default_config: WickCompileConfig = {
     globals: [],

@@ -31,7 +31,7 @@ import { Context } from '../compiler/common/context.js';
 // Load features. Only need side effects as the proper 
 // systems will automatically register themselves through the
 // build system
-import { log } from './logger.js';
+import { log, debug } from './logger.js';
 import wick_runtime from './wick-runtime.js';
 
 export * from "../compiler/source-code-render/render.js";
@@ -49,15 +49,16 @@ export {
     test,
 };
 
-log("\n\n----------- Initializing Wick ---------------");
+debug("\n\n----------- Initializing Wick ---------------");
 
-log("Loading Wick build features");
+debug("Loading Wick build features");
 /*** */
 import "../compiler/features/container_features.js";
 import "../compiler/features/expression_features.js";
 import "../compiler/features/function_features.js";
 import "../compiler/features/html_attribute_features.js";
 import "../compiler/features/html_event_attribute_features.js";
+import "../compiler/features/html_img_features.js";
 import "../compiler/features/html_general_features.js";
 import "../compiler/features/identifier_features.js";
 import "../compiler/features/input_features.js";
@@ -70,9 +71,9 @@ import "../compiler/features/test_features.js";
 
 await b_sys.loadFeatures();
 
-log("Completed loading of build features");
+debug("Completed loading of build features");
 
-log("------------ Wick Initialized ---------------\n\n");
+debug("------------ Wick Initialized ---------------\n\n");
 
 /**
  * Exporting the wick compiler
