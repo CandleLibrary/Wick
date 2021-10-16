@@ -1,9 +1,11 @@
 import { Token } from '@candlelib/hydrocarbon';
 import { HTMLNode, HTMLNodeType, HTMLNodeClass, HTMLElementNode } from "../../types/all.js";
-import { escape_html_string } from './html.js';
+import { escape_html_string, IsHTMLNode } from './html.js';
+import { JSNodeType } from '@candlelib/js';
 
 const MD_Attribute = { type: HTMLNodeType.HTMLAttribute, name: "m:d", value: "" };
 export function convertMarkdownToHTMLNodes(markdown_content): HTMLNode {
+
 
     const output: HTMLNode[] = [];
 
@@ -107,6 +109,12 @@ export function convertMarkdownToHTMLNodes(markdown_content): HTMLNode {
             } break;
 
             default:
+
+                if (header.type == "p" && content?.length == 1 && IsHTMLNode(content[0])) {
+                    output.push(content[0])
+                    previous_object = null;
+                    break;
+                }
 
                 if (!content || content.length == 0) {
                     /* if (previous_object?.type != HTMLNodeType.HTML_BR) {
@@ -245,7 +253,7 @@ export function convertOuterContent(raw_content: any[], offset = 0, length = raw
         }
 
 
-        if ((+obj.type) & HTMLNodeClass.HTML_ELEMENT) {
+        if (IsHTMLNode(obj)) {
             content.push(obj);
             last_node = null;
         } else if (obj.type == 'link') {

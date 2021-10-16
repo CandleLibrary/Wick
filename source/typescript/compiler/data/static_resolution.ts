@@ -197,7 +197,7 @@ export async function getDefaultBindingValueAST(
     name: string,
     comp: ComponentData,
     context: Context,
-    model: Object,
+    model: Object = {},
     parent_comp: ComponentData = null,
     ASSUME_RUNTIME: boolean = false,
     node_lookups: Map<string, Node>

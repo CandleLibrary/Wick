@@ -52,9 +52,9 @@ export interface HTMLHandler<T = HTMLNode, P = HTMLNode> {
         component: ComponentData,
         context: Context
     ):
-        (T | P)
+        (T | P | (P | T)[])
         | void
-        | Promise<T | P | void>;
+        | Promise<T | P | (T | P)[] | void>;
 }
 
 export interface TemplateHTMLNode {

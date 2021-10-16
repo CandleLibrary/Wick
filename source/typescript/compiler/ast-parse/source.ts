@@ -291,8 +291,9 @@ export async function fetchASTFromRemote(url: URL) {
 
             ast = convertMarkdownToHTMLNodes(ast);
 
-            if (ast?.nodes?.[0]?.nodes?.[0]?.type == NodeTypes.HTML_IMPORT) {
-                const import_node = ast?.nodes?.[0]?.nodes?.[0];
+            if (ast?.nodes?.[0]?.type == NodeTypes.HTML_IMPORT) {
+
+                const import_node = ast?.nodes?.[0];
                 //Import the template node and 
 
                 const
@@ -310,9 +311,9 @@ export default <tmpcomp>
 </tmpcomp>;`;
                         const { ast: temp } = parse_component(wrapper_string);
 
-                        temp.nodes[1].nodes[0].nodes[0] = ast;
+                        temp.nodes[1].nodes[0].nodes = ast.nodes;
 
-                        ast.nodes[0].nodes.length = 0;
+                        ast.nodes.splice(0, 1);
 
                         ast = temp;
                     }

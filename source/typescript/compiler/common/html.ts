@@ -1,4 +1,4 @@
-import { HTMLNode, HTMLElementNode } from "../../types/all.js";
+import { HTMLNode, HTMLElementNode, HTMLNodeClass } from "../../types/all.js";
 import { ComponentData } from './component.js';
 
 export const html_void_tags = new Set([
@@ -98,6 +98,13 @@ export function getElementAtIndex<T = HTMLNode>(comp: ComponentData, index: numb
     return null;
 };
 
+export function IsHTMLNode(node: any): node is HTMLNode {
+    return typeof node == "object"
+        && "type" in node
+        && typeof node.type == "number"
+        && (node.type & HTMLNodeClass.HTML_NODE) > 0
+}
+
 export function escape_html_string(string: string): string {
     return string.replace(/>/g, "&gt;")
         .replace(/</g, "&lt;")
@@ -112,6 +119,16 @@ export function getAttributeValue(name, node: HTMLElementNode) {
             return att.value;
     }
 }
+
+export function getAttribute(name, node: HTMLElementNode) {
+    for (const att of node.attributes) {
+        if (att.name == name)
+            return att;
+    }
+
+    return null;
+}
+
 
 export function hasAttribute(name, node: HTMLElementNode) {
     for (const att of node.attributes) {

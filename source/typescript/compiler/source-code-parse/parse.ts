@@ -1,10 +1,10 @@
 import { HTMLNode } from "@candlelib/html";
 import { JSExpressionClass, JSStatementClass } from "@candlelib/js";
-import { CSSNode } from "source/typescript/entry-point/wick-full.js";
 import { Node } from "../../types/all.js";
 import { metrics } from '../metrics.js';
 import env from "./env.js";
 import framework from "./parser_new.js";
+import { convertMarkdownToHTMLNodes } from "../common/markdown.js";
 
 const { parse, entry_points } = await framework;
 
@@ -83,6 +83,6 @@ export function parse_html(input: string, loc: string = ""): HTMLNode {
     return parse_core(input, entry_points.html, loc, "Parse HTML");
 };
 
-export function parse_markdown(input: string, loc: string = ""): HTMLNode {
+export function parse_markdown(input: string, loc: string = "") {
     return parse_core(input, entry_points.md, loc, "Parse MARKDOWN");
 };

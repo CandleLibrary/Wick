@@ -16,7 +16,15 @@ registerFeature(
                 priority: -99999,
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
-                    return convertMarkdownToHTMLNodes(node.nodes[0]);
+                    const resolved_node = convertMarkdownToHTMLNodes(node.nodes[0]);
+
+                    if (resolved_node.nodes.length < 1)
+                        return null
+
+                    for (const node of resolved_node.nodes)
+                        await build_system.processHTMLNode(node, component, context, false, false);
+
+                    return resolved_node.nodes;
                 }
 
             }, HTMLNodeType.MARKDOWN
