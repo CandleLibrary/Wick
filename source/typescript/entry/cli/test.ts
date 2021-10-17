@@ -6,12 +6,12 @@ import { JSNode, JSNodeType } from '@candlelib/js';
 import { Logger } from "@candlelib/log";
 import { addCLIConfig } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
+import { ComponentData } from 'source/typescript/compiler/common/component.js';
 import { createCompiledComponentClass, finalizeBindingExpression, processInlineHooks } from '../../compiler/ast-build/build.js';
 import { componentDataToJSStringCached } from "../../compiler/ast-render/js.js";
 import { getDependentComponents } from "../../compiler/ast-render/webpage.js";
 import { Context } from "../../compiler/common/context.js";
 import { parse_component } from '../../compiler/source-code-parse/parse.js';
-import { renderNewFormatted } from '../../compiler/source-code-render/render.js';
 import { loadComponentsFromDirectory } from '../../server/load_directory.js';
 import { config_arg_properties } from "./config_arg_properties.js";
 
@@ -95,29 +95,7 @@ Test components that have been defined with the \`@test\` synthetic import
 
                     const comp_class = await createCompiledComponentClass(component, context, false, false);
 
-                    const test_source = `
-import spark from "@candlelib/spark";
-
-import wick from "@candlelib/wick";
-
-await wick.appendPresets({});
-
-${component_strings.join("\n")};
-
-const comp = new (wick.rt.gC("${component.name}"))();
-
-comp.hydrate();
-
-comp.initialize();
-
-const component = comp;
-const ele = comp.ele;
-const root = comp.ele;
-
-comp.appendToDOM(document.body);
-
-await spark.sleep(10);
-`;
+                    const test_source = test_script_template(component_strings, component);
 
                     const source = <JSNode>parse_component(test_source).ast;
 
@@ -155,3 +133,29 @@ await spark.sleep(10);
                 test_logger.log("No tests were found. Exiting");
         }
     );
+
+function test_script_template(component_strings: any[], component: ComponentData) {
+    return `
+import spark from "@candlelib/spark";
+
+import wick from "@candlelib/wick";
+
+await wick.appendPresets({});
+
+${component_strings.join("\n")};
+
+const comp = new (wick.rt.gC("${component.name}"))();
+
+comp.hydrate();
+
+comp.initialize();
+
+const component = comp;
+const ele = comp.ele;
+const root = comp.ele;
+
+comp.appendToDOM(document.body);
+
+await spark.sleep(10);
+`;
+}
