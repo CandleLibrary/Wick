@@ -1,10 +1,10 @@
-import URL from "@candlelib/uri";
-import { WickRTComponent } from '../../runtime/component.js';
+import { default as URI, default as URL } from "@candlelib/uri";
 import { ComponentClassStrings, ComponentStyle } from 'source/typescript/types/component.js';
-import { PluginStore } from "../../plugin/plugin.js";
-import { ComponentData } from './component.js';
 import { WickCompileConfig } from "source/typescript/types/config.js";
-import URI from "@candlelib/uri";
+import { JSNode } from '@candlelib/js';
+import { PluginStore } from "../../plugin/plugin.js";
+import { WickRTComponent } from '../../runtime/component.js';
+import { ComponentData } from './component.js';
 
 let CachedPresets = null;
 
@@ -99,7 +99,7 @@ export class Context {
      * using the `@test` synthetic imports. Used in conjuction
      * with `@candlelib/cure` to run tests on individual component instances.
      */
-    test_rig_sources: WeakMap<ComponentData, string[]>
+    test_rig_sources: WeakMap<ComponentData, JSNode[]>;
 
     /**
      * An object of properties that are defined within the 
@@ -323,7 +323,7 @@ export class Context {
         this.api[uri_str] = {
             hash: uri_str,
             default: value,
-        }
+        };
 
         return this.getDataSource(uri);
     }

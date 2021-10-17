@@ -1,22 +1,26 @@
 import {
-    BasicReporter, createTestFrame,
-    createTestSuite,
-    loadTests
+    BasicReporter, compileTestsFromAST, createTestFrame,
+    createTestSuite
 } from "@candlelib/cure";
+import { JSNode, JSNodeType } from '@candlelib/js';
 import { Logger } from "@candlelib/log";
 import { addCLIConfig } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
+import { createCompiledComponentClass, finalizeBindingExpression, processInlineHooks } from '../../compiler/ast-build/build.js';
 import { componentDataToJSStringCached } from "../../compiler/ast-render/js.js";
 import { getDependentComponents } from "../../compiler/ast-render/webpage.js";
 import { Context } from "../../compiler/common/context.js";
+import { parse_component } from '../../compiler/source-code-parse/parse.js';
+import { renderNewFormatted } from '../../compiler/source-code-render/render.js';
 import { loadComponentsFromDirectory } from '../../server/load_directory.js';
 import { config_arg_properties } from "./config_arg_properties.js";
 
 export const test_logger = Logger.get("wick").get("test").activate();
 
+
 const config_arg = addCLIConfig("test", config_arg_properties);
 
-addCLIConfig<URI>("test", {
+addCLIConfig("test", {
     key: "test",
     help_brief: `
 Test components that have been defined with the \`@test\` synthetic import
@@ -46,35 +50,35 @@ Test components that have been defined with the \`@test\` synthetic import
                 root_directory, context, config.endpoint_mapper
             );
 
-            const test_sources = []
+            const test_sources = [];
             const suites = [];
             const test_frame = createTestFrame({
-                watch: false,
+                WATCH: false,
                 BROWSER_HEADLESS: true,
                 number_of_workers: 1,
-
             });
 
             await test_frame.init();
 
-            test_frame.setReporter(new BasicReporter)
+            test_frame.setReporter(new BasicReporter);
 
             let i = 0;
 
             for (const [, component] of context.components) {
 
                 if (context.test_rig_sources.has(component)) {
+                    test_logger.log("Compiling tests for:\n   ->" + component.location + "");
 
                     const test_suite = createTestSuite(
                         component.location + "",
                         i++,
-                    )
+                    );
 
                     test_suite.name = component.name + ` tests`;
 
                     suites.push(test_suite);
 
-                    let source_string = context.test_rig_sources.get(component).join("\n\n");
+                    let source_string = context.test_rig_sources.get(component);
 
                     const components = getDependentComponents(component, context);
 
@@ -88,6 +92,8 @@ Test components that have been defined with the \`@test\` synthetic import
 
                         component_strings.push(`wick.rt.rC(${class_string})`);
                     }
+
+                    const comp_class = await createCompiledComponentClass(component, context, false, false);
 
                     const test_source = `
 import spark from "@candlelib/spark";
@@ -111,10 +117,30 @@ const root = comp.ele;
 comp.appendToDOM(document.body);
 
 await spark.sleep(10);
+`;
 
-${source_string}
-`
-                    loadTests(test_source, test_suite, test_frame.globals);
+                    const source = <JSNode>parse_component(test_source).ast;
+
+                    const ast: JSNode = {
+                        type: JSNodeType.Module,
+                        nodes: [...source_string],
+                        pos: component.root_frame.ast.pos
+                    };
+
+                    await processInlineHooks(component, context, ast, comp_class);
+
+                    const test_source_ast = (await finalizeBindingExpression(
+                        ast,
+                        component,
+                        comp_class,
+                        context,
+                        "comp"
+                    )).ast;
+
+                    //@ts-ignore
+                    source.nodes.push(...test_source_ast.nodes);
+
+                    compileTestsFromAST(source, test_suite, test_frame.globals);
 
                     for (const test of test_suite.tests) {
                         test.BROWSER = true;
@@ -122,6 +148,10 @@ ${source_string}
                 }
             }
 
-            await test_frame.start(suites);
+            if (suites.length > 0) {
+                test_logger.log("Running tests:");
+                await test_frame.start(suites);
+            } else
+                test_logger.log("No tests were found. Exiting");
         }
     );

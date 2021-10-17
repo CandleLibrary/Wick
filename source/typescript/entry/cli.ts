@@ -42,6 +42,6 @@ Web Component Compiler
 addCLIConfig("", {
     key: "",
     help_brief: HELP_MESSAGE
-})
+});
 
 processCLIConfig();

@@ -69,6 +69,8 @@ export function addBindingReference(input_node: JSNode, input_parent: JSNode, fr
         return;
     }
 
+    console.log(input_node);
+
     throw new Error(`Missing reference in expression`);
 }
 
@@ -86,7 +88,6 @@ export function getBindingRefCount(frame: FunctionFrame): Map<string, number> {
 export function removeBindingReferences(name: string, frame: FunctionFrame) {
 
     for (const node of frame.binding_ref_identifiers)
-
         if (node.value == name)
             node.type = getOriginalTypeOfExtendedType<typeof node["type"]>(node.type);
 }
@@ -292,17 +293,19 @@ export function processUndefinedBindingVariables(component: ComponentData, conte
 export function getCompiledBindingVariableNameFromString(
     name: string,
     component: ComponentData,
-    comp_info?: CompiledComponentClass
+    comp_info?: CompiledComponentClass,
+    comp_name: string = "this"
 ) {
 
     const binding = getComponentBinding(name, component);
 
-    return getCompiledBindingVariableName(binding, comp_info);
+    return getCompiledBindingVariableName(binding, comp_info, comp_name);
 }
 
 export function getCompiledBindingVariableName(
     binding: BindingVariable,
-    comp_info?: CompiledComponentClass
+    comp_info?: CompiledComponentClass,
+    comp_name: string = "this"
 ) {
     const external_name = getExternalName(binding);
     const internal_name = getInternalName(binding);
@@ -318,28 +321,28 @@ export function getCompiledBindingVariableName(
         switch (binding.type) {
 
             case BINDING_VARIABLE_TYPE.MODULE_VARIABLE:
-                return `this.context.api.${external_name}.default`;
+                return `${comp_name}.context.api.${external_name}.default`;
 
             case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE:
-                return `this.context.api.${external_name}.module`;
+                return `${comp_name}.context.api.${external_name}.module`;
 
             case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
-                return `this.context.api.${external_name}.module.${internal_name}`;
+                return `${comp_name}.context.api.${external_name}.module.${internal_name}`;
 
             case BINDING_VARIABLE_TYPE.UNDECLARED:
                 const global_names = getSetOfEnvironmentGlobalNames();
                 if (global_names.has(external_name))
                     return external_name;
-                return `this.model.${external_name}`;
+                return `${comp_name}.model.${external_name}`;
 
             case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
-                return `this.model.${external_name}`;
+                return `${comp_name}.model.${external_name}`;
 
             case BINDING_VARIABLE_TYPE.MODEL_DIRECT:
-                return `this.model`;
+                return `${comp_name}.model`;
 
             case BINDING_VARIABLE_TYPE.METHOD_VARIABLE:
-                return "this." + binding.internal_name;
+                return `${comp_name}.${binding.internal_name}`;
 
             case BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE:
                 return `${external_name}`;
@@ -352,7 +355,7 @@ export function getCompiledBindingVariableName(
                 return "'---INVALID US OF STATIC BINDING---'";
 
             default:
-                return `this[${comp_info.binding_records.get(binding.internal_name)?.index ?? -1}]`;
+                return `${comp_name}[${comp_info.binding_records.get(binding.internal_name)?.index ?? -1}]`;
         }
     else
         return name;
@@ -537,4 +540,7 @@ export function Is_Statically_Resolvable_On_Server(binding: BindingVariable, com
                 return false;
 
     return true;
+}
+export function Node_Is_Binding_Identifier(node: JSNode) {
+    return node.type == BindingIdentifierBinding || node.type == BindingIdentifierReference;
 }

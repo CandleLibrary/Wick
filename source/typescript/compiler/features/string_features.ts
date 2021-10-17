@@ -20,14 +20,11 @@ registerFeature(
                 priority: 1,
 
                 prepareJSNode(node, parent_node, skip, component, context, frame) {
-
                     if ((<JSStringLiteral>node).value[0] == "@") {
                         return Object.assign({}, node, {
                             type: CSSSelectorHook
                         });
                     }
-
-                    return <JSNode>node;
                 }
 
             }, JSNodeType.StringLiteral
@@ -72,6 +69,12 @@ registerFeature(
                         expression = (html_nodes.length == 1)
                             ? build_system.js.expr(`$$ele${html_nodes[0].id}`)
                             : build_system.js.expr(`[${html_nodes.map(e => `$$ele${e.id}`).join(",")}]`);
+                    else
+                        //Convert back into string
+
+                        expression = Object.assign({}, string_node, {
+                            type: JSNodeType.StringLiteral
+                        });
                 }
             }
 

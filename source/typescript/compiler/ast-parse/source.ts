@@ -327,7 +327,7 @@ export default <tmpcomp>
             errors.push(error);
 
     } catch (e) {
-        console.log(e)
+        console.log(e);
 
         errors.push(e);
     }

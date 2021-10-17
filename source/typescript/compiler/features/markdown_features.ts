@@ -19,7 +19,7 @@ registerFeature(
                     const resolved_node = convertMarkdownToHTMLNodes(node.nodes[0]);
 
                     if (resolved_node.nodes.length < 1)
-                        return null
+                        return null;
 
                     for (const node of resolved_node.nodes)
                         await build_system.processHTMLNode(node, component, context, false, false);

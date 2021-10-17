@@ -11,7 +11,7 @@
     "scripts": {
         "prepublishOnly": "rm -rf ./build && tsc & sleep 10",
         "compile": "./scripts/compile.sh",
-        "test": "candle.cure --reporter ci --headless ./test/*",
+        "test": "candle.cure --reporter ci --headless ./test/* && candle.wick test --config ./test/wickonfig.js ./test/",
         "test.watch": "candle.cure -w ./test/*",
         "server": "lantern",
         "buildsite": "npm install && candle.wick compile --output ./www ./site"
@@ -58,7 +58,7 @@
         "unused": true
     },
     "dependencies": {
-        "@candlelib/cure": "0.6.1",
+        "@candlelib/cure": "*",
         "@candlelib/conflagrate": "0.5.2",
         "@candlelib/css": "0.3.18",
         "@candlelib/glow": "0.4.17",

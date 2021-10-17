@@ -1,8 +1,9 @@
-import { JSNodeType, JSExpressionStatement } from '@candlelib/js';
-import { registerFeature } from './../build_system.js';
+import { JSNodeType, tools } from '@candlelib/js';
+import { Context } from '../common/context.js';
 import { BINDING_VARIABLE_TYPE } from '../../types/all.js';
-import { tools } from '@candlelib/js';
-import { renderNew, renderNewFormatted } from '../source-code-render/render.js';
+import { registerFeature } from './../build_system.js';
+import { createBuildFrame, createParseFrame } from '../common/frame.js';
+import { addNameToDeclaredVariables } from '../common/binding.js';
 
 registerFeature(
 
@@ -17,7 +18,7 @@ registerFeature(
             {
                 priority: 1,
 
-                prepareJSNode<JSExpressionStatement>(node, parent_node, skip, component, context, frame) {
+                async prepareJSNode<JSNode>(node, parent_node, skip, component, context: Context, frame) {
 
                     if (node.nodes[1].type == JSNodeType.BlockStatement) {
 
@@ -34,11 +35,23 @@ registerFeature(
                             // for the test rig
 
                             if (!context.test_rig_sources.has(component)) {
-                                context.test_rig_sources.set(component, [])
+                                context.test_rig_sources.set(component, []);
                             }
 
-                            context.test_rig_sources.get(component)
-                                .push(renderNewFormatted(node.nodes[1]));
+                            const temp_frame = createParseFrame(frame, component, true, true);
+
+                            //add the built in assert and assert_group names
+
+                            temp_frame.prev = frame;
+
+                            addNameToDeclaredVariables("assert", temp_frame);
+                            addNameToDeclaredVariables("assert_group", temp_frame);
+
+                            const out_node = await build_system.processNodeAsync(
+                                node.nodes[1], temp_frame, component, context
+                            );
+
+                            context.test_rig_sources.get(component).push(out_node);
 
                             return null;
                         }
