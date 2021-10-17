@@ -3,8 +3,6 @@
 # 
 
 @IGNORE g:sp g:nl 
-
-
     
 <> HTML > ! RESULT
 
@@ -15,22 +13,31 @@
 
 <> GOAL_TAG > ! TAG
 
-<> TAG > tk:TAG_HEAD ATTRIBUTES? \> TAG_BODY?  \</ (RST g:sp g:nl ) TAGNAME (RST g:sp g:nl ) \>                                     
-                                        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:$4 || [], VOID:false, pos } }
-    | tk:TAG_HEAD TAGNAME ATTRIBUTES? \/>                                                             
-                                        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:[], VOID:false, pos } }
-    | VOID_TAG_HEAD ATTRIBUTES? /? >                                                          
-                                        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:[], VOID:true, pos } }
+<> TAG > 
+        tk:TAG_HEAD ATTRIBUTES? \> TAG_BODY?  \</ (RST g:sp g:nl ) TAGNAME (RST g:sp g:nl ) \>                                     
+
+        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:$4 || [], VOID:false, pos } }
+
+    |   tk:TAG_HEAD ATTRIBUTES? \/>                                                             
+
+        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:[], VOID:false, pos } }
+
+    |   VOID_TAG_HEAD ATTRIBUTES? \/ ? >                                                          
+
+        f:r { { type:env.typ["HTML_"+$1.slice(1).toUpperCase()] || env.typ.HTML_Element, tag:$1.slice(1).toUpperCase(), attributes:$$2 || [], nodes:[], VOID:true, pos } }
     
-<> DTD > \<! tk:identifier ? \--  ( g:id | g:sym | g:sp | g:nl | g:num  )(*\" )  \-- \>                                                 
-                                                                f:r { { type:"DTD", tag:$$2|| "", value:$$4 }  }                
+<> DTD > 
+
+    \<! tk:identifier ? \--  ( g:id | g:sym | g:sp | g:nl | g:num  )(*\" )  \-- \>                                                 
+    
+    f:r { { type:"DTD", tag:$$2|| "", value:$$4 }  }                
 
 
 ###########################################################################################
 # https://www.w3.org/TR/2011/WD-html-markup-20110113/syntax.html#syntax-elements
 ###########################################################################################
 
-<> TAG_HEAD > \< identifier
+<> TAG_HEAD > \< TAGNAME
 
 
 <> VOID_TAG_HEAD > \<input
@@ -58,10 +65,8 @@
     
 <> ATTRIBUTES > ATTRIBUTE(+)                                    
 
-<> ATTRIBUTE > ATTRIBUTE_HEAD \= ATTRIBUTE_BODY                                                  
-                                                                f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3, pos } }
-    | ATTRIBUTE_HEAD                                                                            
-                                                                f:r { {type:env.typ.HTMLAttribute, name:$1, value:"", pos } }
+<> ATTRIBUTE > ATTRIBUTE_HEAD ( \= ATTRIBUTE_BODY )?
+                                                                f:r { {type:env.typ.HTMLAttribute, name:$1, value:$2 || "", pos } }
 
 <> ATTRIBUTE_HEAD > \' (RST g:sp g:nl ) tk:identifier \'                                                             
                                                                 f:r { $2 }
@@ -73,6 +78,7 @@
     tk:ATTRIBUTE_STRING_VALUE                                                                   
                                                                 f:r { $1.slice(1,-1) }
     | tk:identifier
+
     | g:num          
 
 <> ATTRIBUTE_STRING_VALUE >  \" BODY_SYMBOLS? \"

@@ -79,13 +79,9 @@
     
 +> html::TAG_BODY_ITEM > 
 
-          \< (t:script | t:SCRIPT)  html::ATTRIBUTES? \> js::script? </ (t:script | t:SCRIPT) \>    
+          ( \<script | \<SCRIPT ) html::ATTRIBUTES? \> js::script? ( \</script> | \</SCRIPT> )    
                                             
-          f:r { { type:env.typ.HTML_SCRIPT, attributes:$$3 || [], nodes:[$$5], pos } }
-
-    |     \< t:js html::ATTRIBUTES? \> js::script? \</ t:js \>                                                  
-                                            
-          f:r { { type:env.typ.HTML_SCRIPT, attributes:$$3 || [], nodes:[$$5], pos } }
+          f:r { { type:env.typ.HTML_SCRIPT, attributes:$$2 || [], nodes:[$$4], pos } }
 
 <> IMPORT_TAG_LIST > IMPORT_TAG(+)
 
