@@ -6,7 +6,8 @@ import { JSNode, JSNodeType } from '@candlelib/js';
 import { Logger } from "@candlelib/log";
 import { addCLIConfig } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
-import { ComponentData } from 'source/typescript/compiler/common/component.js';
+import { ComponentData } from '../../compiler/common/component.js';
+import { renderNewFormatted } from '../../compiler/source-code-render/render.js';
 import { createCompiledComponentClass, finalizeBindingExpression, processInlineHooks } from '../../compiler/ast-build/build.js';
 import { componentDataToJSStringCached } from "../../compiler/ast-render/js.js";
 import { getDependentComponents } from "../../compiler/ast-render/webpage.js";
@@ -118,6 +119,8 @@ Test components that have been defined with the \`@test\` synthetic import
                     //@ts-ignore
                     source.nodes.push(...test_source_ast.nodes);
 
+                    //console.log(renderNewFormatted(source));
+
                     compileTestsFromAST(source, test_suite, test_frame.globals);
 
                     for (const test of test_suite.tests) {
@@ -125,6 +128,8 @@ Test components that have been defined with the \`@test\` synthetic import
                     }
                 }
             }
+
+
 
             if (suites.length > 0) {
                 test_logger.log("Running tests:");
