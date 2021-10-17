@@ -29,6 +29,12 @@ export const css_selector_helpers: SelectionHelpers<HTMLNode> = {
 
     hasPseudoElement: (ele, id, val) => false,
 
-    hasType: (ele, namespace, type) => ele.tag &&
-        ele.tag.toUpperCase() == type.toUpperCase()
+    hasType: (ele, namespace, type) => {
+
+        if (type == "root")
+            return ele.id == 0;
+
+        return ele.tag &&
+            ele.tag.toUpperCase() == type.toUpperCase();
+    }
 };

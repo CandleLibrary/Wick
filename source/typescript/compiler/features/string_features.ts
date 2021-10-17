@@ -61,6 +61,11 @@ registerFeature(
 
                     break;
 
+                /*        case "root":
+                           if (component.HTML)
+                               expression = build_system.js.expr(`$$ele${component.HTML.id}`);
+                           break;
+        */
                 default: {
                     const html_nodes = build_system.css.matchAll(css_selector, component.HTML);
 
@@ -69,13 +74,13 @@ registerFeature(
                         expression = (html_nodes.length == 1)
                             ? build_system.js.expr(`$$ele${html_nodes[0].id}`)
                             : build_system.js.expr(`[${html_nodes.map(e => `$$ele${e.id}`).join(",")}]`);
-                    else
-                        //Convert back into string
-
-                        expression = Object.assign({}, string_node, {
-                            type: JSNodeType.StringLiteral
-                        });
                 }
+            }
+
+            if (expression == null) {
+                expression = Object.assign({}, string_node, {
+                    type: JSNodeType.StringLiteral
+                });
             }
 
             return expression;

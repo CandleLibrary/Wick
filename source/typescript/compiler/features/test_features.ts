@@ -1,9 +1,10 @@
-import { JSNodeType, tools } from '@candlelib/js';
-import { Context } from '../common/context.js';
+import { JSIdentifierReference, JSNode, JSNodeType, tools } from '@candlelib/js';
 import { BINDING_VARIABLE_TYPE } from '../../types/all.js';
+import { addNameToDeclaredVariables, Variable_Is_Declared_In_Closure } from '../common/binding.js';
+import { Context } from '../common/context.js';
+import { createParseFrame } from '../common/frame.js';
+import { BindingIdentifierReference } from '../common/js_hook_types.js';
 import { registerFeature } from './../build_system.js';
-import { createBuildFrame, createParseFrame } from '../common/frame.js';
-import { addNameToDeclaredVariables } from '../common/binding.js';
 
 registerFeature(
 
@@ -44,6 +45,8 @@ registerFeature(
 
                             temp_frame.prev = frame;
 
+                            temp_frame.method_name = "--testing--";
+
                             addNameToDeclaredVariables("assert", temp_frame);
                             addNameToDeclaredVariables("assert_group", temp_frame);
 
@@ -58,6 +61,32 @@ registerFeature(
                     }
                 }
             }, JSNodeType.LabeledStatement
+        );
+
+        /*############################################################3
+        * IDENTIFIER REFERENCE - Disable Auto Model Binding Assignment
+        */
+        build_system.registerJSParserHandler(
+            {
+                priority: 0,
+
+                prepareJSNode(node, parent_node, skip, component, context, frame) {
+
+                    if (frame.method_name == "--testing--") {
+
+                        const name = (<JSIdentifierReference>node).value;
+
+                        if (node.type !== BindingIdentifierReference) {
+
+                            if (!Variable_Is_Declared_In_Closure(name, frame)) {
+
+                                return <JSNode>node;
+
+                            }
+                        }
+                    }
+                }
+            }, JSNodeType.IdentifierReference
         );
     }
 );

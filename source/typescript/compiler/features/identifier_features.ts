@@ -16,7 +16,7 @@ registerFeature(
         */
         build_system.registerJSParserHandler(
             {
-                priority: 1,
+                priority: -3000,
 
                 prepareJSNode(node, parent_node, skip, component, context, frame) {
 
