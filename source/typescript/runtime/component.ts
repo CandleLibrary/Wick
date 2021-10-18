@@ -317,7 +317,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                 css_cache.set(this.name, { css_ele, count: 1 });
             } else
-                this.context.css_cache[this.name].count++;
+                this.context.css_cache.get(this.name).count++;
 
             this.ele.classList.add(this.name);
         }
