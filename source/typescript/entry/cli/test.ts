@@ -4,35 +4,38 @@ import {
 } from "@candlelib/cure";
 import { JSNode, JSNodeType } from '@candlelib/js';
 import { Logger } from "@candlelib/log";
-import { addCLIConfig } from "@candlelib/paraffin";
+import { addCLIConfig, args as para_args } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
-import { ComponentData } from '../../compiler/common/component.js';
-import { renderNewFormatted } from '../../compiler/source-code-render/render.js';
 import { createCompiledComponentClass, finalizeBindingExpression, processInlineHooks } from '../../compiler/ast-build/build.js';
 import { componentDataToJSStringCached } from "../../compiler/ast-render/js.js";
 import { getDependentComponents } from "../../compiler/ast-render/webpage.js";
+import { ComponentData } from '../../compiler/common/component.js';
 import { Context } from "../../compiler/common/context.js";
+import { createComponent } from '../../compiler/create_component.js';
 import { parse_component } from '../../compiler/source-code-parse/parse.js';
 import { loadComponentsFromDirectory } from '../../server/load_directory.js';
-import { config_arg_properties } from "./config_arg_properties.js";
+import { create_config_arg_properties } from "./config_arg_properties.js";
 
-export const test_logger = Logger.get("wick").get("test").activate();
+export const test_logger = Logger.get("wick").get("test");
+const log_level_arg = addCLIConfig("test", para_args.log_level_properties);
+const config_arg = addCLIConfig("test", create_config_arg_properties());
 
-
-const config_arg = addCLIConfig("test", config_arg_properties);
-
-addCLIConfig("test", {
+addCLIConfig<URI>("test", {
     key: "test",
     help_brief: `
 Test components that have been defined with the \`@test\` synthetic import
-`
+`,
+    REQUIRES_VALUE: true,
+    default: <string>process.cwd(),
+    accepted_values: <(typeof URI)[]>[URI]
 }).callback = (
-        async (args) => {
+        async (input_path, args) => {
 
-            const input_path = URI.resolveRelative(args.trailing_arguments.pop() ?? "./");
-            const root_directory = URI.resolveRelative(input_path);
+            test_logger.activate(log_level_arg.value);
+
+            //const input_path = URI.resolveRelative(args.trailing_arguments.pop() ?? "./");
+            const root_path = URI.resolveRelative(input_path);
             const config = config_arg.value;
-
 
             test_logger
                 .debug(`Input root path:                [ ${input_path + ""} ]`);
@@ -45,11 +48,16 @@ Test components that have been defined with the \`@test\` synthetic import
             context.assignGlobals(config.globals ?? {});
 
             test_logger
-                .log(`Loading resources from:         [ ${root_directory + ""} ]`);
+                .log(`Loading resources from:         [ ${root_path + ""} ]`);
 
-            await loadComponentsFromDirectory(
-                root_directory, context, config.endpoint_mapper
-            );
+            if (root_path.ext == "wick") {
+                await createComponent(root_path, context);
+            } else {
+
+                await loadComponentsFromDirectory(
+                    root_path, context, config.endpoint_mapper
+                );
+            }
 
             const test_sources = [];
             const suites = [];

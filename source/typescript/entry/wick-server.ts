@@ -46,4 +46,9 @@ export * from "../types/all.js";
 export type { WickLibrary } from './wick-full';
 export * from "./wick-full.js";
 
+
+import { create_config_arg_properties } from './cli/config_arg_properties.js';
+export const args = {
+    create_config_arg_properties
+};
 export default wick_server;

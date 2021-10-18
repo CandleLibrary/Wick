@@ -15,16 +15,15 @@ export function mapEndpoints(uri: URI, working_directory: URI) {
 	const file_name = uri.file.split(".");
 
 	if (file_name[file_name.length - 2] == "index") {
-		const path =
-			"/"
-			+
-			uri.dir.replace(working_directory + "", "")
-			+
-			file_name.slice(0, -2).join("/")
-			+
-			"/";
 
-		return path;
+		const sub_path = uri.dir.replace(working_directory + "", "")
+			+
+			file_name.slice(0, -2).join("/");
+
+		if (sub_path == "/")
+			return sub_path;
+
+		return "/" + sub_path + "/";
 	}
 
 	return "";

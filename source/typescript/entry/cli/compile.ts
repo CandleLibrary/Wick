@@ -7,7 +7,7 @@ import { Context } from "../../compiler/common/context.js";
 import { getAttribute } from "../../compiler/common/html.js";
 import { compile_module } from '../../server/compile_module.js';
 import { loadComponentsFromDirectory } from '../../server/load_directory.js';
-import { config_arg_properties } from "./config_arg_properties.js";
+import { create_config_arg_properties } from "./config_arg_properties.js";
 import { Token } from "@candlelib/hydrocarbon";
 
 const compile_logger = Logger.get("wick").get("compile").activate();
@@ -15,9 +15,9 @@ const compile_logger = Logger.get("wick").get("compile").activate();
 const
     { package: pkg, package_dir }
         //@ts-ignore
-        = await getPackageJsonObject(new URI(import.meta.url).path),;
+        = await getPackageJsonObject(new URI(import.meta.url).path), ;
 
-const config_arg = addCLIConfig("compile", config_arg_properties);
+const config_arg = addCLIConfig("compile", create_config_arg_properties());
 
 const output_arg = addCLIConfig<URI>("compile", {
     key: "output",
@@ -78,9 +78,10 @@ optionally hydrated with associated support scripts.`
             compile_logger
                 .log(`Loading resources from:         [ ${root_directory + ""} ]`);
 
-            const { page_components, components, endpoints } = await loadComponentsFromDirectory(
-                root_directory, context, config.endpoint_mapper
-            );
+            const { page_components, components, endpoints }
+                = await loadComponentsFromDirectory(
+                    root_directory, context, config.endpoint_mapper
+                );
 
             compile_logger
                 .rewrite_log(`Loaded ${pluralize(context.components.size, "component")} from        [ ${root_directory + ""} ]`);
