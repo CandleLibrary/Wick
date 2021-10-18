@@ -411,7 +411,7 @@ export function getBindingStaticResolutionType(
 
     if (!binding.static_resolution_type) {
 
-        let type = 0;
+        let type = STATIC_RESOLUTION_TYPE.INVALID;
 
         switch (binding.type) {
             case BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE:
@@ -453,6 +453,7 @@ export function getBindingStaticResolutionType(
 
         if (binding.default_val) {
             const v = getExpressionStaticResolutionType(binding.default_val, comp, context);
+
             type |= v;
         }
 

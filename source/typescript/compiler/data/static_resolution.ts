@@ -21,7 +21,7 @@ import {
     Is_Statically_Resolvable_On_Server
 } from '../common/binding.js';
 import { ComponentData } from '../common/component.js';
-import { getExtendTypeVal } from '../common/extended_types.js';
+import { getExtendTypeVal, Is_Extend_Type } from '../common/extended_types.js';
 import { convertObjectToJSNode } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 import { Context } from '../common/context.js';
@@ -74,9 +74,9 @@ export async function getStaticValue(
             html = ast;
         } else {
 
+            const data_string = renderCompressed(<any>ast);
             try {
 
-                const data_string = renderCompressed(<any>ast);
 
                 if (data_string)
                     if (ast.type == JSNodeType.ArrowFunction) {
@@ -104,7 +104,11 @@ export async function getStaticValue(
                 }
 
             } catch (e) {
-                console.error(e);
+                // Keep these errors quiet - An error here simply means
+                // That this expression will not be able to be resolved 
+                // statically.
+                // console.log(data_string);
+                // console.error(e);
             }
         }
     }
@@ -186,6 +190,13 @@ export function getExpressionStaticResolutionType(
 
             case JSNodeType.FunctionDeclaration:
                 type |= STATIC_RESOLUTION_TYPE.INVALID;
+                break;
+
+            default:
+
+                if (Is_Extend_Type(node.type)) {
+                    type |= STATIC_RESOLUTION_TYPE.INVALID;
+                }
         }
     }
 
