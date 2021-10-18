@@ -103,7 +103,9 @@ registerFeature(
                     return exp;
             },
 
-            buildHTML: (node, comp, context, model) => null
+            buildHTML: (node, comp, context, model) => {
+                
+            }
         });
 
 

@@ -1,6 +1,6 @@
 import { JSIdentifierReference, JSNode, JSNodeType, tools } from '@candlelib/js';
 import { BINDING_VARIABLE_TYPE } from '../../types/all.js';
-import { addNameToDeclaredVariables, Variable_Is_Declared_In_Closure } from '../common/binding.js';
+import { addNameToDeclaredVariables, Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure } from '../common/binding.js';
 import { Context } from '../common/context.js';
 import { createParseFrame } from '../common/frame.js';
 import { BindingIdentifierReference } from '../common/js_hook_types.js';
@@ -28,6 +28,7 @@ registerFeature(
                         const binding = build_system.getComponentBinding(name, component);
 
                         if (binding && binding.type == BINDING_VARIABLE_TYPE.CURE_TEST) {
+                            skip();
 
                             // Get binding variables and other information necessary to properly 
                             // test this component. 
@@ -47,14 +48,13 @@ registerFeature(
 
                             temp_frame.method_name = "--testing--";
 
-                            addNameToDeclaredVariables("assert", temp_frame);
-                            addNameToDeclaredVariables("assert_group", temp_frame);
-
                             const out_node = await build_system.processNodeAsync(
                                 node.nodes[1], temp_frame, component, context
                             );
 
                             context.test_rig_sources.get(component).push(out_node);
+
+
 
                             return null;
                         }
@@ -76,13 +76,14 @@ registerFeature(
 
                         const name = (<JSIdentifierReference>node).value;
 
-                        if (node.type !== BindingIdentifierReference) {
+                        if (node.type !== BindingIdentifierReference
+                            &&
+                            !Variable_Is_Declared_In_Closure(name, frame)
+                            &&
+                            !Name_Is_A_Binding_Variable(name, frame)
+                        ) {
 
-                            if (!Variable_Is_Declared_In_Closure(name, frame)) {
-
-                                return <JSNode>node;
-
-                            }
+                            return <JSNode>node;
                         }
                     }
                 }
