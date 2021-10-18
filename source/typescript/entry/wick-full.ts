@@ -3,25 +3,24 @@ import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlelib/css";
 import { JSNode, JSNodeTypeLU } from "@candlelib/js";
 import URL from "@candlelib/uri";
 import { createCompiledComponentClass } from "../compiler/ast-build/build.js";
-import { parseSource } from "../compiler/ast-parse/source.js";
 import { componentDataToCSS } from "../compiler/ast-render/css.js";
 import { componentDataToHTML } from "../compiler/ast-render/html.js";
 import {
     componentDataToJS,
-    componentDataToJSCached,
+    componentDataToJSCached
 } from "../compiler/ast-render/js.js";
-import * as b_sys from "../compiler/build_system.js";
-import { ComponentData } from "../compiler/common/component.js";
+import { Context } from '../compiler/common/context.js';
 import { css_selector_helpers } from "../compiler/common/css.js";
 import { ComponentHash } from "../compiler/common/hash_name.js";
 
+import { init_build_system } from '../compiler/init_build_system.js';
 import { parse_component } from "../compiler/source-code-parse/parse.js";
 import { renderWithFormatting } from "../compiler/source-code-render/render.js";
 import { WickRTComponent } from "../runtime/component.js";
 import { rt, WickRuntime } from "../runtime/global.js";
 import { Observable } from "../runtime/observable/observable.js";
 import { ObservableScheme } from "../runtime/observable/observable_prototyped.js";
-import { init, WickTest as test } from "../test/wick.test.js";
+import { WickTest as test } from "../test/wick.test.js";
 
 import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from '../types/wick_ast.js';
 import { BindingVariable, BINDING_VARIABLE_TYPE } from '../types/binding.js';
@@ -49,31 +48,8 @@ export {
     test,
 };
 
-debug("\n\n----------- Initializing Wick ---------------");
 
-debug("Loading Wick build features");
-/*** */
-import "../compiler/features/container_features.js";
-import "../compiler/features/expression_features.js";
-import "../compiler/features/function_features.js";
-import "../compiler/features/html_attribute_features.js";
-import "../compiler/features/html_event_attribute_features.js";
-import "../compiler/features/html_img_features.js";
-import "../compiler/features/html_general_features.js";
-import "../compiler/features/identifier_features.js";
-import "../compiler/features/input_features.js";
-import "../compiler/features/module_features.js";
-import "../compiler/features/string_features.js";
-import "../compiler/features/text_node_features.js";
-import "../compiler/features/template_features.js";
-import "../compiler/features/markdown_features.js";
-import "../compiler/features/test_features.js";
-
-await b_sys.loadFeatures();
-
-debug("Completed loading of build features");
-
-debug("------------ Wick Initialized ---------------\n\n");
+await init_build_system();
 
 /**
  * Exporting the wick compiler
