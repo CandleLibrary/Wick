@@ -12,7 +12,7 @@ import {
 import { Context } from '../compiler/common/context.js';
 import { css_selector_helpers } from "../compiler/common/css.js";
 import { ComponentHash } from "../compiler/common/hash_name.js";
-
+import { createComponent } from '../compiler/create_component.js';
 import { init_build_system } from '../compiler/init_build_system.js';
 import { parse_component } from "../compiler/source-code-parse/parse.js";
 import { renderWithFormatting } from "../compiler/source-code-render/render.js";
@@ -21,16 +21,9 @@ import { rt, WickRuntime } from "../runtime/global.js";
 import { Observable } from "../runtime/observable/observable.js";
 import { ObservableScheme } from "../runtime/observable/observable_prototyped.js";
 import { WickTest as test } from "../test/wick.test.js";
-
-import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from '../types/wick_ast.js';
 import { BindingVariable, BINDING_VARIABLE_TYPE } from '../types/binding.js';
+import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from '../types/wick_ast.js';
 
-import { Context } from '../compiler/common/context.js';
-
-// Load features. Only need side effects as the proper 
-// systems will automatically register themselves through the
-// build system
-import { log, debug } from './logger.js';
 import wick_runtime from './wick-runtime.js';
 
 export * from "../compiler/source-code-render/render.js";
@@ -134,43 +127,9 @@ export interface WickCompiler {
 
 
 /**
- * ==================================================================================================
- * ==================================================================================================
- * Creates an ExtendedComponentData object from a string or from data imported from a URL.
- * 
- * @param input - String with Wick source text or a URL to a file containing source text.
- * 
- * @param context - An optional Presets object. If this is left undefined then the global 
- * context object will be used, or a new global context object will be created if not defined. This
- * argument is Presets object and the global context object has not yet been set, then global context
- * will be set to the value of this argument.
- * 
- * @returns {Promise<ComponentData>}
- */
-async function componentCreate(input: string | URL, context: Context = rt.context): Promise<ComponentData> {
-
-    // Ensure there is a context object attached to this component.
-    if (!context)
-        context = new Context();
-
-    if (!rt.context)
-        rt.context = context;
-
-    b_sys.enableParserFeatures();
-
-    const { comp: comp_data } = await parseSource(input, context);
-
-    b_sys.disableParserFeatures();
-
-    comp_data.context = context;
-
-    return comp_data;
-}
-
-/**
  * Wick component parser and component library.
  */
-export type WickLibrary = typeof componentCreate & WickCompiler & typeof wick_runtime;
+export type WickLibrary = typeof createComponent & WickCompiler & typeof wick_runtime;
 
 /** README:USAGE
  * 
@@ -194,7 +153,7 @@ export type WickLibrary = typeof componentCreate & WickCompiler & typeof wick_ru
  * ```
  */
 const wick: WickLibrary = Object.assign(
-    componentCreate,
+    createComponent,
     wick_runtime,
     <WickCompiler>{
 
@@ -231,7 +190,7 @@ const wick: WickLibrary = Object.assign(
              * Configure runtime components and component data objects 
              * with methods useful for testing behavior.
              */
-            enableTest: init,
+            enableTest: init_build_system,
 
             setWrapper: async function (url) {
                 //create new component
