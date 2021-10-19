@@ -221,11 +221,13 @@ async function loadHTMLImports(ast: HTMLNode, component: ComponentData, context:
         }
 }
 
-export async function processWickHTML_AST(ast: HTMLNode,
+export async function processWickHTML_AST(
+    ast: HTMLNode,
     component: ComponentData,
     context: Context,
     USE_AS_PRIMARY_HTML: boolean = true,
-    APPEND_TO_COMPONENT_INLINE_HTML = true
+    APPEND_TO_COMPONENT_INLINE_HTML = true,
+    location: string = component.location + ""
 ): Promise<HTMLNode> {
     //Process the import list
 
@@ -358,6 +360,8 @@ export async function processWickHTML_AST(ast: HTMLNode,
     }
 
     if (receiver.ast) {
+
+        receiver.ast.pos.path = location;
 
         if (USE_AS_PRIMARY_HTML)
             component.HTML = receiver.ast;

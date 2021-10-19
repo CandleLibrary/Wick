@@ -23,7 +23,12 @@ export async function createComponent(
      * has not yet been set, then global context will be set to the 
      * value of this argument.
      */
-    context: Context = rt.context
+    context: Context = rt.context,
+
+    /**
+     * Base URL of component to resolve relative paths
+     */
+    location?: URL
 
 ): Promise<ComponentData> {
 
@@ -36,7 +41,7 @@ export async function createComponent(
 
     b_sys.enableParserFeatures();
 
-    const { comp: comp_data } = await parseSource(input, context);
+    const { comp: comp_data } = await parseSource(input, context, location);
 
     b_sys.disableParserFeatures();
 
