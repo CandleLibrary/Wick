@@ -19,7 +19,7 @@ import { renderWithFormatting } from "../compiler/source-code-render/render.js";
 import { WickRTComponent } from "../runtime/component.js";
 import { rt, WickRuntime } from "../runtime/global.js";
 import { Observable } from "../runtime/observable/observable.js";
-import { ObservableScheme } from "../runtime/observable/observable_prototyped.js";
+import { ObservableScheme, ObservableScheme__ } from "../runtime/observable/observable_prototyped.js";
 import { WickTest as test } from "../test/wick.test.js";
 import { BindingVariable, BINDING_VARIABLE_TYPE } from '../types/binding.js';
 import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from '../types/wick_ast.js';
@@ -217,7 +217,9 @@ const wick: WickLibrary = Object.assign(
             WickRTComponent,
             Context: Context,
             Observable,
-            ObservableScheme
+            ObservableScheme<T>(obj: T): ObservableScheme__<T> & T {
+                return <any>new ObservableScheme__(obj);
+            }
         },
 
     });

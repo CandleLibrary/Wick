@@ -123,7 +123,7 @@ export async function importResource(
                 }
             }
             // Read file and determine if we have a component, a script or some other resource. 
-            //Compile Component Data
+            // Compile Component Data
             else if (!(uri.ext == "wick" || uri.ext == "html")
                 ||
                 !(await importComponentData(

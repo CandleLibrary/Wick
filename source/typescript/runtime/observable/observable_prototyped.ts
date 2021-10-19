@@ -76,22 +76,24 @@ class SchemedContainer extends ObservableArray<any> {
                 _SealedProperty_(this, name, schema.proto[name]);
     }
 }
+type OS<T> = {
 
-export class ObservableScheme<T = any> extends ObservableBase {
+    [P in keyof T]: T[P];
+};
+export class ObservableScheme__<T = any> extends ObservableBase {
+
     _changed_: boolean;
     schema: any;
     look_up: any;
-
     prop_offset: number;
-
     static schema: any;
 
     constructor(data: T, _schema_ = null) {
 
         super();
 
-        if (this.constructor === ObservableScheme)
-            this.constructor = (class extends ObservableScheme { });
+        if (this.constructor === ObservableScheme__)
+            this.constructor = (class extends ObservableScheme__ { });
 
         if (!this.schema) {
 
@@ -220,4 +222,8 @@ export class ObservableScheme<T = any> extends ObservableBase {
     createProp() { }
 }
 
-ObservableScheme.prototype.toJSON = ObservableData.prototype.toJSON;
+export function ObservableScheme<T>(obj: T): ObservableScheme__<T> & T {
+    return <any>new ObservableScheme__(obj);
+}
+
+ObservableScheme__.prototype.toJSON = ObservableData.prototype.toJSON;

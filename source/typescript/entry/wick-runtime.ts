@@ -7,7 +7,7 @@ import {
 } from "../runtime/html.js";
 import { loadModules } from "../runtime/load_modules.js";
 import { Observable } from '../runtime/observable/observable.js';
-import { ObservableScheme } from '../runtime/observable/observable_prototyped.js';
+import { ObservableScheme__ } from '../runtime/observable/observable_prototyped.js';
 
 let
     nop = _ => !0,
@@ -41,7 +41,9 @@ const wick = Object.assign(wick_root, {
         WickRTComponent: WickRTComponent,
         Context: Context,
         Observable: Observable,
-        ObservableScheme: ObservableScheme
+        ObservableScheme<T>(obj: T): ObservableScheme__<T> & T {
+            return <any>new ObservableScheme__(obj);
+        }
     },
     /**
      * Integrate the givin set of UserPresets with
