@@ -7,7 +7,11 @@ import { getElementAtIndex } from "../common/html.js";
 import { parse_css_selector } from "../source-code-parse/parse.js";
 import { renderWithFormatting, renderNewFormatted } from "../source-code-render/render.js";
 
-export function UpdateSelector(node: CSSNode, name, class_selector: CSSSelectorNode) {
+export function UpdateSelector(
+    node: CSSNode, name,
+    class_selector: CSSSelectorNode,
+    ADD_COMPONENT_SCOPE: boolean = true
+) {
 
     node.selectors = node.selectors.map(s => {
 
@@ -34,7 +38,7 @@ export function UpdateSelector(node: CSSNode, name, class_selector: CSSSelectorN
             }
         }
 
-        if (!HAS_ROOT) {
+        if (!HAS_ROOT && ADD_COMPONENT_SCOPE) {
             const ns = parse_css_selector(`.${name} ${renderWithFormatting(s)}`);
             ns.pos = s.pos;
             return ns;
@@ -45,7 +49,11 @@ export function UpdateSelector(node: CSSNode, name, class_selector: CSSSelectorN
 
 }
 
-export function componentToMutatedCSS(css: ComponentStyle, component?: ComponentData): CSSNode {
+export function componentToMutatedCSS(
+    css: ComponentStyle,
+    component?: ComponentData,
+    ADD_COMPONENT_SCOPE: boolean = true
+): CSSNode {
 
     const r = { ast: null };
 
@@ -56,9 +64,11 @@ export function componentToMutatedCSS(css: ComponentStyle, component?: Component
     const name = component.name;
 
     if (host_ele?.component_name && host_ele != component.HTML) {
+
         const expat_node = host_ele.attributes.find(({ name }) => name == "expat");
 
         class_selector = parse_css_selector(`${host_ele.tag}[expat="${expat_node[1]}"]`);
+
     } else
         class_selector = parse_css_selector(`.${name}`);
 
@@ -70,7 +80,7 @@ export function componentToMutatedCSS(css: ComponentStyle, component?: Component
         const copy = Object.assign({}, node);
 
         if (component)
-            UpdateSelector(copy, name, class_selector);
+            UpdateSelector(copy, name, class_selector, ADD_COMPONENT_SCOPE);
 
         replace(copy);
     }
@@ -78,8 +88,21 @@ export function componentToMutatedCSS(css: ComponentStyle, component?: Component
     return <CSSNode>r.ast;
 }
 
-export function getCSSStringFromComponentStyle(css: ComponentStyle, component?: ComponentData) {
-    return css.data ? renderNewFormatted(componentToMutatedCSS(css, component)) : "";
+export function getCSSStringFromComponentStyle(
+    css: ComponentStyle,
+    component?: ComponentData,
+    ADD_COMPONENT_SCOPE: boolean = true
+) {
+    if (css.data) {
+
+        const css_data = ADD_COMPONENT_SCOPE
+            ? componentToMutatedCSS(css, component)
+            : css.data;
+
+        return renderNewFormatted(css_data);
+    }
+
+    return "";
 }
 
 export function componentDataToCSS(component: ComponentData): string {
