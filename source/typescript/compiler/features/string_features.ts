@@ -35,47 +35,50 @@ registerFeature(
             const css_selector = string_node.value.slice(1); //remove "@"
 
             let html_node: HTMLNode = null, expression = null;
+            try {
 
-            switch (css_selector.toLowerCase()) {
-                case "ctxwebgpu":
-                    html_node = build_system.css.matchAll("canvas", component.HTML)[0];
 
-                    if (html_node)
-                        expression = build_system.js.expr(`$$ele${html_node.id}.getContext("gpupresent")`);
+                switch (css_selector.toLowerCase()) {
+                    case "ctxwebgpu":
+                        html_node = build_system.css.matchAll("canvas", component.HTML)[0];
 
-                    break;
-                case "ctx3d":
-                    html_node = build_system.css.matchAll("canvas", component.HTML)[0];
+                        if (html_node)
+                            expression = build_system.js.expr(`$$ele${html_node.id}.getContext("gpupresent")`);
 
-                    if (html_node)
+                        break;
+                    case "ctx3d":
+                        html_node = build_system.css.matchAll("canvas", component.HTML)[0];
 
-                        expression = build_system.js.expr(`$$ele${html_node.id}.getContext("webgl2")`);
+                        if (html_node)
 
-                    break;
+                            expression = build_system.js.expr(`$$ele${html_node.id}.getContext("webgl2")`);
 
-                case "ctx2d":
-                    html_node = build_system.css.matchAll("canvas", component.HTML)[0];
+                        break;
 
-                    if (html_node)
-                        expression = build_system.js.expr(`$$ele${html_node.id - 1}.getContext("2d")`);
+                    case "ctx2d":
+                        html_node = build_system.css.matchAll("canvas", component.HTML)[0];
 
-                    break;
+                        if (html_node)
+                            expression = build_system.js.expr(`$$ele${html_node.id - 1}.getContext("2d")`);
 
-                /*        case "root":
-                           if (component.HTML)
-                               expression = build_system.js.expr(`$$ele${component.HTML.id}`);
-                           break;
-        */
-                default: {
-                    const html_nodes = build_system.css.matchAll(css_selector, component.HTML);
+                        break;
 
-                    if (html_nodes.length > 0)
+                    /*        case "root":
+                               if (component.HTML)
+                                   expression = build_system.js.expr(`$$ele${component.HTML.id}`);
+                               break;
+            */
+                    default: {
+                        const html_nodes = build_system.css.matchAll(css_selector, component.HTML);
 
-                        expression = (html_nodes.length == 1)
-                            ? build_system.js.expr(`$$ele${html_nodes[0].id}`)
-                            : build_system.js.expr(`[${html_nodes.map(e => `$$ele${e.id}`).join(",")}]`);
+                        if (html_nodes.length > 0)
+
+                            expression = (html_nodes.length == 1)
+                                ? build_system.js.expr(`$$ele${html_nodes[0].id}`)
+                                : build_system.js.expr(`[${html_nodes.map(e => `$$ele${e.id}`).join(",")}]`);
+                    }
                 }
-            }
+            } catch (e) { }
 
             if (expression == null) {
                 expression = Object.assign({}, string_node, {
@@ -104,7 +107,7 @@ registerFeature(
             },
 
             buildHTML: (node, comp, context, model) => {
-                
+
             }
         });
 
