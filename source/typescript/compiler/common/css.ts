@@ -1,6 +1,6 @@
-import { SelectionHelpers } from "@candlelib/css";
+import { tools } from "@candlelib/css";
 import { HTMLNode } from '../../types/wick_ast';
-export const css_selector_helpers: SelectionHelpers<HTMLNode> = {
+export const css_selector_helpers: tools.selectors.SelectionHelpers<HTMLNode> = {
 
     getIndexFigures: (ele, tag) => ({ ele_index: 0, tag_index: 0 }),
 

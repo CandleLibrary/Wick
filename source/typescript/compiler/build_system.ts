@@ -1,4 +1,4 @@
-import { CSSNodeType, matchAll } from '@candlelib/css';
+import { CSSNodeType, tools } from '@candlelib/css';
 import { exp, ext, JSNode, JSNodeType, JSNodeTypeLU, stmt } from '@candlelib/js';
 import { dir, log, trace, warn, debug } from '../entry/logger.js';
 import {
@@ -172,7 +172,7 @@ const unregistered_system = {
  */
 const build_system = {
     css: {
-        matchAll: (string: string, html: HTMLNode) => matchAll(string, html, css_selector_helpers)
+        matchAll: (string: string, html: HTMLNode) => tools.rules.matchAll(string, html, css_selector_helpers)
     },
     /**
      * Allows the build system to import a resource and 
