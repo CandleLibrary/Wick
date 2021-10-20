@@ -6,6 +6,7 @@ import { JSNode, JSNodeType } from '@candlelib/js';
 import { Logger } from "@candlelib/log";
 import { addCLIConfig, args as para_args } from "@candlelib/paraffin";
 import URI from '@candlelib/uri';
+import { traverse } from '@candlelib/conflagrate';
 import { createCompiledComponentClass, finalizeBindingExpression, processInlineHooks } from '../../compiler/ast-build/build.js';
 import { componentDataToJSStringCached } from "../../compiler/ast-render/js.js";
 import { getDependentComponents } from "../../compiler/ast-render/webpage.js";
@@ -76,6 +77,7 @@ Test components that have been defined with the \`@test\` synthetic import
             for (const [, component] of context.components) {
 
                 if (context.test_rig_sources.has(component)) {
+
                     test_logger.log("Compiling tests for:\n   ->" + component.location + "");
 
                     const test_suite = createTestSuite(
@@ -87,7 +89,7 @@ Test components that have been defined with the \`@test\` synthetic import
 
                     suites.push(test_suite);
 
-                    let source_string = context.test_rig_sources.get(component);
+                    let source_ast_block = context.test_rig_sources.get(component)[0];
 
                     const components = getDependentComponents(component, context);
 
@@ -102,6 +104,22 @@ Test components that have been defined with the \`@test\` synthetic import
                         component_strings.push(`wick.rt.rC(${class_string})`);
                     }
 
+                    const model = traverse(source_ast_block, "nodes").makeMutable()
+                        .filter("type", JSNodeType.VariableDeclaration, JSNodeType.LexicalDeclaration)
+                        .run(
+                            (node, meta) => {
+                                if (
+                                    node.nodes.length == 1
+                                    &&
+                                    node.nodes[0].nodes[0].value == "$model"
+                                ) {
+                                    meta.mutate(null);
+
+                                    return node;
+                                }
+                            }
+                        )?.[0]?.nodes[0]?.nodes[1];
+
                     const comp_class = await createCompiledComponentClass(component, context, false, false);
 
                     const test_source = test_script_template(component_strings, component);
@@ -110,7 +128,7 @@ Test components that have been defined with the \`@test\` synthetic import
 
                     const ast: JSNode = {
                         type: JSNodeType.Module,
-                        nodes: [...source_string],
+                        nodes: [source_ast_block],
                         pos: component.root_frame.ast.pos
                     };
 
@@ -124,8 +142,14 @@ Test components that have been defined with the \`@test\` synthetic import
                         "comp"
                     )).ast;
 
+                    if (model)
+                        source.nodes[5 + component_strings.length]
+                            .nodes[0].nodes[1].nodes.push(model);
+
                     //@ts-ignore
                     source.nodes.push(...test_source_ast.nodes);
+
+
 
                     //console.log(renderNewFormatted(source));
 
@@ -147,7 +171,10 @@ Test components that have been defined with the \`@test\` synthetic import
         }
     );
 
-function test_script_template(component_strings: any[], component: ComponentData) {
+function test_script_template(
+    component_strings: any[],
+    component: ComponentData
+) {
     return `
 import spark from "@candlelib/spark";
 

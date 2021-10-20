@@ -494,9 +494,9 @@ export async function finalizeBindingExpression(
 
 
                         const update_action =
+
                             comp_var.type == BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE
-                                ? "fua" : "ua";
-                        const
+                                ? "fua" : "ua",
 
                             index = comp_info.binding_records.get(name).index,
 

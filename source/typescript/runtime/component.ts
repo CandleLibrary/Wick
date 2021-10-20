@@ -34,6 +34,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     CONNECTED: boolean;
 
+    ALLOW_UPDATE: boolean;
+
     context: Context;
     nlu: object;
 
@@ -92,7 +94,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     _SCHD_: number;
 
     constructor(
-        model = null,
         existing_element = null,
         wrapper = null,
         parent_chain: WickRTComponent[] = [],
@@ -119,6 +120,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.active_flags = 0;
         this.call_depth = 0;
         this.affinity = element_affinity;
+
+        this.ALLOW_UPDATE = false;
+        this.CONNECTED = false;
+        this.INITIALIZED = false;
+        this.TRANSITIONED_IN = false;
+        this.DESTROY_AFTER_TRANSITION = false;
 
         //@ts-ignore
         this.up = this.updateParent;
@@ -163,23 +170,18 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             return;
 
         this.INITIALIZED = true;
+        this.ALLOW_UPDATE = true;
 
         for (const child of this.ch)
             child.initialize();
 
         this.model = model;
 
-        this.CONNECTED = true;
-
         this.init(this);
 
         this.async_init();
 
-        this.model = null;
-
         this.setModel(model);
-
-        this.CONNECTED = false;
 
         return this;
     }
@@ -238,8 +240,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     addChild(cp: WickRTComponent) {
 
-
-
         for (const ch of this.ch)
             if (ch == cp) continue;
 
@@ -250,13 +250,16 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     connect() {
         this.CONNECTED = true;
+        this.ALLOW_UPDATE = true;
         for (const child of this.ch)
             child.connect();
+        this.onModelUpdate();
     }
 
     disconnect() {
         for (const child of this.ch)
             child.disconnect();
+        this.ALLOW_UPDATE = false;
         this.CONNECTED = false;
     }
 
@@ -273,7 +276,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (rt.templates.has(this.name)) {
 
-            const template: HTMLTemplateElement = <HTMLTemplateElement>rt.templates.get(this.name);
+            const template: HTMLTemplateElement = <HTMLTemplateElement>
+                rt.templates.get(this.name);
 
             if (template) {
 
@@ -326,16 +330,15 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     appendToDOM(parent_element: HTMLElement, other_element: HTMLElement = null, INSERT_AFTER = false) {
 
         //Lifecycle Events: Connecting <======================================================================
-        this.connect();
-
-        this.update({ connecting: true });
+        this.connecting();
 
         if (other_element) {
             if (!INSERT_AFTER)
                 other_element.parentElement.insertBefore(this.ele, other_element);
             else {
                 if (other_element.nextElementSibling)
-                    other_element.parentElement.insertBefore(this.ele, other_element.nextElementSibling);
+                    other_element.parentElement
+                        .insertBefore(this.ele, other_element.nextElementSibling);
                 else
                     other_element.parentElement.appendChild(this.ele);
             }
@@ -343,8 +346,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             parent_element.appendChild(this.ele);
         }
 
+        this.connect();
+
         //Lifecycle Events: Connected <======================================================================
-        this.update({ connected: true });
+        this.connected();
     }
 
 
@@ -353,15 +358,14 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         if (this.CONNECTED == false) return;
 
         //Lifecycle Events: Disconnecting <======================================================================
-        this.update({ disconnecting: true });
+        this.disconnecting();
 
         if (this.ele && this.ele.parentElement)
             this.ele.parentElement.removeChild(this.ele);
 
         //Lifecycle Events: Disconnected <======================================================================
-        this.update({ disconnected: true });
-
         this.disconnect();
+        this.disconnected();
 
     }
 
@@ -495,7 +499,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     setModel(model: ObservableModel | any) {
 
-        if (this.model) {
+        if (this.model && model != this.model) {
             if (this.polling_id >= 0) {
                 clearInterval(this.polling_id);
                 this.polling_id = -1;
@@ -520,10 +524,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                 //Create a polling monitor
                 //if (this.ALLOW_POLLING)
                 if (this.polling_id < 0)
-                    this.polling_id = <number><unknown>setInterval(this.onModelUpdate.bind(this), 1000 / 15);
+                    this.polling_id = <number><unknown>
+                        setInterval(this.onModelUpdate.bind(this), 1000 / 15);
             }
 
-            this.onModelUpdate.call(this);
+
+            this.onModelUpdate(model);
         }
     }
 
@@ -532,31 +538,32 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
      * @param changed_names - An iterable list of property names on the model that have been modified 
      */
 
-    onModelUpdate(model: any = this.model, changed_names?: Iterable<string>) {
+    onModelUpdate(
+        model: any = this.model,
+        flags = BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL | BINDING_FLAG.DEFAULT_BINDING_STATE
+    ) {
         // Go through the model's props and test whether they are different then the 
         // currently cached variables
 
-        if (!this.CONNECTED) return;
+        if (!this.ALLOW_UPDATE) return;
 
         if (model) {
 
-            if (changed_names) {
+            this.update(model, flags);
 
-                for (const name in changed_names) {
-
-                    const flag_id = this.nlu[name];
-
-                    if (
-                        flag_id && (flag_id >>> 24)
-                        &
-                        BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL
-                    )
-                        this.ua(flag_id & 0xFFFFFF, model[name]);
-                }
-            } else
-                this.update(model, BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL);
+            this.updateChildrenWithModel(model);
         }
     }
+
+    private updateChildrenWithModel(model: any) {
+        for (const child of this.ch)
+            child.onModelUpdate(model,
+                BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL
+                | BINDING_FLAG.FROM_PARENT
+                | BINDING_FLAG.DEFAULT_BINDING_STATE
+            );
+    }
+
     /**
      * ██    ██ ██████  ██████   █████  ████████ ███████ 
      * ██    ██ ██   ██ ██   ██ ██   ██    ██    ██      
@@ -565,19 +572,20 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
      *  ██████  ██      ██████  ██   ██    ██    ███████ 
      */
 
-    update(data, flags: number = 0, IMMEDIATE: boolean = false) {
+    update(data: object, flags: number = 1, IMMEDIATE: boolean = false) {
 
-        if (!this.CONNECTED) return;
+        if (!this.ALLOW_UPDATE) return;
 
         for (const name in data) {
 
             const val = data[name];
 
+
             if (typeof val !== "undefined" && this.nlu) {
 
                 const index = this.nlu[name];
 
-                if (((index >>> 24) & flags))
+                if (flags && ((index >>> 24) & flags) == flags)
                     this.ua(index & 0xFFFFFF, val);
             }
         }
@@ -1002,13 +1010,25 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         return ele;
     }
+
+    connecting() { }
+    connected() { }
+
+    disconnecting() { }
+    disconnected() { }
 }
 
 
 //If null=n attribute exists then the container will 
 //be hydrated by the next n elements, which do not 
 //belong to the scope of the current container. 
-function process_container(ele: HTMLElement, scope_component: WickRTComponent, sk: number, PROCESS_CHILDREN: boolean) {
+function process_container(
+    ele: HTMLElement,
+    scope_component: WickRTComponent,
+    sk: number,
+    PROCESS_CHILDREN: boolean
+) {
+
     const
         null_count = parseInt(ele.getAttribute("null")) || 0,
         null_elements = [];
@@ -1031,7 +1051,11 @@ function process_container(ele: HTMLElement, scope_component: WickRTComponent, s
     return { sk, PROCESS_CHILDREN };
 }
 
-function iterateElementChildren(ele: HTMLElement, scope_component: WickRTComponent, component_chain: WickRTComponent[]) {
+function iterateElementChildren(
+    ele: HTMLElement,
+    scope_component: WickRTComponent,
+    component_chain: WickRTComponent[]
+) {
 
     let skip_count = 0;
 
@@ -1039,6 +1063,7 @@ function iterateElementChildren(ele: HTMLElement, scope_component: WickRTCompone
 
         if (skip_count-- > 0) continue;
 
-        skip_count = scope_component.integrateElement(<HTMLElement>child, component_chain);
+        skip_count = scope_component
+            .integrateElement(<HTMLElement>child, component_chain);
     }
 }

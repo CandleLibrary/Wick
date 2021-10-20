@@ -110,7 +110,7 @@ export function createClassStringObject(
 
     if (component.global_model_name)
         component_class = stmt(`class ${name} extends 
-        ${class_name} {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model_name}");}}`);
+        ${class_name} {constructor(e,p,w){super(e,p,w,"${component.global_model_name}");}}`);
     else
         component_class = stmt(`class ${name} extends ${class_name} {}`);
 

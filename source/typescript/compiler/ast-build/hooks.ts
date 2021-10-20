@@ -357,7 +357,11 @@ export function processHookASTs(comp: ComponentData, comp_info: CompiledComponen
                     )) > 0)
                 .map(v => comp_info.binding_records.get(v).index).sort();
 
-            appendStmtToFrame(frame, stmt(`if(!this.check(${ids}))return 0;`));
+            if (ids.length > 0)
+                appendStmtToFrame(frame, stmt(`if(!this.check(${ids}))return 0;`));
+
+            if (representative.component_variables.some(v => comp.root_frame.binding_variables.get(v).type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE))
+                appendStmtToFrame(frame, stmt(`if(!this.model)return 0;`));
 
             for (const member of group)
                 appendStmtToFrame(frame, member.ast);
@@ -439,7 +443,12 @@ function processBindingVariables(
         binding.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
         ||
         binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
-    ) class_info.lu_public_variables.push(<any>getPropertyAST(getExternalName(binding), ((binding.flags << 24) | index) + ""));
+    ) class_info.lu_public_variables.push(
+        <any>getPropertyAST(
+            getExternalName(binding),
+            (((binding.flags | BINDING_FLAG.DEFAULT_BINDING_STATE) << 24) | index) + ""
+        )
+    );
 
     if (binding.type == BINDING_VARIABLE_TYPE.METHOD_VARIABLE) {
         const nluf_array_entry = exp(`c.u${index}___`);

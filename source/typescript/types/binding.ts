@@ -62,19 +62,21 @@ export enum BINDING_VARIABLE_TYPE {
  * through the boundaries of a component
  */
 export const enum BINDING_FLAG {
-    FROM_PARENT = 1,
 
-    FROM_PRESETS = 2,
+    DEFAULT_BINDING_STATE = 1,
+    FROM_PARENT = 2,
 
-    FROM_OUTSIDE = 4,
+    FROM_PRESETS = 4,
+
+    FROM_OUTSIDE = 8,
 
     ALLOW_EXPORT_TO_PARENT = 16,
 
-    ALLOW_UPDATE_FROM_CHILD = 64,
+    ALLOW_UPDATE_FROM_CHILD = 32,
 
-    ALLOW_UPDATE_FROM_MODEL = 128,
+    ALLOW_UPDATE_FROM_MODEL = 64,
 
-    WRITTEN = 256
+    WRITTEN = 128
 }
 
 export const enum STATIC_BINDING_STATE {
@@ -142,5 +144,5 @@ export interface BindingVariable {
      */
     ref_count: number;
 
-    source_location?: URI
+    source_location?: URI;
 }

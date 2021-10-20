@@ -61,7 +61,7 @@ export function* getComponentNames(ele: HTMLElement): Generator<string, void, vo
 }
 
 const comp_name_regex = /W[_\$a-zA-Z0-9]+/;
-function String_Is_Wick_Hash_ID(str): boolean {
+export function String_Is_Wick_Hash_ID(str): boolean {
     return !!str.match(comp_name_regex);
 }
 
@@ -127,7 +127,7 @@ export function hydrateComponentElement(hydrate_candidate: HTMLElement, parent_c
                 affinity++;
             } else {
 
-                let comp = new (comp_class)(null, hydrate_candidate, u, parent_chain, u, u, affinity++);
+                let comp = new (comp_class)(hydrate_candidate, u, parent_chain, u, u, affinity++);
 
                 comp.hydrate();
 
@@ -147,13 +147,11 @@ export function hydrateComponentElement(hydrate_candidate: HTMLElement, parent_c
 
 export function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponent, null_elements: HTMLElement[] = []) {
     const
-        comp_constructors = ele
-            .getAttribute("w:ctr")
+        comp_constructors = ele.getAttribute("w:ctr")
             .split(" ")
             .map(name => parent.context.component_class.get(name)),
 
-        comp_attributes = (ele
-            .getAttribute("w:ctr-atr") ?? "")
+        comp_attributes = (ele.getAttribute("w:ctr-atr") ?? "")
             .split(":")
             .map(e => e.split(";").map(e => <[string, string]>e.split("=")));
 

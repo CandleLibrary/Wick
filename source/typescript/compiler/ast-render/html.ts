@@ -34,6 +34,10 @@ export async function componentDataToHTML(
     return { html: html_string, template_map };
 }
 
+function nodeAllowsFormatting(node, parent): boolean {
+    return !((parent?.tagName == "pre") || (node?.tagName == "w-b") || (node?.tagName == "pre"));
+}
+
 /**
  * Return an HTML string from a TemplateHTMLNode AST object
  */
@@ -43,9 +47,9 @@ export function htmlTemplateToString(html: TemplateHTMLNode, html_indent: number
 
     for (const { node, meta: { depth, parent, traverse_state } } of bidirectionalTraverse(html, "children")) {
 
-        const depth_str = (parent?.tagName == "pre")
-            ? ""
-            : "  ".repeat(depth + (html_indent * 2));
+        const depth_str = nodeAllowsFormatting(node, parent)
+            ? "\n" + "  ".repeat(depth + (html_indent * 2))
+            : "";
 
         if (traverse_state == TraverseState.LEAF && (!node.tagName || Is_Tag_Void_Element(node.tagName))) {
 
@@ -92,7 +96,7 @@ export function htmlTemplateToString(html: TemplateHTMLNode, html_indent: number
             //Null container elements do not enclose their child elements
 
 
-            if (node.tagName?.toLocaleLowerCase() == "code") {
+            if (node.tagName?.toLocaleLowerCase() == "code" || node.tagName?.toLocaleLowerCase() == "w-b") {
                 node.strings = [node.strings.join("") + `</${node.tagName}>`];
             } else if (node.tagName !== "null")
                 node.strings.push(depth_str + `</${node.tagName}>`);;
@@ -107,7 +111,7 @@ export function htmlTemplateToString(html: TemplateHTMLNode, html_indent: number
         }
     };
 
-    return html.strings.join("\n");
+    return html.strings.join("");
 }
 
 function addAttributesToString(node: TraversedNode<TemplateHTMLNode>, string: string) {

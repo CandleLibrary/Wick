@@ -111,7 +111,6 @@ function md5(inputString) {
 
 export function ModuleHash(string: string) {
     return "M" + md5(string).slice(0, 8);
-    //return "W" + PearsonModifiedHash(string, 8) + "_";
 }
 
 /**
@@ -120,7 +119,6 @@ export function ModuleHash(string: string) {
 */
 export function ComponentHash(string: string) {
     return "W" + md5(string).slice(0, 15);
-    //return "M" + PearsonModifiedHash(string, 15);
 }
 
 /**

@@ -58,13 +58,18 @@ registerFeature(
 
                 let arrow_argument_match = new Array(1).fill(null), s = null;
 
-                if (getListOfUnboundArgs(ast, comp, arrow_argument_match, build_system)) {
-                    s = parse_js_stmt(`this.al(${element_index}, "${action}", ${arrow_argument_match[0].value}=>a)`);
+                //if (getListOfUnboundArgs(ast, comp, arrow_argument_match, build_system)) {
+                //    s = parse_js_stmt(`this.al(${element_index}, "${action}", ${arrow_argument_match[0].value}=>a)`);
+                //} else {
+                s = parse_js_stmt(`this.al(${element_index}, "${action}", _=>a)`);
+                //}
+
+                if (ast.type == JSNodeType.ArrowFunction) {
+                    s.nodes[0].nodes[1].nodes[2] = ast;
                 } else {
-                    s = parse_js_stmt(`this.al(${element_index}, "${action}", _=>a)`);
+                    s.nodes[0].nodes[1].nodes[2].nodes[1] = ast;
                 }
 
-                s.nodes[0].nodes[1].nodes[2].nodes[1] = ast;
 
                 addInit(s);
             },
