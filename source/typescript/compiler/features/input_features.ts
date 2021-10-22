@@ -12,7 +12,7 @@ registerFeature(
     "CandleLibrary WICK: HTML Inputs",
     (build_system) => {
 
-        const TextInputValueHook = build_system.registerHookType("text-input-value-hook", HTMLNodeType.HTMLAttribute);
+        const GeneralInputValueHook = build_system.registerHookType("text-input-value-hook", HTMLNodeType.HTMLAttribute);
         const CheckboxInputValueHook = build_system.registerHookType("checkbox-input-value-hook", HTMLNodeType.HTMLAttribute);
 
         /** ###########################################################
@@ -35,14 +35,18 @@ registerFeature(
 
                             // Create an indirect hook for container data attribute
 
-                            build_system.addIndirectHook(component, TextInputValueHook, ast, index);
+                            build_system.addIndirectHook(component, GeneralInputValueHook, ast, index);
 
                             // Remove the attribute from the container element
 
                             return null;
                         }
 
-                        if (host_node.attributes.some(val => val.value == "text")) {
+                        if (host_node.attributes.some(
+                            val => [
+                                "text", "number", "month", "email", "time", "url", "week", "tel", "date", "color"
+                            ].includes((<string>val.value).toLocaleLowerCase()))
+                        ) {
 
 
                             // Process the primary expression for Binding Refs and static
@@ -51,7 +55,7 @@ registerFeature(
 
                             // Create an indirect hook for container data attribute
 
-                            build_system.addIndirectHook(component, TextInputValueHook, ast, index);
+                            build_system.addIndirectHook(component, GeneralInputValueHook, ast, index);
 
                             // Remove the attribute from the container element
 
@@ -83,7 +87,7 @@ registerFeature(
 
             name: "Text Input Value Handler",
 
-            types: [TextInputValueHook],
+            types: [GeneralInputValueHook],
 
             verify: () => true,
 
