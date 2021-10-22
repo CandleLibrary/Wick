@@ -13,7 +13,6 @@ registerFeature(
 
         const AttributeHook = build_system.registerHookType("attribute-hook", JSNodeType.StringLiteral);
 
-
         /** ##########################################################
          * BINDING ATTRIBUTE VALUE 
          */
@@ -22,6 +21,7 @@ registerFeature(
                 priority: -100000000, // <- Truly meant to be overridden
 
                 async prepareHTMLNode(attr, host_node, host_element, index, skip, component, context) {
+
 
                     if (attr.IS_BINDING) {
 
@@ -45,7 +45,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, context, element_index, addWrite, addInit) => {
+            buildJS: (node, sdp, element_index, addWrite, addInit) => {
 
                 const { name, nodes: [ast] } = node.value[0];
 
@@ -56,18 +56,18 @@ registerFeature(
                 addWrite(s);
             },
 
-            async buildHTML(hook, comp, context, model, parents) {
+            async buildHTML(hook, sdp) {
 
                 const ast = hook.value[0].nodes[0];
 
 
                 if (
-                    build_system.getExpressionStaticResolutionType(ast, comp, context)
+                    build_system.getExpressionStaticResolutionType(ast, sdp)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const { value } = await build_system.getStaticValue(ast, comp, context, model, parents);
+                    const { value } = await build_system.getStaticValue(ast, sdp);
 
                     if (value)
                         return <any>{

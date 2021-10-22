@@ -51,11 +51,11 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, context, element_index, addOnBindingUpdate) => {
+            buildJS: (node, sdp, element_index, addOnBindingUpdate) => {
 
                 const v = node.value[0];
 
-                const type = build_system.getExpressionStaticResolutionType(v, comp, context);
+                const type = build_system.getExpressionStaticResolutionType(v, sdp);
 
                 if (type == 1)
                     return null;
@@ -70,7 +70,7 @@ registerFeature(
                 return null;
             },
 
-            buildHTML: (node, comp, context, model) => null
+            buildHTML: (node, sdp) => null
         });
 
     }

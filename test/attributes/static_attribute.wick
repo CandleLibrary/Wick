@@ -1,0 +1,16 @@
+import attributed from "./attribute_child.wick";
+
+let value = "testing";
+
+export default <div>
+    <attributed {value} />
+</div>;
+
+import test from "@test";
+
+test: {
+
+    const val = document.querySelectorAll("div")[1];
+
+    assert("Static bindings are applied to element attribute imports", val.innerText == value );
+}

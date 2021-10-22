@@ -38,7 +38,7 @@ import {
 } from './common/binding.js';
 import { getComponentSourceString, setPos } from './common/common.js';
 import { css_selector_helpers } from './common/css.js';
-import { getExtendTypeName, getExtendTypeVal } from './common/extended_types.js';
+import { getExtendTypeName, registerHookType } from './common/extended_types.js';
 import { getElementAtIndex } from './common/html.js';
 import { getFirstReferenceName } from './common/js.js';
 import { importResource } from "./data/module.js";
@@ -106,7 +106,7 @@ export function getHookHandlers(): HookHandlerPackage[] {
 
 const registration_system = {
     registerHookType<T>(extension_name: string, original_type: T) {
-        return getExtendTypeVal(extension_name, original_type);
+        return registerHookType(extension_name, original_type);
     },
 
     registerJSParserHandler(js_parse_handler: JSHandler<Node>, ...types: (JSNodeType | HTMLNodeType | CSSNodeType)[]) {

@@ -3,7 +3,7 @@ import { JSIdentifierReference, JSNode, JSNodeType } from '@candlelib/js';
 import { HOOK_SELECTOR, HTMLNodeClass, HTMLNodeType } from "../../types/all.js";
 import { registerFeature } from '../build_system.js';
 import { Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure } from '../common/binding.js';
-import { getExtendTypeVal } from '../common/extended_types.js';
+import { registerHookType } from '../common/extended_types.js';
 
 registerFeature(
 
@@ -66,7 +66,7 @@ registerFeature(
                             if (id.type == JSNodeType.IdentifierReference
                                 && id.value == "watch") {
 
-                                expr.type = getExtendTypeVal("watch-call", JSNodeType.CallExpression);
+                                expr.type = registerHookType("watch-call", JSNodeType.CallExpression);
 
                                 build_system.addIndirectHook(component, expr.type, {
                                     hook_value: expr,

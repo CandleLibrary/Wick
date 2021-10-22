@@ -18,7 +18,7 @@ import {
     getExternalName,
     Name_Is_A_Binding_Variable
 } from "../common/binding.js";
-import { getExpressionStaticResolutionType, getStaticValue, getStaticValueAstFromSourceAST } from "../data/static_resolution.js";
+import { getExpressionStaticResolutionType, getStaticValue, getStaticValueAstFromSourceAST, StaticDataPack } from "../data/static_resolution.js";
 import {
     appendStmtToFrame,
     createBuildFrame,
@@ -92,10 +92,7 @@ export async function processIndirectHook(
 
 export async function processHookForHTML(
     indirect_hook: IndirectHook<any>,
-    comp: ComponentData,
-    context: Context,
-    model: any,
-    parent_components: ComponentData
+    sdp: StaticDataPack
 
 ): Promise<HookTemplatePackage> {
 
@@ -107,7 +104,7 @@ export async function processHookForHTML(
         if (handler.types.includes(indirect_hook.type) && handler.verify(indirect_hook)) {
 
             let
-                result = handler.buildHTML(copy(indirect_hook), comp, context, model, parent_components);
+                result = handler.buildHTML(copy(indirect_hook), sdp);
 
             if (result instanceof Promise)
                 result = await result;
@@ -172,6 +169,17 @@ export async function processHookForClass(
      */
     function addDestroyAST(ast: JSNode) { pending_destroy_asts.push(ast); }
 
+
+    const static_data_pack: StaticDataPack = {
+        self: component,
+        model: null,
+        context: context,
+        parent: null,
+        prev: null,
+        root_element: component.HTML
+    };
+
+
     //@ts-ignore
     for (const { node, meta } of bidirectionalTraverse(copy(ast), "nodes")
         .makeMutable()
@@ -188,8 +196,7 @@ export async function processHookForClass(
                     let
                         result = await handler.buildJS(
                             node,
-                            component,
-                            context,
+                            static_data_pack,
                             element_index,
                             addOnBindingUpdateAst,
                             addInitAST,
@@ -239,7 +246,7 @@ export async function processHookForClass(
         if (
             false &&
             ALLOW_STATIC_REPLACE &&
-            getExpressionStaticResolutionType(ast, component, context)
+            getExpressionStaticResolutionType(ast, static_data_pack)
             ==
             STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
         )
@@ -263,7 +270,7 @@ export async function processHookForClass(
                 ((binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE)
                     &&
                     (
-                        getBindingStaticResolutionType(binding, component, context)
+                        getBindingStaticResolutionType(binding, static_data_pack)
                         &
                         (STATIC_RESOLUTION_TYPE.WITH_MODEL | STATIC_RESOLUTION_TYPE.WITH_PARENT)
                     ) == 0)
@@ -271,7 +278,8 @@ export async function processHookForClass(
                 //Template constants should always be resolved
                 binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT
             ) {
-                const { value } = await getStaticValue(node, component, context, null, null, true);
+
+                const { value } = await getStaticValue(node, static_data_pack, true);
 
                 if (value)
                     mutate(convertObjectToJSNode(value));
@@ -446,7 +454,7 @@ function processBindingVariables(
     ) class_info.lu_public_variables.push(
         <any>getPropertyAST(
             getExternalName(binding),
-            (((binding.flags | BINDING_FLAG.DEFAULT_BINDING_STATE) << 24) | index) + ""
+            ((((binding.flags | BINDING_FLAG.DEFAULT_BINDING_STATE) << 24) | index) >>> 0) + ""
         )
     );
 

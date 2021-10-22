@@ -13,7 +13,7 @@ const extended_types_reverse_lookup = new Map();
  * @param type_name
  * @returns
  */
-export function getExtendTypeVal<T>(type_name: string, original_type: T): ExtendedType & T {
+export function registerHookType<T>(type_name: string, original_type: T): ExtendedType & T {
     const universal_name = type_name.toLocaleLowerCase();
 
 
@@ -27,7 +27,7 @@ export function getExtendTypeVal<T>(type_name: string, original_type: T): Extend
 
         extended_types_reverse_lookup.set(VC, universal_name);
 
-        return <T & ExtendedType>getExtendTypeVal(type_name, original_type);
+        return <T & ExtendedType>registerHookType(type_name, original_type);
     }
 }
 

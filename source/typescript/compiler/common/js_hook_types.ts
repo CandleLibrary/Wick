@@ -1,7 +1,7 @@
 import { JSNodeType } from "@candlelib/js";
-import { getExtendTypeVal } from "./extended_types.js";
+import { registerHookType } from "./extended_types.js";
 
 
 export const
-    BindingIdentifierBinding = getExtendTypeVal("binding-id", JSNodeType.IdentifierBinding),
-    BindingIdentifierReference = getExtendTypeVal("ref-id", JSNodeType.IdentifierReference);
+    BindingIdentifierBinding = registerHookType("binding-id", JSNodeType.IdentifierBinding),
+    BindingIdentifierReference = registerHookType("ref-id", JSNodeType.IdentifierReference);

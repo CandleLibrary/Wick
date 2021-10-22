@@ -11,7 +11,7 @@ import {
     STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import { getOriginalTypeOfExtendedType } from "./extended_types.js";
-import { getExpressionStaticResolutionType } from '../data/static_resolution.js';
+import { getExpressionStaticResolutionType, StaticDataPack } from '../data/static_resolution.js';
 import { getSetOfEnvironmentGlobalNames } from "./global_variables.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "./js_hook_types.js";
 import { Context } from './context.js';
@@ -403,8 +403,7 @@ export function haveStaticPluginForRefName(name: string, context: Context) {
  */
 export function getBindingStaticResolutionType(
     binding: BindingVariable,
-    comp: ComponentData,
-    context: Context,
+    static_data_pack: StaticDataPack,
     modules: Set<BindingVariable> = null,
     globals: Set<BindingVariable> = null,
 ): STATIC_RESOLUTION_TYPE {
@@ -452,15 +451,12 @@ export function getBindingStaticResolutionType(
         }
 
         if (binding.default_val) {
-            const v = getExpressionStaticResolutionType(binding.default_val, comp, context);
+            const v = getExpressionStaticResolutionType(binding.default_val, static_data_pack);
 
             type |= v;
         }
 
         binding.static_resolution_type = type;
-
-
-
     }
 
     return binding.static_resolution_type;
@@ -529,15 +525,18 @@ export function Variable_Is_Declared_In_Closure(var_name: string, frame: Functio
         return false;
 }
 
-export function Is_Statically_Resolvable_On_Server(binding: BindingVariable, comp: ComponentData, context: Context): boolean {
+export function Is_Statically_Resolvable_On_Server(
+    binding: BindingVariable,
+    static_data_pack: StaticDataPack
+): boolean {
     const modules: Set<BindingVariable> = new Set();
     const globals: Set<BindingVariable> = new Set();
-    const type = getBindingStaticResolutionType(binding, comp, context, modules, globals);
+    const type = getBindingStaticResolutionType(binding, static_data_pack, modules, globals);
 
     if (type == STATIC_RESOLUTION_TYPE.INVALID)
 
         for (const module of modules)
-            if (!haveStaticPluginForRefName(module.internal_name, context))
+            if (!haveStaticPluginForRefName(module.internal_name, static_data_pack.context))
                 return false;
 
     return true;

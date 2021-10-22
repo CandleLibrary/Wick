@@ -1,0 +1,5 @@
+import {value} from "@attributes";
+
+export default <div>
+    {value}
+</div>;

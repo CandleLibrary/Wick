@@ -10,7 +10,7 @@ import {
     tools
 } from "@candlelib/js";
 import {
-    BindingVariable, BINDING_VARIABLE_TYPE, HTMLNodeClass, Node, PLUGIN_TYPE,
+    BindingVariable, BINDING_VARIABLE_TYPE, HTMLElementNode, HTMLNodeClass, Node, PLUGIN_TYPE,
     STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import {
@@ -21,21 +21,27 @@ import {
     Is_Statically_Resolvable_On_Server
 } from '../common/binding.js';
 import { ComponentData } from '../common/component.js';
-import { getExtendTypeVal, Is_Extend_Type } from '../common/extended_types.js';
+import { Context } from '../common/context.js';
+import { Is_Extend_Type, registerHookType } from '../common/extended_types.js';
+import { getAttribute } from '../common/html.js';
 import { convertObjectToJSNode } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-import { Context } from '../common/context.js';
 import { parse_js_exp } from '../source-code-parse/parse.js';
 import { AsyncFunction } from './AsyncFunction.js';
-const DataCache = new WeakMap();
 
-export const ExportToChildAttributeHook = getExtendTypeVal("data-export-to-child-through-attribute-hook", JSNodeType.StringLiteral);
+
+export interface StaticDataPack {
+    root_element?: HTMLElementNode;
+    self: ComponentData;
+    model?: object;
+    context: Context;
+    prev?: StaticDataPack;
+
+}
+export const AttributeHook = registerHookType("attribute-hook", JSNodeType.StringLiteral);
 export async function getStaticAST(
     input_ast: JSNode & { cache_data: any; },
-    component: ComponentData,
-    context: Context,
-    model: any = null,
-    parent_comp: ComponentData = null,
+    static_data_pack: StaticDataPack,
     ASSUME_RUNTIME: boolean = false,
     ref: any = null
 ) {
@@ -43,7 +49,7 @@ export async function getStaticAST(
     const input_args = new Map;
 
     return await getStaticValueAstFromSourceAST(
-        input_ast, component, context, model, parent_comp, ASSUME_RUNTIME, input_args
+        input_ast, static_data_pack, ASSUME_RUNTIME, input_args
     );
 }
 
@@ -53,10 +59,7 @@ export async function getStaticAST(
  */
 export async function getStaticValue(
     input_ast: Node & { cache_data: any; },
-    component: ComponentData,
-    context: Context,
-    model: any = null,
-    parent_comp: ComponentData = null,
+    static_data_pack: StaticDataPack,
     ASSUME_RUNTIME: boolean = false,
     ref: any = null
 ): Promise<{ html: any, value: null; }> {
@@ -64,7 +67,7 @@ export async function getStaticValue(
     const input_args = new Map;
 
     const ast = await getStaticValueAstFromSourceAST(
-        input_ast, component, context, model, parent_comp, ASSUME_RUNTIME, input_args
+        input_ast, static_data_pack, ASSUME_RUNTIME, input_args
     );
 
     let html = null, value = null;
@@ -140,8 +143,7 @@ export async function getStaticValue(
 
 export function getExpressionStaticResolutionType(
     ast: JSNode,
-    comp: ComponentData,
-    context: Context,
+    static_data_pack: StaticDataPack,
     m: Set<BindingVariable> = null,
     g: Set<BindingVariable> = null
 ): STATIC_RESOLUTION_TYPE {
@@ -160,9 +162,9 @@ export function getExpressionStaticResolutionType(
 
                 const name = tools.getIdentifierName(node);
 
-                let binding = getComponentBinding(name, comp);
+                let binding = getComponentBinding(name, static_data_pack.self);
 
-                type |= getBindingStaticResolutionType(binding, comp, context, m, g);
+                type |= getBindingStaticResolutionType(binding, static_data_pack, m, g);
 
                 break;
 
@@ -170,7 +172,7 @@ export function getExpressionStaticResolutionType(
 
 
                 for (const n of node.nodes)
-                    type |= getExpressionStaticResolutionType(<any>n, comp, context, m, g);
+                    type |= getExpressionStaticResolutionType(<any>n, static_data_pack, m, g);
 
                 break;
 
@@ -179,9 +181,9 @@ export function getExpressionStaticResolutionType(
                 const [name_node] = <JSIdentifier[]>node.nodes;
 
                 if ((name_node.type & JSNodeClass.IDENTIFIER) > 0) {
-                    if (haveStaticPluginForRefName(<string>name_node.value, context)) {
+                    if (haveStaticPluginForRefName(<string>name_node.value, static_data_pack.context)) {
                         for (const n of node.nodes.slice(1)) {
-                            type |= getExpressionStaticResolutionType(n, comp, context, m, g);
+                            type |= getExpressionStaticResolutionType(n, static_data_pack, m, g);
                             meta.skip();
                         }
                     }
@@ -206,13 +208,12 @@ export function getExpressionStaticResolutionType(
 
 export async function getDefaultBindingValueAST(
     name: string,
-    comp: ComponentData,
-    context: Context,
-    model: Object = {},
-    parent_comp: ComponentData = null,
+    static_data_pack: StaticDataPack,
     ASSUME_RUNTIME: boolean = false,
     node_lookups: Map<string, Node>
 ): Promise<JSExpressionClass> {
+
+    const { self: comp, context, model } = static_data_pack;
 
 
     const binding = getComponentBinding(name, comp);
@@ -238,29 +239,39 @@ export async function getDefaultBindingValueAST(
             if (context.active_template_data)
                 return await <any>convertObjectToJSNode(context.active_template_data[binding.external_name]);
 
-        } else if (binding.type == BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE && parent_comp) {
+        } else if (binding.type == BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE) {
 
-            for (const hook of (<ComponentData><any>parent_comp).indirect_hooks.filter(h => h.type == ExportToChildAttributeHook)) {
+            //check current attributes on the guest element for any values
 
-                if (hook.value[0].foreign == binding.external_name) {
+            const external_name = binding.external_name;
+            //check the guest ast for the attribute bound to this name
+            const attrib = getAttribute(external_name, static_data_pack.root_element);
 
+            const parent = static_data_pack?.prev?.self;
 
+            if (attrib) {
 
-                    return await getDefaultBindingValueAST(
-                        hook.value[0].local,
-                        <any>parent_comp,
-                        context,
-                        model,
-                        null,
-                        ASSUME_RUNTIME,
-                        node_lookups
-                    );
+                return <any>attrib.value || exp("true");
+
+            } else if (parent) {
+
+                const index = static_data_pack.root_element.id;
+
+                for (const hook of (<ComponentData><any>parent).indirect_hooks.filter(h => h.type == AttributeHook)) {
+                    if (
+                        hook.ele_index == index &&
+                        hook.value[0].name == external_name
+                    ) {
+                        return <any>await getStaticValueAstFromSourceAST(
+                            <any>hook.value[0].nodes[0],
+                            static_data_pack.prev, // <- Ensure we are working within the parent scope
+                            ASSUME_RUNTIME,
+                            node_lookups
+                        );
+                    }
                 }
             }
-
-        }
-
-        if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
+        } else if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
 
             if (model)
                 return await <any>convertObjectToJSNode(model[binding.external_name]);
@@ -279,24 +290,17 @@ export async function getDefaultBindingValueAST(
             return <JSExpressionClass>exp(getCompiledBindingVariableNameFromString(binding.external_name, comp));
 
         } else if (ASSUME_RUNTIME) {
-            if (getBindingStaticResolutionType(binding, comp, context) != STATIC_RESOLUTION_TYPE.INVALID)
+            if (getBindingStaticResolutionType(binding, static_data_pack) != STATIC_RESOLUTION_TYPE.INVALID)
                 return <any>await getStaticValueAstFromSourceAST(
                     <any>binding.default_val,
-                    comp,
-                    context,
-                    model,
-                    parent_comp,
+                    static_data_pack,
                     ASSUME_RUNTIME,
                     node_lookups
                 );
-        }
-        else if (Is_Statically_Resolvable_On_Server(binding, comp, context))
+        } else if (Is_Statically_Resolvable_On_Server(binding, static_data_pack))
             return await <any>getStaticValueAstFromSourceAST(
                 <any>binding.default_val,
-                comp,
-                context,
-                model,
-                parent_comp,
+                static_data_pack,
                 false,
                 node_lookups
             );
@@ -317,13 +321,12 @@ export async function getDefaultBindingValueAST(
 
 export async function getStaticValueAstFromSourceAST(
     input_node: Node,
-    comp: ComponentData,
-    context: Context,
-    model: Object,
-    parent_comp: ComponentData = null,
+    static_data_pack: StaticDataPack,
     ASSUME_RUNTIME: boolean = false,
     node_lookups: Map<string, Node>
 ): Promise<Node> {
+
+    const { context, self: comp } = static_data_pack;
 
     const receiver = { ast: null };
 
@@ -346,10 +349,7 @@ export async function getStaticValueAstFromSourceAST(
 
             const val = await getStaticValueAstFromSourceAST(
                 <any>node.nodes[0],
-                comp,
-                context,
-                model,
-                parent_comp,
+                static_data_pack,
                 ASSUME_RUNTIME,
                 node_lookups
             );
@@ -370,10 +370,7 @@ export async function getStaticValueAstFromSourceAST(
 
                     const val = await getStaticValueAstFromSourceAST(
                         n,
-                        comp,
-                        context,
-                        model,
-                        parent_comp,
+                        static_data_pack,
                         ASSUME_RUNTIME,
                         node_lookups
                     );
@@ -408,10 +405,7 @@ export async function getStaticValueAstFromSourceAST(
 
                 const val = <any>await getDefaultBindingValueAST(
                     name,
-                    comp,
-                    context,
-                    model,
-                    parent_comp,
+                    static_data_pack,
                     ASSUME_RUNTIME,
                     node_lookups
                 );
@@ -439,9 +433,9 @@ export async function getStaticValueAstFromSourceAST(
 }
 
 
-export function ExpressionIsConstantStatic(node: JSNode, comp: ComponentData, context: Context) {
+export function ExpressionIsConstantStatic(node: JSNode, static_data_pack: StaticDataPack) {
 
-    const resolution_type = getExpressionStaticResolutionType(node, comp, context);
+    const resolution_type = getExpressionStaticResolutionType(node, static_data_pack);
 
     return (resolution_type ^ STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) == 0;
 }

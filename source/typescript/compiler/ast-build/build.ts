@@ -14,7 +14,8 @@ import {
     BINDING_VARIABLE_TYPE,
     CompiledComponentClass,
     FunctionFrame,
-    HTMLNodeClass
+    HTMLNodeClass,
+    STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import { componentDataToCSS } from "../ast-render/css.js";
 import {
@@ -23,6 +24,7 @@ import {
 import * as b_sys from "../build_system.js";
 import {
     Binding_Var_Is_Internal_Variable,
+    getBindingStaticResolutionType,
     getCompiledBindingVariableNameFromString,
     getComponentBinding,
     Node_Is_Binding_Identifier
@@ -42,7 +44,7 @@ import {
     BindingIdentifierBinding,
     BindingIdentifierReference
 } from "../common/js_hook_types.js";
-import { ExpressionIsConstantStatic, getStaticValue } from "../data/static_resolution.js";
+import { ExpressionIsConstantStatic, getStaticValue, StaticDataPack } from "../data/static_resolution.js";
 import { metrics } from '../metrics.js';
 import { parse_js_exp } from '../source-code-parse/parse.js';
 import {
@@ -358,6 +360,15 @@ export async function finalizeBindingExpression(
 }> {
     const run_tag = metrics.startRun("Component Build - Binding Expressions");
 
+    const static_data_pack: StaticDataPack = {
+        context,
+        parent: null,
+        self: component,
+        model: null,
+        prev: null,
+        root_element: component.HTML
+    };
+
     const lz = { ast: null };
     let NEED_ASYNC = false;
     for (const { node, meta: { mutate, skip } } of traverse(mutated_node, "nodes")
@@ -453,12 +464,18 @@ export async function finalizeBindingExpression(
                 const
                     name = <string>node.value,
                     binding = getComponentBinding(name, component);
-                if ((
+                if (
                     binding.type == BINDING_VARIABLE_TYPE.TEMPLATE_CONSTANT
                     ||
-                    binding.type == BINDING_VARIABLE_TYPE.CONFIG_GLOBAL)
+                    binding.type == BINDING_VARIABLE_TYPE.CONFIG_GLOBAL
+                    ||
+                    (
+                        binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+                        &&
+                        bindingIsConstStatic(binding, static_data_pack)
+                    )
                 ) {
-                    const { value } = await getStaticValue(node, component, context);
+                    const { value } = await getStaticValue(node, static_data_pack);
 
                     new_node = convertObjectToJSNode(value);
                 } else {
@@ -544,7 +561,7 @@ export async function finalizeBindingExpression(
                         name = <string>ref.value,
                         comp_var: BindingVariable = getComponentBinding(name, component);
 
-                    if (ExpressionIsConstantStatic(ref, component, context)) {
+                    if (ExpressionIsConstantStatic(ref, static_data_pack)) {
                         mutate(null);
                         continue;
                     }
@@ -598,3 +615,9 @@ export async function finalizeBindingExpression(
 
     return { ast: lz.ast, NEED_ASYNC };
 }
+function bindingIsConstStatic(binding: BindingVariable, static_data_pack: StaticDataPack): boolean {
+    return getBindingStaticResolutionType(binding, static_data_pack)
+        ==
+        STATIC_RESOLUTION_TYPE.CONSTANT_STATIC;
+}
+

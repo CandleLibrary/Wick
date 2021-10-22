@@ -87,13 +87,13 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, context, element_index, addOnBindingUpdate, addInitBindingInit) => {
+            buildJS: (node, sdp, element_index, addOnBindingUpdate, addInitBindingInit) => {
                 const { expr, stmt } = build_system.js;
 
                 const
                     expression = node.value[0],
                     root_type = expression.type,
-                    READONLY = getElementAtIndex<HTMLElementNode>(comp, element_index)
+                    READONLY = getElementAtIndex<HTMLElementNode>(sdp.self, element_index)
                         .attributes
                         .some(({ value: v }) => v.toString().toLowerCase() == "readonly");
                 // Determine whether the expression is trivial, simple, or complex.
@@ -129,7 +129,7 @@ registerFeature(
                     // - INTERNAL_VARIABLE
                     // - METHOD_VARIABLE (The method will be called with value of the input)
 
-                    const binding = build_system.getComponentBinding(expression.value, comp);
+                    const binding = build_system.getComponentBinding(expression.value, sdp.self);
 
                     if (
                         binding.type == BINDING_VARIABLE_TYPE.UNDECLARED
@@ -155,15 +155,15 @@ registerFeature(
                 }
             },
 
-            buildHTML: async (hook, comp, context, model, parents) => {
+            buildHTML: async (hook, sdp) => {
 
                 if (
-                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, context)
+                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], sdp)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const { value } = await build_system.getStaticValue(hook.value[0], comp, context, model, parents);
+                    const { value } = await build_system.getStaticValue(hook.value[0], sdp);
 
                     if (value !== null)
                         return <any>{
@@ -182,12 +182,12 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, context, element_index, addOnBindingUpdate, addInitBindingInit) => {
+            buildJS: (node, sdp, element_index, addOnBindingUpdate, addInitBindingInit) => {
                 const { expr, stmt } = build_system.js,
                     ele_name = "$$ele" + element_index,
                     expression = node.value[0],
                     root_type = expression.type,
-                    READONLY = getElementAtIndex<HTMLElementNode>(comp, element_index)
+                    READONLY = getElementAtIndex<HTMLElementNode>(sdp.self, element_index)
                         .attributes
                         .some(({ value: v }) => v.toString().toLowerCase() == "readonly");
                 // Determine whether the expression is trivial, simple, or complex.
@@ -223,7 +223,7 @@ registerFeature(
                     // - INTERNAL_VARIABLE
                     // - METHOD_VARIABLE (The method will be called with value of the input)
 
-                    const binding = build_system.getComponentBinding(expression.value, comp);
+                    const binding = build_system.getComponentBinding(expression.value, sdp.self);
 
                     if (
                         binding.type == BINDING_VARIABLE_TYPE.UNDECLARED
@@ -247,15 +247,15 @@ registerFeature(
                 }
             },
 
-            buildHTML: async (hook, comp, context, model, parents) => {
+            buildHTML: async (hook, sdp) => {
 
                 if (
-                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, context)
+                    build_system.getExpressionStaticResolutionType(<JSNode>hook.value[0], sdp)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                 ) {
 
-                    const { value } = await build_system.getStaticValue(hook.value[0], comp, context, model, parents);
+                    const { value } = await build_system.getStaticValue(hook.value[0], sdp);
 
                     if (value !== null)
                         return <any>{

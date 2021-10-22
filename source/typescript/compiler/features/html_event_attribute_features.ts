@@ -50,7 +50,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, context, element_index, _1, addInit) => {
+            buildJS: (node, sdp, element_index, _1, addInit) => {
                 // Replace the value with a 
                 // Get the on* attribute name
                 const
@@ -74,7 +74,7 @@ registerFeature(
                 addInit(s);
             },
 
-            buildHTML: (node, comp, context, model) => null
+            buildHTML: (node, sdp) => null
         });
     }
 );

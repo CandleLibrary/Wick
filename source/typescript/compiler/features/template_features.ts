@@ -7,13 +7,13 @@ import {
     HTMLNodeType
 } from "../../types/all.js";
 import { registerFeature } from '../build_system.js';
-import { getExtendTypeVal } from "../common/extended_types.js";
+import { registerHookType } from "../common/extended_types.js";
 import { AsyncFunction } from '../data/AsyncFunction.js';
 import * as utils from "../common/utils.js";
 import { tools } from '@candlelib/js';
 
 
-export const ContainerDataHook = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);
+export const ContainerDataHook = registerHookType("container-data-hook", HTMLNodeType.HTMLAttribute);
 
 registerFeature(
 

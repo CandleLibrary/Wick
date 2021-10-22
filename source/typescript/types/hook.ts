@@ -6,6 +6,7 @@ import { CompiledComponentClass } from "./class_information";
 import { Node, WickBindingNode } from "./wick_ast.js";
 import { ComponentData } from '../compiler/common/component.js';
 import { Context } from '../compiler/common/context.js';
+import { StaticDataPack } from '../compiler/data/static_resolution.js';
 export type ExtendedType = CSSNodeType | JSNodeType | HTMLNodeType | number;
 
 interface filterFunction {
@@ -23,12 +24,11 @@ interface buildJSFunction<T, U = T> {
          * of the binding hook
          */
         node: T,
-        /**
-         * Component Data Object
-         */
-        comp: ComponentData,
 
-        context: Context,
+        /**
+         * Static component data including the context object
+         */
+        static_data_pack: StaticDataPack,
 
         /**
          * The index number of the ele the hook belongs
@@ -71,14 +71,10 @@ interface buildJSFunction<T, U = T> {
 interface buildHTMLFunction<T = IndirectHook<JSNode>> {
     (
         hook: T,
-        comp: ComponentData,
-        context: Context,
-        model: any,
         /**
-         * A FIFO stack of the current component's parent 
-         * and ancestor components
+         * Static component data including the context object
          */
-        parent_component: ComponentData
+        static_data_pack: StaticDataPack,
     ): (HookTemplatePackage | Promise<HookTemplatePackage>);
 }
 

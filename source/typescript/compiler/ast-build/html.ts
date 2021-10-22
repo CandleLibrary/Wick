@@ -13,7 +13,7 @@ import {
 import * as b_sys from "../build_system.js";
 import { ComponentData } from '../common/component.js';
 import { Context } from '../common/context.js';
-import { getExpressionStaticResolutionType, getStaticValue } from "../data/static_resolution.js";
+import { getExpressionStaticResolutionType, getStaticValue, StaticDataPack } from "../data/static_resolution.js";
 import {
     ContainerDataHook,
     ContainerFilterHook,
@@ -57,6 +57,26 @@ enum HTMLAnnotationMode {
 }
 
 
+export async function componentDataToCompiledHTML(
+    comp: ComponentData,
+    context: Context = rt.context,
+    model = null,
+) {
+    const static_data_pack: StaticDataPack = {
+        context,
+        self: comp,
+        model: model,
+        root_element: comp.HTML,
+        prev: null
+    };
+
+    return __componentDataToCompiledHTML__(
+        comp.HTML,
+        static_data_pack,
+    );
+}
+
+
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
  * tree and template html elements for components referenced in containers.
@@ -67,17 +87,18 @@ enum HTMLAnnotationMode {
  * @param html
  * @param root
  */
-export async function componentDataToCompiledHTML(
-    comp: ComponentData,
-    context: Context = rt.context,
-    model = null,
+export async function __componentDataToCompiledHTML__(
+    html: HTMLNode,
+    static_data_pack: StaticDataPack,
     template_map: TemplatePackage["templates"] = new Map,
-    html: HTMLNode = comp.HTML,
     state: htmlState = htmlState.IS_ROOT | htmlState.IS_COMPONENT,
     extern_children: { USED: boolean; child: HTMLNode; id: number; }[] = [],
-    parent_component: ComponentData = null,
-    comp_data = [comp.name]
+    comp_data = [static_data_pack.self.name]
 ): Promise<TemplatePackage> {
+
+    const {
+        context,
+    } = static_data_pack;
 
     let node: TemplateHTMLNode = {
         tagName: "",
@@ -107,31 +128,27 @@ export async function componentDataToCompiledHTML(
         if ("IS_CONTAINER" in html && html.IS_CONTAINER)
             await addContainer(
                 html,
-                comp,
-                context,
+                static_data_pack,
                 state,
                 comp_data,
                 template_map,
-                node,
-                model,
-                parent_component
+                node
             );
 
         else if (component_name && context.components.has(component_name)) {
 
+
             ({ node, state } =
                 await addComponent(
                     html,
-                    context,
+                    static_data_pack,
                     component_name,
                     state,
                     node,
                     template_map,
                     extern_children,
                     children,
-                    comp,
                     comp_data,
-                    model
                 )
             );
 
@@ -139,16 +156,21 @@ export async function componentDataToCompiledHTML(
 
             if (tag_name == "SLOT" && extern_children.length > 0) {
 
-                let r_ = await processSlot(template_map, slot_name, extern_children, parent_component, context, model);
+                let r_ = await processSlot(
+                    static_data_pack,
+                    template_map,
+                    slot_name,
+                    extern_children,
+                );
 
                 if (r_.html.length > 0)
                     return r_;
             }
 
-            await processElement(html, comp, context, model, node, parent_component, tag_name, state, comp_data, template_map);
+            await processElement(html, static_data_pack, node, tag_name, state, comp_data, template_map);
 
         } else if ("IS_BINDING" in html)
-            node = await resolveHTMLBinding(html, state, node, comp_data, comp, context, model, parent_component);
+            node = await resolveHTMLBinding(html, static_data_pack, state, node, comp_data);
         else if ("data" in html)
             processTextNode(node, html.data);
 
@@ -158,15 +180,12 @@ export async function componentDataToCompiledHTML(
 
         for (const { child } of children.filter(n => !n.USED)) {
 
-            const { html } = await componentDataToCompiledHTML(
-                comp,
-                context,
-                model,
-                template_map,
+            const { html } = await __componentDataToCompiledHTML__(
                 child,
+                static_data_pack,
+                template_map,
                 child_state,
                 extern_children,
-                parent_component,
                 comp_data
             );
 
@@ -187,25 +206,22 @@ function processTextNode(node: TemplateHTMLNode, data: string) {
 
 async function processElement(
     html: HTMLElementNode,
-    comp: ComponentData,
-    context: Context,
-    model: any,
+    static_data_pack: StaticDataPack,
     node: TemplateHTMLNode,
-    parent_component: ComponentData,
     tag_name: string,
     state: htmlState,
     comp_data: string[],
     template_map: TemplatePackage["templates"]
 ) {
-    await processHooks(html, comp, context, model, node, parent_component, template_map);
+    await processHooks(html, static_data_pack, node, template_map);
 
-    const COMPONENT_IS_ROOT_ELEMENT = comp.HTML == html;
+    const COMPONENT_IS_ROOT_ELEMENT = static_data_pack.self.HTML == html;
 
     node.tagName = tag_name.toLocaleLowerCase();
 
     setScopeAssignment(state, node, html);
 
-    const HAVE_CLASS = processAttributes(html.attributes, comp, state, comp_data, node, comp.HTML == html);
+    const HAVE_CLASS = processAttributes(html.attributes, state, comp_data, node, static_data_pack.self.HTML == html);
 
     if (COMPONENT_IS_ROOT_ELEMENT) {
         node.attributes.set("w:c", "");
@@ -220,7 +236,7 @@ async function processElement(
     }
 
     if ((state & htmlState.IS_INTERLEAVED) > 0) {
-        node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
+        node.attributes.set("w:own", "" + comp_data.indexOf(static_data_pack.self.name));
     }
 }
 
@@ -230,12 +246,10 @@ function setScopeAssignment(state: htmlState, node: TemplateHTMLNode, html: HTML
 }
 
 async function processSlot(
+    static_data_pack: StaticDataPack,
     template_map: TemplatePackage["templates"],
     slot_name: string,
     extern_children: { USED: boolean; child: HTMLNode; id: number; }[],
-    parent_component: ComponentData,
-    context: Context,
-    model: any
 ): Promise<TemplatePackage> {
     let r_: TemplatePackage = { html: [], templates: template_map };
 
@@ -248,12 +262,10 @@ async function processSlot(
             if (pkg.child.slot_name == slot_name && !pkg.USED) {
                 pkg.USED = true;
                 pkg.child.host_component_index = pkg.id;
-                r_.html.push(...(await componentDataToCompiledHTML(
-                    parent_component,
-                    context,
-                    model,
-                    template_map,
+                r_.html.push(...(await __componentDataToCompiledHTML__(
                     pkg.child,
+                    static_data_pack,
+                    template_map,
                     htmlState.IS_SLOT_REPLACEMENT
                 )).html);
             }
@@ -268,12 +280,10 @@ async function processSlot(
             if (!pkg.child.slot_name && !pkg.USED) {
                 pkg.USED = true;
                 pkg.child.host_component_index = pkg.id;
-                r_.html.push(...(await componentDataToCompiledHTML(
-                    parent_component,
-                    context,
-                    model,
-                    template_map,
+                r_.html.push(...(await __componentDataToCompiledHTML__(
                     pkg.child,
+                    static_data_pack,
+                    template_map,
                     htmlState.IS_SLOT_REPLACEMENT
                 )).html);
             }
@@ -284,7 +294,6 @@ async function processSlot(
 
 function processAttributes(
     attributes: HTMLElementNode["attributes"],
-    comp: ComponentData,
     state: htmlState,
     comp_data: string[],
     node: TemplateHTMLNode,
@@ -322,31 +331,36 @@ function processAttributes(
 
 async function addComponent(
     html: HTMLElementNode,
-    context: Context,
+    static_data_pack: StaticDataPack,
     component_name: string,
     state: htmlState,
     node: TemplateHTMLNode,
     template_map: TemplatePackage["templates"],
     extern_children: { USED: boolean; child: HTMLNode; id: number; }[],
     children: { USED: boolean; child: HTMLNode; id: number; }[],
-    comp: ComponentData,
     comp_data: string[],
-    model: any = null
 ) {
+
+    const { context, self: comp, model } = static_data_pack;
+
     const c_comp = context.components.get(component_name);
 
     if (htmlState.IS_COMPONENT & state)
         state |= htmlState.IS_INTERLEAVED;
+    const new_static_data_pack: StaticDataPack = {
+        root_element: html || c_comp.HTML,
+        self: c_comp,
+        model: null,
+        context: context,
+        prev: static_data_pack
+    };
 
-    ({ html: [node] } = await componentDataToCompiledHTML(
-        c_comp,
-        context,
-        model,
-        template_map,
+    ({ html: [node] } = await __componentDataToCompiledHTML__(
         c_comp.HTML,
+        new_static_data_pack,
+        template_map,
         state,
         extern_children.concat(children),
-        comp,
         [...comp_data, c_comp.name]
     ));
 
@@ -354,7 +368,6 @@ async function addComponent(
 
     processAttributes(
         html.attributes,
-        comp,
         state,
         comp_data,
         node,
@@ -366,15 +379,16 @@ async function addComponent(
 
 async function addContainer(
     html: HTMLContainerNode,
-    component: ComponentData,
-    context: Context,
+    static_data_pack: StaticDataPack,
     state: htmlState,
     comp_data: string[],
     template_map: TemplatePackage["templates"],
     node: TemplateHTMLNode,
-    model: any = null,
-    parent_components: ComponentData = null
 ) {
+    const {
+        self: component,
+        context,
+    } = static_data_pack;
     const {
         component_attributes: component_attribs,
         component_names
@@ -412,11 +426,11 @@ async function addContainer(
     setScopeAssignment(state, node, html);
 
     //get data hook 
-    await processHooks(html, component, context, model, node, parent_components, template_map);
+    await processHooks(html, static_data_pack, node, template_map);
 
-    await processContainerHooks(html, component, context, model, node, parent_components, template_map);
+    await processContainerHooks(html, static_data_pack, node, template_map);
 
-    processAttributes(html.attributes, component, state, comp_data, node, component.HTML == html);
+    processAttributes(html.attributes, state, comp_data, node, component.HTML == html);
 }
 
 
@@ -452,15 +466,12 @@ export async function ensureComponentHasTemplates(
 
 async function processContainerHooks(
     html: HTMLContainerNode,
-    component: ComponentData,
-    context: Context,
-    model: any,
+    static_data_pack: StaticDataPack,
     node: TemplateHTMLNode,
-    parent_components: ComponentData,
     template_map: TemplatePackage["templates"],
 ) {
     const
-        hooks = getHookFromElement(html, component),
+        hooks = getHookFromElement(html, static_data_pack.self),
         data_hook = hooks.find(t => t.type == ContainerDataHook),
         filter_hook = hooks.find(t => t.type == ContainerFilterHook),
         sort_hook = hooks.find(t => t.type == ContainerSortHook),
@@ -474,7 +485,7 @@ async function processContainerHooks(
 
     if (data_hook) {
 
-        let { value: data } = await processHookForHTML(data_hook, component, context, model, parent_components);
+        let { value: data } = await processHookForHTML(data_hook, static_data_pack);
 
         if (Array.isArray(data) && data.length > 0) {
 
@@ -482,35 +493,35 @@ async function processContainerHooks(
             let limit = data.length, offset = 0, shift = 1;
 
             if (filter_hook) {
-                const { value: arrow_filter } = await processHookForHTML(filter_hook, component, context, model, parent_components);
+                const { value: arrow_filter } = await processHookForHTML(filter_hook, static_data_pack);
 
                 if (arrow_filter)
                     data = data.filter(arrow_filter);
             }
 
             if (sort_hook) {
-                const { value: sort_filter } = await processHookForHTML(sort_hook, component, context, model, parent_components);
+                const { value: sort_filter } = await processHookForHTML(sort_hook, static_data_pack);
 
                 if (sort_filter)
                     data = data.sort(sort_filter);
             }
 
             if (limit_hook) {
-                const { value: pending_limit } = await processHookForHTML(limit_hook, component, context, model, parent_components);
+                const { value: pending_limit } = await processHookForHTML(limit_hook, static_data_pack);
 
                 if (typeof pending_limit == "number")
                     limit = Math.max(0, Math.min(pending_limit, data.length));
             }
 
             if (shift_hook) {
-                const { value: pending_shift } = await processHookForHTML(shift_hook, component, context, model, parent_components);
+                const { value: pending_shift } = await processHookForHTML(shift_hook, static_data_pack);
 
                 if (typeof pending_shift == "number")
                     shift = Math.max(1, pending_shift);
             }
 
             if (offset_hook) {
-                const { value: pending_offset } = await processHookForHTML(offset_hook, component, context, model, parent_components);
+                const { value: pending_offset } = await processHookForHTML(offset_hook, static_data_pack);
 
                 if (typeof pending_offset == "number")
                     offset = Math.max(0, Math.min(pending_offset, data.length));
@@ -524,13 +535,21 @@ async function processContainerHooks(
 
                     comp_name = html.component_names[0],
 
-                    child_comp = context.components.get(comp_name);
+                    child_comp = static_data_pack.context.components.get(comp_name);
 
                 //Don't forget use-if hooks which may be present in the above component types.
 
                 for (const model of data) {
 
-                    const result = await componentDataToCompiledHTML(child_comp, context, model, template_map);
+                    const new_static_data_pack: StaticDataPack = {
+                        self: child_comp,
+                        root_element: child_comp.HTML,
+                        context: static_data_pack.context,
+                        model: model,
+                        prev: static_data_pack
+                    };
+
+                    const result = await __componentDataToCompiledHTML__(child_comp.HTML, new_static_data_pack, template_map);
 
                     node.children.push(result.html[0]);
                 }
@@ -541,14 +560,11 @@ async function processContainerHooks(
 
 async function processHooks(
     html: HTMLNode,
-    component: ComponentData,
-    context: Context,
-    model: any,
+    static_data_pack: StaticDataPack,
     node: TemplateHTMLNode,
-    parent_components: ComponentData,
     template_map: TemplatePackage["templates"],
 ) {
-    for (const hook of getHookFromElement(html, component)
+    for (const hook of getHookFromElement(html, static_data_pack.self)
         .filter(
             h => (
                 /**
@@ -566,7 +582,7 @@ async function processHooks(
         )
     ) {
 
-        const { html, templates } = (await processHookForHTML(hook, component, context, model, parent_components) || {});
+        const { html, templates } = (await processHookForHTML(hook, static_data_pack) || {});
 
         if (html) {
             if (html.attributes)
@@ -593,20 +609,17 @@ async function processHooks(
 
 async function resolveHTMLBinding(
     html: WickBindingNode,
+    static_data_pack: StaticDataPack,
     state: htmlState,
     node: TemplateHTMLNode,
     comp_data: string[],
-    comp: ComponentData,
-    context: Context,
-    model: any = null,
-    parent_component: ComponentData
 ): Promise<TemplateHTMLNode> {
     //*
     const
-        hook = getHookFromElement(html, comp)[0],
-        type = getExpressionStaticResolutionType(hook.value[0], comp, context),
+        hook = getHookFromElement(html, static_data_pack.self)[0],
+        type = getExpressionStaticResolutionType(hook.value[0], static_data_pack),
         { value, html: child_html } = hook
-            ? await getStaticValue(<any>hook.value[0], comp, context, model, parent_component)
+            ? await getStaticValue(<any>hook.value[0], static_data_pack)
             : null;
 
     node.tagName = "w-b";
@@ -614,12 +627,9 @@ async function resolveHTMLBinding(
     if (child_html) {
         node.tagName = "w-e";
 
-        const { html } = await componentDataToCompiledHTML(
-            comp,
-            context,
-            model,
-            undefined,
-            child_html
+        const { html } = await __componentDataToCompiledHTML__(
+            child_html,
+            static_data_pack
         );
         node.children.push(html[0]);
 
@@ -646,7 +656,7 @@ async function resolveHTMLBinding(
     }
 
     if ((state & htmlState.IS_INTERLEAVED) > 0)
-        node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
+        node.attributes.set("w:own", "" + comp_data.indexOf(static_data_pack.self.name));
 
     return node;
 }

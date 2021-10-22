@@ -33,9 +33,9 @@ registerFeature(
                         if (typeof src == "string") {
                             component.URI.push({
                                 type: "src",
-                                node: node,
+                                node: <Node><any>node,
                                 uri: src
-                            })
+                            });
                         }
                     } else {
 
@@ -43,7 +43,7 @@ registerFeature(
 
                     if (!alt) {
 
-                        node.pos.throw("Missing alt attribute [a11y alt attribute]")
+                        node.pos.throw("Missing alt attribute [a11y alt attribute]");
                         //Warn about accesibility
                     }
 

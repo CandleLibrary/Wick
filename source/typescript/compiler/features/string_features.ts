@@ -97,18 +97,16 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, context, element_index, addOnBindingUpdate) => {
+            buildJS: (node, sdp, element_index, addOnBindingUpdate) => {
 
                 //Replace the value with a 
-                const exp = convertAtLookupToElementRef(node, comp);
+                const exp = convertAtLookupToElementRef(node, sdp.self);
 
                 if (exp)
                     return exp;
             },
 
-            buildHTML: (node, comp, context, model) => {
-
-            }
+            buildHTML: (node, sdp) => null
         });
 
 

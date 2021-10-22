@@ -225,19 +225,19 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: async (node, comp, context, _3, _, _1, _2) => {
+            buildJS: async (node, sdp, _3, _, _1, _2) => {
 
-                const binding_var = build_system.getComponentBinding(node.value, comp);
+                const binding_var = build_system.getComponentBinding(node.value, sdp.self);
 
                 if (
-                    build_system.getBindingStaticResolutionType(binding_var, comp, context)
+                    build_system.getBindingStaticResolutionType(binding_var, sdp)
                     ==
                     STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
                     &&
                     binding_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
                 ) {
 
-                    const value = await build_system.getStaticAST(<any>node, comp, context, null, null, true);
+                    const value = await build_system.getStaticAST(<any>node, sdp, true);
 
                     if (value) return <JSExpressionClass>value;
                 }

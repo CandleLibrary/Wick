@@ -8,7 +8,7 @@ import {
 } from "../../types/all.js";
 import { registerFeature } from '../build_system.js';
 import { BindingIdentifierBinding } from '../common/js_hook_types.js';
-import { ExportToChildAttributeHook } from '../data/static_resolution.js';
+import { AttributeHook } from '../data/static_resolution.js';
 
 
 registerFeature(
@@ -82,7 +82,7 @@ registerFeature(
                                 //@ts-ignore
                                 external = "namespace";
                             } else {
-                                external = local
+                                external = local;
                             }
 
                             names.push({ local, external });
@@ -197,7 +197,7 @@ registerFeature(
                             const internal_id = specifier.nodes[1] || external_id;
                             const local = external_id.value;
                             const foreign = internal_id.value;
-                            build_system.addIndirectHook(component, ExportToChildAttributeHook, { local, foreign, child_id: host_node.child_id }, index);
+                            build_system.addIndirectHook(component, AttributeHook, { local, foreign, child_id: host_node.child_id }, index);
                         }
 
                         return null;
@@ -210,24 +210,24 @@ registerFeature(
         build_system.registerHookHandler<IndirectHook<[{ foreign: string; local: string; child_id: number; }]>, void>({
             name: "Export & Import Attribute Hooks",
 
-            types: [ExportToChildAttributeHook, ImportFromChildAttributeHook],
+            types: [AttributeHook, ImportFromChildAttributeHook],
 
             verify: () => true,
 
-            buildJS: (node, comp, context, element_index, addWrite, addInit) => {
+            buildJS: (node, sdp, element_index, addWrite, addInit) => {
 
-                const ele = <HTMLNode><any>build_system.getElementAtIndex(comp, element_index);
+                const ele = <HTMLNode><any>build_system.getElementAtIndex(sdp.self, element_index);
 
                 const comp_name = ele.component_name;
 
-                const child_comp = context.components.get(comp_name);
+                const child_comp = sdp.context.components.get(comp_name);
 
                 const { foreign, local, child_id } = node.value[0];
 
                 if (child_comp) {
 
                     const
-                        par_binding = build_system.getComponentBinding(local, comp),
+                        par_binding = build_system.getComponentBinding(local, sdp.self),
                         child_binding = build_system.getBindingFromExternalName(foreign, child_comp);
 
                     if (par_binding
@@ -235,7 +235,7 @@ registerFeature(
                         child_binding
                     ) {
 
-                        if (node.type == ExportToChildAttributeHook && (child_binding.flags & BINDING_FLAG.FROM_PARENT) > 0) {
+                        if (node.type == AttributeHook && (child_binding.flags & BINDING_FLAG.FROM_PARENT) > 0) {
 
                             const exp = build_system.js.stmt(`this.ch[${child_id}].ufp(${child_binding.class_index}, _, f);`);
 
@@ -260,7 +260,7 @@ registerFeature(
                 }
             },
 
-            buildHTML: (node, comp, context, model) => null
+            buildHTML: (node, sdp) => null
         });
 
         build_system.registerHookHandler<IndirectHook<[JSExportClause]>, void>({
@@ -270,17 +270,17 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, _, _2, _3, addInit) => {
+            buildJS: (node, sdp, _, _2, _3, addInit) => {
 
                 const [clause] = node.value;
 
                 for (const { nodes: [internal] } of clause.nodes)
-                    registerClassBinding(addInit, build_system.getComponentBinding(internal.value, comp));
+                    registerClassBinding(addInit, build_system.getComponentBinding(internal.value, sdp.self));
 
                 return null;
             },
 
-            buildHTML: (node, comp, context, model) => null
+            buildHTML: (node, sdp) => null
         });
 
         function getBindingClassIndexID(binding: BindingVariable) {

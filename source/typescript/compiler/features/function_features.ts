@@ -139,7 +139,7 @@ registerFeature(
                 types: [BindingFunction],
                 verify: () => true,
                 buildHTML: () => null,
-                buildJS(node, comp, context, element_index, addOnBindingUpdate, addInitBindingInit) {
+                buildJS(node, sdp, element_index, addOnBindingUpdate, addInitBindingInit) {
                     const [call_stmt, ...refs] = node.value[0].nodes;
 
                     addOnBindingUpdate(node.value[0]);
@@ -197,7 +197,7 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: (node, comp, context, element_index, _1, addInit) => {
+            buildJS: (node, sdp, element_index, _1, addInit) => {
                 // Replace the value with a 
                 // Get the on* attribute name
                 const
@@ -206,7 +206,7 @@ registerFeature(
                 addInit(parse_js_stmt(`this.ele.addEventListener("${action}", this.on${action}.bind(this))`));
             },
 
-            buildHTML: (node, comp, context, model) => null
+            buildHTML: (node, sdp) => null
         });
 
     }

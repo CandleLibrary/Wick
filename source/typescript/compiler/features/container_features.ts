@@ -21,23 +21,21 @@ import {
 } from "../../types/all.js";
 import { registerFeature } from '../build_system.js';
 import { ComponentData } from '../common/component.js';
-import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "../common/extended_types.js";
+import { registerHookType, getOriginalTypeOfExtendedType } from "../common/extended_types.js";
 import { getElementAtIndex } from "../common/html.js";
-import { convertObjectToJSNode } from '../common/js.js';
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-import { getExpressionStaticResolutionType, getStaticValue, ExpressionIsConstantStatic } from "../data/static_resolution.js";
-import { Context } from '../common/context.js';
+import { ExpressionIsConstantStatic, getExpressionStaticResolutionType, getStaticValue, StaticDataPack } from "../data/static_resolution.js";
 
 
-export const ContainerDataHook = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);
-export const ContainerFilterHook = getExtendTypeVal("container-filter-hook", HTMLNodeType.HTMLAttribute);
-export const ContainerSortHook = getExtendTypeVal("container-sort-hook", HTMLNodeType.HTMLAttribute);
-export const ContainerLimitHook = getExtendTypeVal("container-limit-hook", HTMLNodeType.HTMLAttribute);
-export const ContainerOffsetHook = getExtendTypeVal("container-offset-hook", HTMLNodeType.HTMLAttribute);
-export const ContainerShiftHook = getExtendTypeVal("container-shift-hook", HTMLNodeType.HTMLAttribute);
-export const ContainerScrubHook = getExtendTypeVal("container-scrub-hook", HTMLNodeType.HTMLAttribute);
-export const ContainerUseIfHook = getExtendTypeVal("container-use-if", HTMLNodeType.HTMLAttribute);
-export const ContainerUseIfEmptyHook = getExtendTypeVal("container-use-if-empty", HTMLNodeType.HTMLAttribute);
+export const ContainerDataHook = registerHookType("container-data-hook", HTMLNodeType.HTMLAttribute);
+export const ContainerFilterHook = registerHookType("container-filter-hook", HTMLNodeType.HTMLAttribute);
+export const ContainerSortHook = registerHookType("container-sort-hook", HTMLNodeType.HTMLAttribute);
+export const ContainerLimitHook = registerHookType("container-limit-hook", HTMLNodeType.HTMLAttribute);
+export const ContainerOffsetHook = registerHookType("container-offset-hook", HTMLNodeType.HTMLAttribute);
+export const ContainerShiftHook = registerHookType("container-shift-hook", HTMLNodeType.HTMLAttribute);
+export const ContainerScrubHook = registerHookType("container-scrub-hook", HTMLNodeType.HTMLAttribute);
+export const ContainerUseIfHook = registerHookType("container-use-if", HTMLNodeType.HTMLAttribute);
+export const ContainerUseIfEmptyHook = registerHookType("container-use-if-empty", HTMLNodeType.HTMLAttribute);
 
 registerFeature(
 
@@ -177,7 +175,7 @@ registerFeature(
 
             buildHTML: _ => null,
 
-            buildJS: (node, comp, context, index, write, init, _2) => {
+            buildJS: (node, sdp, index, write, init, _2) => {
 
                 const {
                     expression,
@@ -187,7 +185,7 @@ registerFeature(
 
                 let arrow_argument_match = new Array(1).fill(null);
 
-                if (getListOfUnboundArgs(expression, comp, arrow_argument_match, build_system)) {
+                if (getListOfUnboundArgs(expression, sdp.self, arrow_argument_match, build_system)) {
 
                     const arrow_expression_stmt = stmt(`$$ctr${container_id}.addEvaluator(${arrow_argument_match[0].value} => 1, ${comp_index})`);
 
@@ -236,16 +234,16 @@ registerFeature(
 
             verify: () => true,
 
-            buildJS: async (node, comp, context, element_index, on_write, init, read) => {
+            buildJS: async (node, sdp, element_index, on_write, init, read) => {
 
                 const
-                    ele = getElementAtIndex<HTMLContainerNode>(comp, element_index),
+                    ele = getElementAtIndex<HTMLContainerNode>(sdp.self, element_index),
 
                     st = <JSExpressionStatement>stmt(`$$ctr${ele.container_id}.sd(0)`),
 
                     id = <JSNode>node.value[0];
 
-                if (ExpressionIsConstantStatic(id, comp, context)) {
+                if (ExpressionIsConstantStatic(id, sdp)) {
                     // Constant Static bindings are resolved during build time and do not need to be represented in
                     // any way within the runtime code
                     return null;
@@ -257,18 +255,18 @@ registerFeature(
                 return null;
             },
 
-            buildHTML: async (hook, comp, context, model, parents) => {
+            buildHTML: async (hook, sdp) => {
                 const ast = hook.value[0];
-                const container_ele: HTMLContainerNode = <any>getElementAtIndex(comp, hook.ele_index);
+                const container_ele: HTMLContainerNode = <any>getElementAtIndex(sdp.self, hook.ele_index);
 
                 if (
-                    getExpressionStaticResolutionType(<JSNode>hook.value[0], comp, context)
+                    getExpressionStaticResolutionType(<JSNode>hook.value[0], sdp)
                     !==
                     STATIC_RESOLUTION_TYPE.INVALID
                     &&
                     container_ele.component_names.length > 0
                 ) {
-                    return await getStaticValue(hook.value[0], comp, context, model, parents);
+                    return await getStaticValue(hook.value[0], sdp);
                 }
 
                 return <HookTemplatePackage>null;
@@ -528,9 +526,9 @@ registerFeature(
 
         function createContainerDynamicValue(container_method_name: string) {
 
-            return function (node, comp, context, index, write, _1, _2) {
+            return function (node, sdp, index, write, _1, _2) {
 
-                const container_id = build_system.getElementAtIndex<HTMLContainerNode>(comp, index).container_id;
+                const container_id = build_system.getElementAtIndex<HTMLContainerNode>(sdp.self, index).container_id;
 
                 const arrow_expression_stmt = stmt(`$$ctr${container_id}.${container_method_name}()`);
 
@@ -540,16 +538,16 @@ registerFeature(
             };
         }
 
-        async function createContainerStaticValue(hook: IndirectHook<JSNode>, comp, context, model, parents) {
+        async function createContainerStaticValue(hook: IndirectHook<JSNode>, sdp: StaticDataPack) {
 
 
             if (
-                build_system.getExpressionStaticResolutionType(hook.value[0], comp, context)
+                build_system.getExpressionStaticResolutionType(hook.value[0], sdp)
                 ==
                 STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
 
 
-                const ast = await build_system.getStaticAST(hook.value[0], comp, context, model, parents, false);
+                const ast = await build_system.getStaticAST(hook.value[0], sdp, false);
 
                 try {
                     return eval(renderCompressed(<JSNode>ast));
@@ -558,17 +556,17 @@ registerFeature(
         };
 
         function createContainerDynamicArrowCall(argument_size: number, container_method_name: string) {
-            return function (node, comp, context, index, write, _1, _2) {
+            return function (node, sdp, index, write, _1, _2) {
 
                 const ast = node.value[0];
 
-                const container_id = build_system.getElementAtIndex<HTMLContainerNode>(comp, index).container_id;
+                const container_id = build_system.getElementAtIndex<HTMLContainerNode>(sdp.self, index).container_id;
 
                 let arrow_argument_match = new Array(argument_size).fill(null);
 
                 const ast_copy = copy(ast);
 
-                if (getListOfUnboundArgs(ast_copy, comp, arrow_argument_match, build_system)) {
+                if (getListOfUnboundArgs(ast_copy, sdp.self, arrow_argument_match, build_system)) {
 
                     const arrow_expression_stmt = stmt(`$$ctr${container_id}.${container_method_name}((${arrow_argument_match.map(i => i.value).join(",")}) => 1)`);
 
@@ -581,7 +579,7 @@ registerFeature(
 
         function createContainerStaticArrowFunction(argument_size: number = 1) {
 
-            return async function (hook: IndirectHook<JSNode>, comp, context, model, parents) {
+            return async function (hook: IndirectHook<JSNode>, sdp: StaticDataPack) {
 
                 let arrow_argument_match = new Array(argument_size).fill(null);
 
@@ -591,15 +589,15 @@ registerFeature(
                 if (ast.type == JSNodeType.ArrowFunction)
                     ast = ast.nodes[1];
 
-                if (getListOfUnboundArgs(ast, comp, arrow_argument_match, build_system)) {
+                if (getListOfUnboundArgs(ast, sdp.self, arrow_argument_match, build_system)) {
 
 
-                    if (build_system.getExpressionStaticResolutionType(ast, comp, context) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
+                    if (build_system.getExpressionStaticResolutionType(ast, sdp) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
 
                         const arrow_expression_stmt = build_system.js.expr(`(${arrow_argument_match.map(v => v.value)}) => 1`);
 
                         arrow_expression_stmt.nodes[1] =
-                            <any>await build_system.getStaticAST(ast, comp, context, model, parents, false);
+                            <any>await build_system.getStaticAST(ast, sdp, false);
 
                         try {
                             return eval(renderCompressed(arrow_expression_stmt));
