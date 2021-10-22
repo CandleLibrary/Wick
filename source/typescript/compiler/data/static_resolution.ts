@@ -249,9 +249,13 @@ export async function getDefaultBindingValueAST(
 
             const parent = static_data_pack?.prev?.self;
 
+
             if (attrib) {
 
-                return <any>attrib.value || exp("true");
+                return <any>attrib.value ?
+                    <any>convertObjectToJSNode(attrib.value)
+                    :
+                    exp("true");
 
             } else if (parent) {
 

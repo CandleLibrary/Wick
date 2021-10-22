@@ -1,5 +1,5 @@
-import {value} from "@attributes";
+import {value as val} from "@attributes";
 
 export default <div>
-    {value}
+    {val}
 </div>;

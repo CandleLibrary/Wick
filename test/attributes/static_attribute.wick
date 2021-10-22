@@ -4,13 +4,18 @@ let value = "testing";
 
 export default <div>
     <attributed {value} />
+    <attributed value="hello world" />
 </div>;
 
 import test from "@test";
 
 test: {
 
-    const val = document.querySelectorAll("div")[1];
+    const valA = document.querySelectorAll("div")[1];
 
-    assert("Static bindings are applied to element attribute imports", val.innerText == value );
+    assert("Static binding should apply to attribute import", valA.innerText == value );
+
+    const valB = document.querySelectorAll("div")[2];
+
+    assert("Plain value should apply to attribute import", valB.innerText == "hello world" );
 }
