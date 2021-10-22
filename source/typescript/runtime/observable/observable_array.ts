@@ -200,6 +200,11 @@ export class ObservableArray<T> extends ObservableContainerBase<T> {
         this.scheduleUpdate();
     };
 
+    sort(fn) {
+        this.data.sort(fn);
+        this.scheduleUpdate();
+    }
+
     indexOf(object) { return this.data.indexOf(object); }
     pop() { const v = this.data.pop(); this.scheduleUpdate(); return v; }
     shift() { const v = this.data.shift(); this.scheduleUpdate(); return v; }
