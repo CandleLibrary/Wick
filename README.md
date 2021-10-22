@@ -74,7 +74,7 @@ export default <div>
 </style>
 ```
 
-Organize that mess:
+Refactor that mess:
 ```jsx
 // ./my_component.wick
 
