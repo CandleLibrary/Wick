@@ -1,8 +1,21 @@
 import { traverse } from '@candlelib/conflagrate';
-import { JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, tools } from '@candlelib/js';
-import { BINDING_VARIABLE_TYPE, STATIC_RESOLUTION_TYPE } from '../../types/binding.js';
+import {
+    JSExpressionClass,
+    JSExpressionStatement,
+    JSIdentifierBinding,
+    JSIdentifierReference,
+    JSMemberExpression,
+    JSNode,
+    JSNodeClass,
+    JSNodeType, tools
+} from '@candlelib/js';
+import {
+    BINDING_VARIABLE_TYPE,
+    STATIC_RESOLUTION_TYPE,
+    BINDING_FLAG
+} from '../../types/all.js';
 import { registerFeature } from './../build_system.js';
-import { getBindingFromExternalName, Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure, Variable_Is_Declared_Locally } from './../common/binding.js';
+import { Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure, Variable_Is_Declared_Locally } from './../common/binding.js';
 import { BindingIdentifierBinding, BindingIdentifierReference } from './../common/js_hook_types.js';
 
 registerFeature(
@@ -10,6 +23,43 @@ registerFeature(
     "CandleLibrary WICK: JS Identifiers and Variables",
     (build_system) => {
 
+        /*############################################################3
+        * HOST MODEL REFERENCE IDENTIFIER
+        * 
+        * Allows the binding identifier to be updated from the host component's model.
+        */
+        build_system.registerJSParserHandler(
+            {
+                priority: -1000,
+
+                async prepareJSNode(node: JSMemberExpression, parent_node, skip, component, context, frame) {
+
+                    const name = build_system.js.getFirstReferenceName(node);
+
+                    if (name == "$host") {
+
+                        const child = <any>node.nodes[1];
+
+                        if (child.type == (JSNodeType.IdentifierName | JSNodeClass.PROPERTY_NAME))
+                            child.type = JSNodeType.IdentifierReference;
+
+                        const name = build_system.js.getFirstReferenceName(child);
+
+                        build_system.addBindingVariable(
+                            frame, name, child.pos, BINDING_VARIABLE_TYPE.ATTRIBUTE_VARIABLE, name,
+                            BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL | BINDING_FLAG.FROM_PARENT
+                        );
+
+                        await build_system.processNodeAsync(child, frame, component, context);
+
+                        skip();
+
+                        return child;
+
+                    }
+                }
+            }, JSNodeType.MemberExpression
+        );
 
         /*############################################################3
         * IDENTIFIER REFERENCE
@@ -246,7 +296,4 @@ registerFeature(
             buildHTML: () => null
         });
     }
-
-
-
 );

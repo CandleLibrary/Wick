@@ -1,19 +1,15 @@
 import { test } from "@model";
 
-
 var data = [{ name: "alpha"}]
-
 
 export default <div>
 
     <container { data }>
         <span>
-            { name }{ test }
-            
+            { name }{ $host.test }
         </span>
     </container>
-
-
+    
 </div>;
 
 import t from "@test";
