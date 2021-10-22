@@ -20,6 +20,11 @@ import { create_config_arg_properties } from "./config_arg_properties.js";
 export const test_logger = Logger.get("wick").get("test");
 const log_level_arg = addCLIConfig("test", para_args.log_level_properties);
 const config_arg = addCLIConfig("test", create_config_arg_properties());
+const show_rig_arg = addCLIConfig("test", {
+    key: "showrig",
+    default: false,
+    help_brief: "Prints test rig values without running any tests",
+});
 
 addCLIConfig<URI>("test", {
     key: "test",
@@ -161,13 +166,22 @@ Test components that have been defined with the \`@test\` synthetic import
                 }
             }
 
-
-
-            if (suites.length > 0) {
-                test_logger.log("Running tests:");
-                await test_frame.start(suites);
-            } else
-                test_logger.log("No tests were found. Exiting");
+            if (show_rig_arg.value) {
+                for (const rig of suites) {
+                    const logger = Logger.get(rig.name);
+                    logger.log(rig.origin);
+                    for (const test of rig.tests) {
+                        logger.log("Test Name:" + test.name);
+                        logger.log("Test Source:\n" + test.source);
+                    }
+                }
+            } else {
+                if (suites.length > 0) {
+                    test_logger.log("Running tests:");
+                    await test_frame.start(suites);
+                } else
+                    test_logger.log("No tests were found. Exiting");
+            }
         }
     );
 
