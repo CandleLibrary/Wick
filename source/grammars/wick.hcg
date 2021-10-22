@@ -50,7 +50,9 @@
 
 @EXPORT css::COMPLEX_SELECTOR as css_selector
 
-<> WICK > COMPONENT                                                                                           
+<> WICK > tk:shebang? COMPONENT
+
+<> shebang > \#! (g:sym | g:id | g:num | g:sp)(*) g:nl
 
 <> COMPONENT > 
          html::HTML
