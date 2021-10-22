@@ -207,6 +207,8 @@ registerFeature(
 
                             node.component_name = node.component.name;
 
+                            node.child_component_index = node.child_id;
+
                             //@ts-ignore
                             node.attributes.push({
                                 type: HTMLNodeType.HTMLAttribute,

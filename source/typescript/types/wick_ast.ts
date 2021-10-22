@@ -212,6 +212,7 @@ export interface HTMLNodeBase {
     child_id?: number;
     component?: ComponentData;
     component_name?: string;
+    child_component_index?: number;
     /**
      * child nodes 
      */
