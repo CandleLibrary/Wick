@@ -56,13 +56,17 @@ export default <div>
 
 <style>
     root { 
-        display:flex; width:100vw; height: 100vh; align-items:center; justify-content:center;
-        position:relative; font-family: "sans-serif"
+        display:flex; width:100vw; 
+        height: 100vh; align-items:center;
+        justify-content:center; position:relative; 
+        font-family: "sans-serif"
     }
 
     .banner{
-        width:80%; height:60%; text-align:center; justify-content:center; padding:80px; display:flex;
-        background: linear-gradient(  18deg, rgba(63,0,71,1) 0%, rgba(204,109,29,1) 45%, rgba(220,200,50,1) 100% );
+        width:80%; height:60%; 
+        text-align:center; justify-content:center; 
+        padding:80px; display:flex;
+        background: linear-gradient( 18deg, rgba(63,0,71,1) 0%, rgba(204,109,29,1) 45%, rgba(220,200,50,1) 100% );
         border-radius: 1vw
     }
     
@@ -118,7 +122,9 @@ import test from "@test";
 
 test: {
     likes += 9001; //Classic
-    assert( document.querySelector( document.querySelector("h3").innerText = "👍: Over 9000!!!!!!" ) )
+    assert( 
+        document.querySelector( document.querySelector("h3").innerText = "👍: Over 9000!!!!!!" ) 
+     )
 }
 ```
 
