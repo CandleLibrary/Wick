@@ -104,7 +104,11 @@ export function getFirstMatchingReferenceIdentifier(input_node: JSNode, id_value
 }
 
 export function getFirstReferenceNode(node: JSNode): JSIdentifierClass {
-    for (const { node: id } of traverse(node, "nodes").filter("type", JSNodeType.IdentifierReference))
+    for (const { node: id } of traverse(node, "nodes").filter("type",
+        JSNodeType.IdentifierReference,
+        JSNodeType.IdentifierProperty,
+        JSNodeType.IdentifierName | JSNodeClass.PROPERTY_NAME,
+    ))
         return <JSIdentifierClass>id;
     return null;
 }

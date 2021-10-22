@@ -5,8 +5,10 @@ import {
     HTMLAttribute, HTMLNodeType,
     IndirectHook,
     STATIC_RESOLUTION_TYPE,
-    BINDING_FLAG
+    BINDING_FLAG,
+    HTMLElementNode
 } from "../../types/all.js";
+import { NodeTypes } from '../source-code-parse/env.js';
 import { registerFeature } from './../build_system.js';
 
 registerFeature(
@@ -15,6 +17,64 @@ registerFeature(
     (build_system) => {
 
         const AttributeHook = build_system.registerHookType("attribute-hook", JSNodeType.StringLiteral);
+        const AssignedModelHook = build_system.registerHookType("assigned-model-binding", NodeTypes.HTMLAttribute);
+        /** ##########################################################
+         * MODEL ATTRIBUTE
+         * 
+         * This attribute works with imported and ad-hoc components
+         * and allows a host component bind a different model to 
+         * a guest component.
+         */
+        build_system.registerHTMLParserHandler(
+            {
+                priority: 99999999999,
+
+                async prepareHTMLNode(node: HTMLAttribute, host_node: HTMLElementNode, host_element, index, skip, component, context) {
+
+                    if (node.name == "model") {
+
+                        if (host_node.component_name) {
+
+                            if (node.IS_BINDING) {
+
+                                const ast = await build_system.processBindingAsync(
+                                    node.value, component, context
+                                );
+
+                                build_system.addIndirectHook(
+                                    component, AssignedModelHook,
+                                    { child_comp_id: host_node.child_id, ast },
+                                    index
+                                );
+                            }
+                        }
+
+                        return null;
+                    }
+                }
+            }, HTMLNodeType.HTMLAttribute
+        );
+
+        build_system.registerHookHandler({
+            name: "Model Attribute Binding",
+            description: "",
+            verify: () => true,
+            types: [AssignedModelHook],
+
+            buildHTML: (hook, sdp) => null,
+
+            buildJS: (node, sdp, index, write, init, destroy) => {
+
+                const { ast, child_comp_id } = node.value[0];
+
+                const exp = build_system.js.stmt(`this.ch[${child_comp_id}]
+                            .setModel();`);
+
+                exp.nodes[0].nodes[1].nodes[0] = ast;
+
+                write(<any>exp);
+            }
+        });
 
         /** ##########################################################
          * BINDING ATTRIBUTE VALUE 

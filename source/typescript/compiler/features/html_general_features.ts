@@ -4,9 +4,9 @@ import {
     BINDING_VARIABLE_TYPE,
     HTMLAttribute, HTMLElementNode, HTMLNode, HTMLNodeType
 } from "../../types/all.js";
+import { getAttributeValue } from '../common/html.js';
 import { registerFeature } from './../build_system.js';
 import { ComponentHash } from './../common/hash_name.js';
-import { getAttributeValue } from '../common/html.js';
 
 registerFeature(
 
@@ -233,46 +233,70 @@ registerFeature(
             {
                 priority: -999,
 
-                async prepareHTMLNode(node, host_node, host_element, index, skip, component, context) {
-
-
+                async prepareHTMLNode(
+                    node: HTMLElementNode,
+                    host_node: HTMLElementNode,
+                    host_element,
+                    index,
+                    skip,
+                    component,
+                    context
+                ) {
                     if (
                         node.tag.toLocaleLowerCase() == "component"
                     ) {
 
                         node.tag = "div";
 
+                        const new_attribs = [];
+                        const old_attribs = [];
+
+                        for (const attrib of (node.attributes || [])) {
+                            const { name, value } = attrib;
+                            if (name == "element") {
+                                node.tag == value || "div";
+                            } else if (name == "model") {
+                                //Skip this node
+                                old_attribs.push(attrib);
+                            } else {
+                                new_attribs.push(attrib);
+                            }
+                        }
+
                         const { comp } = await build_system.parseComponentAST(
-                            Object.assign({}, node),
+                            Object.assign({}, node, { attributes: new_attribs }),
                             node.pos.slice(),
                             component.location,
                             context,
                             component
                         );
 
-                        node.nodes.length = 0;
-
-                        node.child_id = component.children.push(1) - 1;
-
-                        node.component = comp;
-
                         if (comp) {
 
+                            let new_node = Object.assign({}, node);
+
+                            new_node.attributes = old_attribs;
+
+                            new_node.nodes = [];
+
+                            new_node.child_id = component.children.push(1) - 1;
+
+                            new_node.component = comp;
 
                             component.local_component_names.set(comp?.name, comp?.name);
 
-                            skip();
-
-                            node.component_name = node.component.name;
+                            new_node.component_name = new_node.component.name;
 
                             //@ts-ignore
-                            node.attributes.push({
+                            new_node.attributes.push({
                                 type: HTMLNodeType.HTMLAttribute,
                                 name: "expat",
                                 value: ComponentHash(index + comp.name)
                             });
                             /*
                             */
+
+                            return new_node;
                         }
 
                         return node;
@@ -281,6 +305,8 @@ registerFeature(
 
             }, HTMLNodeType.HTML_Element
         );
+
+
 
         /** ##########################################################
          *  Radiate Element

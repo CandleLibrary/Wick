@@ -278,8 +278,8 @@ export function processUndefinedBindingVariables(component: ComponentData, conte
         if (binding_variable.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
 
             if (!getSetOfEnvironmentGlobalNames().has(getExternalName(binding_variable))) {
-
-                binding_variable.type = BINDING_VARIABLE_TYPE.UNDECLARED;
+                
+                binding_variable.type = BINDING_VARIABLE_TYPE.MODEL_VARIABLE;
 
                 binding_variable.flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL
                     //Assumes binding will inevitably be written to 
