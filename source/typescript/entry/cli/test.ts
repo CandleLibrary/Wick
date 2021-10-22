@@ -110,7 +110,7 @@ Test components that have been defined with the \`@test\` synthetic import
                     }
 
                     const model = traverse(source_ast_block, "nodes").makeMutable()
-                        .filter("type", JSNodeType.VariableDeclaration, JSNodeType.LexicalDeclaration)
+                        .filter("type", JSNodeType.VariableStatement, JSNodeType.LexicalStatement)
                         .run(
                             (node, meta) => {
                                 if (

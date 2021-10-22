@@ -46,13 +46,11 @@ addCLIConfig<string>("compile",
     {
         key: "compile",
         help_brief: `
-compile <source directory>
 
 Statically compile a web application from a source directory.
 
-Wick will automatically handle the compilation & packaging of 
-components and will render out a static site that can be 
-optionally hydrated with associated support scripts.`
+Wick will automatically handle the compilation & packaging of components and will render out a 
+static site that can be optionally hydrated with associated support scripts.`
     }
 ).callback = (
         async (args) => {

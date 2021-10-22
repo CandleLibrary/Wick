@@ -2,6 +2,7 @@ import lantern, {
     candle_library_dispatch,
     $404_dispatch,
     filesystem_dispatch,
+    candle_favicon_dispatch,
     args,
     Dispatcher,
     ext_map
@@ -19,6 +20,15 @@ Logger.get("lantern").deactivate();
 const log_level_arg = addCLIConfig("run", para_args.log_level_properties);
 const config_arg = addCLIConfig("run", create_config_arg_properties());
 const port_arg = addCLIConfig("run", args.create_port_arg_properties("Wick", "WICK_DEV_PORT", "8080"));
+const browser_arg = addCLIConfig<string>("run", {
+    key: "browser",
+    REQUIRES_VALUE: true,
+    default: "none",
+    help_arg_name: "browser-name",
+    accepted_values: ["chrome", "opera", "safari", "edge", "firefox"],
+    help_brief: "Open a web browser after component has been compiled and server has started"
+});
+
 addCLIConfig<URI>("run", {
     key: "run",
     help_arg_name: "component_path",
@@ -77,12 +87,23 @@ Host a single component on a local server.
                             return tools.sendUTF8String(page);
                         }
                     },
+                    candle_favicon_dispatch,
                     candle_library_dispatch,
                     $404_dispatch,
                     filesystem_dispatch
                 );
 
                 run_logger.log(`Component running at: [ http://localhost:${port_arg.value}/ ]`);
+
+                const { spawn } = await import("child_process");
+
+                ({
+                    chrome: (spawn, site) => spawn("google-chrome", [site]),
+                    firefox: (spawn, site) => spawn("firefox", [site]),
+                    edge: (spawn, site) => spawn("msedge", [site]),
+                    opera: (spawn, site) => spawn("opera", [site]),
+
+                })?.[browser_arg.value]?.(spawn, `http://localhost:${port_arg.value}/`); 
 
             } else {
 

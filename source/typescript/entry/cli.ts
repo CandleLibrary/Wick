@@ -26,7 +26,9 @@ import URI from '@candlelib/uri';
 URI.server();
 
 import "./cli/test.js";
+import "./cli/create.js";
 import "./cli/compile.js";
+import "./cli/run.js";
 
 
 const
@@ -34,13 +36,13 @@ const
         //@ts-ignore
         = await getPackageJsonObject(new URI(import.meta.url).path),
     HELP_MESSAGE = `
-CANDLELIB::Wick v${pkg.version}
+****          CANDLELIB::Wick v${pkg.version}        ****
 
-Web Component Compiler
+**** Candle Library's Web Component Compiler ****
 `;
 
-addCLIConfig("", {
-    key: "",
+addCLIConfig("root", {
+    key: "root",
     help_brief: HELP_MESSAGE
 });
 
