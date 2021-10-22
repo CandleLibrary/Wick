@@ -4,26 +4,143 @@
 
 <p align=center> <img alt="npm (tag)" src="https://img.shields.io/npm/v/@candlelib/wick?style=for-the-badge&logo=appveyor"> </p>
 
-Wick's purpose is to reduce the cognitive overhead required to work with sprawling web technologies
-and provide a flexible way to wrangle HTML, CSS, JavaScript, APIs, and custom code into manageable pieces. 
+## Quick Start
 
-### Static First 
+Install Wick:
+```bash
+# NPM
+$: npm install -g @candlelib/wick
+```
+```bash
+# YARN
+$: yarn global add @candlelib/wick
+```
 
-Wick compiles components to static html documents. Depending on the input components, the output
-may not have any javascript at all. The whole point of is to make is easy corral various together
-and then get out of the way as much as possible let the browser do what it does best, render web
-pages. 
+Build a component:
+```jsx
+// ./my_component.wick
 
-Wick is designed to be easily, once the learning curve of discovering how the code works is surmounted.
-Adding new features or revising old ones should be a breeze, allowing Wick to serve as a swiss army 
-knife for creating web content. 
+<div> hello world </div>
+```
 
-Want to create a static blog web site with template system and editor, wicks got you covered. Want 
+Run the component in a browser:
+```bash
+candle.wick run --browser firefox ./my_component.wick
+```
+
+Compile your component into a static app:
+```bash
+candle.wick compile --output ./app ./my_component.wick
+```
+
+Host your app (using whatever static file web server you choose):
+```bash
+$ http-server ./app
+```
+
+Now grab a drink and toast your excelence!
+
+> psss ... Checkout out [@candlelib/flame](https://github.com/candlelibrary/flame) for more goodies for editing and working with components
+
+### But wait, there's more!
+
+Add some pizzazz:
+```jsx
+// ./my_component.wick
+
+export default <div> 
+    <div class=banner>
+        <h1> Hello World! </h1>
+    </div>
+</div>;
+
+<style>
+    root { 
+        display:flex; width:100vw; height: 100vh; align-items:center; justify-content:center;
+        position:relative; font-family: "sans-serif"
+    }
+
+    .banner{
+        width:80%; height:60%; text-align:center; justify-content:center; padding:80px; display:flex;
+        background: linear-gradient(  18deg, rgba(63,0,71,1) 0%, rgba(204,109,29,1) 45%, rgba(220,200,50,1) 100% );
+        border-radius: 1vw
+    }
+    
+    h1 { color:white; font-size:20vh; text-transform:uppercase }
+</style>
+```
+
+Organize that mess:
+```jsx
+// ./my_component.wick
+
+import "./my_style.css";
+
+export default <div> 
+    <div class=banner>
+        <h1> Hello World! </h1>
+    </div>
+</div>;
+```
+Get some reactions:
+```jsx
+// ./my_component.wick
+
+import "./my_style.css";
+
+let likes = 1;
+
+export default <div> 
+    <div class=banner>
+        <h1> Hello World! </h1>
+        <h3> 👍: {likes > 9000 ? "Over 9000 !!!!!!" : likes} </h3>
+        <p><button onclick={likes++}> LIKE! </button></p>
+    </div>
+</div>;
+```
+Test it out:
+```jsx
+// ./my_component.wick
+
+import "./my_style.css";
+
+let likes = 1;
+
+export default <div> 
+    <div class=banner>
+        <h1> Hello World! </h1>
+        <h3> 👍: {likes > 9000 ? "Over 9000 !!!!!!" : likes} </h3>
+        <p><button onclick={likes++}> LIKE! </button></p>
+    </div>
+</div>;
+
+import test from "@test";
+
+test: {
+    likes += 9001; //Classic
+    assert( document.querySelector( document.querySelector("h3").innerText = "👍: Over 9000!!!!!!" ) )
+}
+```
+
+```bash
+$ candle.wick test ./my_component.wick
+```
+Passed? Grab some moons:
+```
+🌕 🌕 
+  🌙 
+```
+
+
+## Wick Is... 
+
+Wick is a web component compiler that consumes JavaScript, CSS, HTML, JSON, Markdown, and few other things, and outputs
+well constructed HTML documents that feel equally at home in a static deployment as they do in server side rendering. Its
+designed to be easily configurable and infinitly adaptable.
+
+Want to create a static blog web site with template system and editor, Wick has got you covered. Want 
 to build a complete web editor in the browser, no problem; checkout CandleLibrary Flame for an example
 of how Wick makes this possible.
-
-Leverages syntax ambiguity:
-    JavaScript leaves a lot up to imagination
 
 #### Features
 
@@ -36,13 +153,13 @@ Leverages syntax ambiguity:
 
 - Small Distribution
 
-- Flexible component system with deterministic data flow. From simple drop in components to full applications, decide how your app should be structured.
+- Flexible component system with adaptable data flow. From simple drop in components to full applications, decide how your app should be structured.
 
-- Dev and Language tools provided with [CandleLibrary Flame](https://github.com/CandleLibrary/flame)
+- Dev, Language, and CSS tools provided with [CandleLibrary Flame](https://github.com/CandleLibrary/flame)
 
-- Backed by CandleLibrary Hydrocarbon, a flexible parser compiler that can be leveraged to expand Wick's syntax for even higher levels of customization and integration.
+- Backed by [CandleLibrary Hydrocarbon](http://github.com/CandleLibrary/hydrocarbon), a flexible parser compiler that can be leveraged to expand Wick's syntax for even higher levels of customization and integration.
 
-## Example 
+## More Examples
 
 ```jsx
 //component-package-a.wick
@@ -97,6 +214,23 @@ export default <div>
 
 </div>;
 ```
+# State Of The Library
+
+Wick is in ongoing development and more features will be added, hardened, and bug fixed in persuite of a 
+version 1.0.0 release. Of primary concern at this point is the construction of documentation to reflect the
+depth and breadth of the Wick compiler and it's associated CandleLibrary sister projects. 
+
+Wick can be used to build prototypes and products at this point, but it should be understood that Wick is
+still volatile and unstable in areas, and cannot be gaurenteed to produce a production ready product until
+a version 1.0.0 release. 
+
+## Get Involved 
+
+Wick is still in a very causual development process. If you want chip in and improve one what's already
+here, I encourage you to open an issue. Ideas, bugs, rants, whatever it is, let me know what can be done to 
+make this a stellar project.
+
+
 # License
 
 [MIT](./LICENSE) License
