@@ -414,6 +414,7 @@ registerFeature(
                         // data
                         const ast = await build_system.processBindingAsync(node.value, component, context);
 
+
                         // Create an indirect hook for container data attribute
 
                         build_system.addIndirectHook(component, ContainerLimitHook, ast, index);
@@ -532,7 +533,7 @@ registerFeature(
 
                 const arrow_expression_stmt = stmt(`$$ctr${container_id}.${container_method_name}()`);
 
-                arrow_expression_stmt.nodes[0].nodes[1].nodes[0] = node.nodes[0];
+                arrow_expression_stmt.nodes[0].nodes[1].nodes[0] = node.value[0];
 
                 write(arrow_expression_stmt);
             };
@@ -540,19 +541,14 @@ registerFeature(
 
         async function createContainerStaticValue(hook: IndirectHook<JSNode>, sdp: StaticDataPack) {
 
+            const ast = await build_system.getStaticAST(hook.value[0], sdp, false);
 
-            if (
-                build_system.getExpressionStaticResolutionType(hook.value[0], sdp)
-                ==
-                STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
-
-
-                const ast = await build_system.getStaticAST(hook.value[0], sdp, false);
-
+            if (ast) {
                 try {
-                    return eval(renderCompressed(<JSNode>ast));
+                    return { value: eval(renderCompressed(<JSNode>ast)) };
                 } catch (e) { }
             }
+
         };
 
         function createContainerDynamicArrowCall(argument_size: number, container_method_name: string) {

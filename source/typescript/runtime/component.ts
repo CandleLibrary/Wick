@@ -332,6 +332,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         //Lifecycle Events: Connecting <======================================================================
         this.connecting();
 
+        this.connect();
+
         if (other_element) {
             if (!INSERT_AFTER)
                 other_element.parentElement.insertBefore(this.ele, other_element);
@@ -345,8 +347,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         } else {
             parent_element.appendChild(this.ele);
         }
-
-        this.connect();
 
         //Lifecycle Events: Connected <======================================================================
         this.connected();
@@ -363,9 +363,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         if (this.ele && this.ele.parentElement)
             this.ele.parentElement.removeChild(this.ele);
 
+
         //Lifecycle Events: Disconnected <======================================================================
         this.disconnect();
+
         this.disconnected();
+
 
     }
 

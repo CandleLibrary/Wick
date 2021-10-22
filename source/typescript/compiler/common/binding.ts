@@ -17,6 +17,7 @@ import { BindingIdentifierBinding, BindingIdentifierReference } from "./js_hook_
 import { Context } from './context.js';
 import { ComponentData } from './component.js';
 import URI from "@candlelib/uri";
+import { AttributeHook, getAttribute } from './html.js';
 
 
 function getNonTempFrame(frame: FunctionFrame) {

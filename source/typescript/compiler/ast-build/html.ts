@@ -347,6 +347,7 @@ async function addComponent(
 
     if (htmlState.IS_COMPONENT & state)
         state |= htmlState.IS_INTERLEAVED;
+
     const new_static_data_pack: StaticDataPack = {
         root_element: html || c_comp.HTML,
         self: c_comp,

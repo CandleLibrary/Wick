@@ -561,6 +561,29 @@ export class WickContainer implements Sparky, ObservableWatcher {
     }
 
 
+    private getWindowData(output = this.activeComps): WindowData {
+
+        const
+            limit = this.limit,
+            offset = this.offset,
+            output_length = output.length,
+            active_window_start = Math.max(0, offset * this.shift_amount),
+            upper_bound = Math.min(active_window_start + limit, output_length),
+            direction = Math.sign(this.offset_diff),
+            DESCENDING = direction < 0;
+
+        return {
+            limit,
+            offset,
+            output_length,
+            active_window_start,
+            upper_bound,
+            direction,
+            DESCENDING
+        };
+    }
+
+
     arrange(w_data: WindowData, output = this.activeComps, transition = createTransition()) {
 
         const { limit, offset, output_length, active_window_start, upper_bound, DESCENDING } = w_data;
@@ -568,6 +591,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
         //Arranges active scopes according to their arrange handler.
 
         let i = 0;
+
 
         while (i < active_window_start && i < output_length) {
 
@@ -665,6 +689,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
         //Insert elements
         // Index the active items
         let upper_bound = Math.min(active_window_start + limit, output_length);
+
         let i = Math.min(active_window_start, output_length);
 
         while (i < upper_bound)
@@ -693,11 +718,13 @@ export class WickContainer implements Sparky, ObservableWatcher {
             output[j].index = -1;
             j++;
         }
+
         return j;
     }
 
     private removeFromDOM() {
         for (const component of this.components_pending_removal)
+
             component.removeFromDOM();
 
         this.components_pending_removal.length = 0;
@@ -744,29 +771,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
             }
 
         this.transition_list.length = 0;
-    }
-
-
-    private getWindowData(output = this.activeComps): WindowData {
-
-        const
-            limit = this.limit,
-            offset = this.offset,
-            output_length = output.length,
-            active_window_start = Math.max(0, offset * this.shift_amount),
-            upper_bound = Math.min(active_window_start + limit, output_length),
-            direction = Math.sign(this.offset_diff),
-            DESCENDING = direction < 0;
-
-        return {
-            limit,
-            offset,
-            output_length,
-            active_window_start,
-            upper_bound,
-            direction,
-            DESCENDING
-        };
     }
 
     limitExpressionUpdate(transition) {
@@ -840,23 +844,31 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
     updateLimit(value: number) {
 
-        if (typeof value == "number" && this.limit != value) {
-            this.limit = value;
-            this.scheduledUpdate();
+        let numeric = parseInt(value.toString());
+
+        if (numeric) {
+            numeric = Math.max(0, numeric);
+            if (this.limit != numeric) {
+                this.limit = numeric;
+                spark.queueUpdate(this);
+            }
+        } else {
+            this.limit = Infinity;
+            spark.queueUpdate(this);
         }
     }
 
     updateShift(value: number) {
         if (typeof value == "number" && this.shift_amount != value) {
             this.shift_amount = value;
-            this.scheduledUpdate();
+            spark.queueUpdate(this);
         }
     }
 
     updateOffset(value: number) {
         if (typeof value == "number" && this.offset != value) {
             this.offset = value;
-            this.scheduledUpdate();
+            spark.queueUpdate(this);
         }
     }
 
@@ -1007,6 +1019,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
                         component = <ContainerComponent>new this.comp_constructors[j](null, null, [this.parent]);
 
                         component.hydrate().initialize(item);
+
+                        component.disconnect();
 
                         const attrib_list = this.comp_attributes[j];
 

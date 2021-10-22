@@ -23,7 +23,7 @@ import {
 import { ComponentData } from '../common/component.js';
 import { Context } from '../common/context.js';
 import { Is_Extend_Type, registerHookType } from '../common/extended_types.js';
-import { getAttribute } from '../common/html.js';
+import { AttributeHook, getAttribute } from '../common/html.js';
 import { convertObjectToJSNode } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 import { parse_js_exp } from '../source-code-parse/parse.js';
@@ -38,7 +38,7 @@ export interface StaticDataPack {
     prev?: StaticDataPack;
 
 }
-export const AttributeHook = registerHookType("attribute-hook", JSNodeType.StringLiteral);
+
 export async function getStaticAST(
     input_ast: JSNode & { cache_data: any; },
     static_data_pack: StaticDataPack,
@@ -215,7 +215,6 @@ export async function getDefaultBindingValueAST(
 
     const { self: comp, context, model } = static_data_pack;
 
-
     const binding = getComponentBinding(name, comp);
 
     if (binding) {
@@ -249,7 +248,6 @@ export async function getDefaultBindingValueAST(
 
             const parent = static_data_pack?.prev?.self;
 
-
             if (attrib) {
 
                 return <any>attrib.value ?
@@ -260,7 +258,6 @@ export async function getDefaultBindingValueAST(
             } else if (parent) {
 
                 const index = static_data_pack.root_element.id;
-
                 for (const hook of (<ComponentData><any>parent).indirect_hooks.filter(h => h.type == AttributeHook)) {
                     if (
                         hook.ele_index == index &&
@@ -275,7 +272,15 @@ export async function getDefaultBindingValueAST(
                     }
                 }
             }
-        } else if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
+
+            //Use the component's own model to fulfill this variable
+            if (model)
+                return await <any>convertObjectToJSNode(model[binding.external_name]);
+
+        } else if ((
+            binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE
+            ||
+            binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
 
             if (model)
                 return await <any>convertObjectToJSNode(model[binding.external_name]);

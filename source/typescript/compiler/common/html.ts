@@ -1,5 +1,7 @@
+import { JSNodeType } from '@candlelib/js';
 import { HTMLNode, HTMLElementNode, HTMLNodeClass } from "../../types/all.js";
 import { ComponentData } from './component.js';
+import { registerHookType } from './extended_types.js';
 
 export const html_void_tags = new Set([
     "area",
@@ -102,7 +104,7 @@ export function IsHTMLNode(node: any): node is HTMLNode {
     return typeof node == "object"
         && "type" in node
         && typeof node.type == "number"
-        && (node.type & HTMLNodeClass.HTML_NODE) > 0
+        && (node.type & HTMLNodeClass.HTML_NODE) > 0;
 }
 
 export function escape_html_string(string: string): string {
@@ -138,3 +140,5 @@ export function hasAttribute(name, node: HTMLElementNode) {
 
     return false;
 }
+
+export const AttributeHook = registerHookType("attribute-hook", JSNodeType.StringLiteral);

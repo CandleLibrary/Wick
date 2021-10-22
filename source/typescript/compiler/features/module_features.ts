@@ -7,8 +7,8 @@ import {
     HTMLNodeClass, HTMLNodeType, IndirectHook
 } from "../../types/all.js";
 import { registerFeature } from '../build_system.js';
+import { AttributeHook } from '../common/html.js';
 import { BindingIdentifierBinding } from '../common/js_hook_types.js';
-import { AttributeHook } from '../data/static_resolution.js';
 
 
 registerFeature(
