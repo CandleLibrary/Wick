@@ -7,6 +7,7 @@ import {
 } from "../runtime/html.js";
 import { loadModules } from "../runtime/load_modules.js";
 import { Observable } from '../runtime/observable/observable.js';
+import { ObservableArray } from '../runtime/observable/observable_array.js';
 import { ObservableScheme__ } from '../runtime/observable/observable_prototyped.js';
 
 let
@@ -41,6 +42,7 @@ const wick = Object.assign(wick_root, {
         WickRTComponent: WickRTComponent,
         Context: Context,
         Observable: Observable,
+        ObservableArray: ObservableArray,
         ObservableScheme<T>(obj: T): ObservableScheme__<T> & T {
             return <any>new ObservableScheme__(obj);
         }
